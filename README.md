@@ -59,7 +59,7 @@ To deploy this project onto the cloud, Google App Engine or Heroku for example,
 you need to first download the source code, build it locally, then try to deploy
 it.
 
-The `npm run build` will build all static files, then automatically call
+The `npm run generate` will generate all static files, then automatically call
 `go generate ./...` to bind those static files directly into program source
 code. You need those generated source code to get application to function. Also
 because of this, directly call `go build .` on the newly downloaded souce code
