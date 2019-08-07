@@ -182,7 +182,7 @@ func File(customPath string) Loader {
 			return loadFile(fallbackFileSearchList[f])
 		}
 
-		return "", Configuration{}, fmt.Errorf(
+		return fileTypeName, Configuration{}, fmt.Errorf(
 			"Configuration file was not specified. Also tried fallback files "+
 				"\"%s\", but none of it was available",
 			strings.Join(fallbackFileSearchList, "\", \""))
