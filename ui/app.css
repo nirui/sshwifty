@@ -1,0 +1,73 @@
+/*
+// Sshwifty - A Web SSH client
+//
+// Copyright (C) 2019 Rui NI <nirui@gmx.com>
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+@charset "utf-8";
+
+#app {
+  padding: 0;
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  min-width: 320px;
+}
+
+body.app-error {
+  background: #b44;
+  color: #fff;
+}
+
+#app-loading {
+  width: 100%;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-items: center;
+  justify-content: center;
+}
+
+#app-loading-frame {
+  flex: 0 0;
+  padding: 30px;
+  text-align: center;
+}
+
+#app-loading-icon {
+  background: url("./widgets/busy.svg") center center no-repeat;
+  background-size: contain;
+  width: 100%;
+  height: 200px;
+}
+
+#app-loading-error {
+  font-size: 5em;
+  color: #fff;
+}
+
+#app-loading-title {
+  color: #fab;
+  font-size: 1.2em;
+  font-weight: lighter;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+#app-loading-title.error {
+  color: #fff;
+}

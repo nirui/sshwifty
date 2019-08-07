@@ -1,0 +1,111 @@
+/*
+// Sshwifty - A Web SSH client
+//
+// Copyright (C) 2019 Rui NI <nirui@gmx.com>
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+@charset "utf-8";
+
+#connect-known-list {
+  min-height: 200px;
+  font-size: 0.75em;
+  padding: 15px;
+  background: #3a3a3a;
+}
+
+#connect-known-list li {
+  width: 50%;
+  position: relative;
+}
+
+@media (max-width: 480px) {
+  #connect-known-list li {
+    width: 100%;
+  }
+}
+
+#connect-known-list li .lst-wrap {
+  cursor: pointer;
+}
+
+#connect-known-list li .lst-wrap:hover {
+  background: #444;
+}
+
+#connect-known-list li .labels {
+  position: absolute;
+  top: 0;
+  left: 0;
+  text-transform: uppercase;
+  font-size: 0.85em;
+  letter-spacing: 1px;
+}
+
+#connect-known-list li .labels > .type {
+  display: inline-block;
+  padding: 3px;
+  background: #a56;
+  color: #fff;
+}
+
+#connect-known-list li .labels > .opt {
+  display: none;
+  padding: 3px;
+  background: #a56;
+  color: #fff;
+  text-decoration: none;
+  z-index: 2;
+}
+
+@media (max-width: 480px) {
+  #connect-known-list li .labels > .opt {
+    display: inline-block;
+  }
+}
+
+#connect-known-list li .labels > .opt.link {
+  background: #287;
+  color: #fff;
+}
+
+#connect-known-list li .labels > .opt.link:after {
+  content: "\02936";
+}
+
+#connect-known-list li .labels > .opt.del {
+  background: #a56;
+  color: #fff;
+}
+
+#connect-known-list li:hover .labels > .opt,
+#connect-known-list li:focus .labels > .opt {
+  display: inline-block;
+}
+
+#connect-known-list li h2 {
+  margin-top: 5px;
+  margin-bottom: 5px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+#connect-known-list li h2::before {
+  content: ">_";
+  color: #555;
+  font-size: 0.8em;
+  margin-right: 5px;
+  font-weight: normal;
+}

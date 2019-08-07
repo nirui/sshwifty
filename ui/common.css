@@ -1,0 +1,542 @@
+/*
+// Sshwifty - A Web SSH client
+//
+// Copyright (C) 2019 Rui NI <nirui@gmx.com>
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+@charset "UTF-8";
+
+@import "~normalize.css";
+
+html,
+body {
+  height: 100%;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+p {
+  overflow: hidden;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0;
+  padding: 0;
+}
+
+a {
+  outline: 0;
+}
+
+body {
+  line-height: 1.5;
+}
+
+body {
+  background: #444;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 1em;
+  position: relative;
+}
+
+/* Tabs */
+.tab1 {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-items: center;
+  list-style: none;
+  list-style-position: inside;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+.tab1 > li {
+  padding: 0 15px;
+  color: #999;
+  white-space: nowrap;
+  word-wrap: none;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  flex: initial;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.tab1 > li.active {
+  background: #444;
+}
+
+.tab1.tab1-list {
+  flex-direction: column;
+  flex-wrap: wrap;
+}
+
+.tab1.tab1-list > li {
+  flex: 0 0;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.tab2 {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-items: center;
+  list-style: none;
+  list-style-position: inside;
+  margin: 0;
+  height: 100%;
+  color: #aaa;
+  border-bottom: 1px solid #a56;
+  background: #333;
+  padding: 0 10px;
+  position: relative;
+}
+
+.tab2::before {
+  content: " ";
+  display: block;
+  position: absolute;
+  width: 100%;
+  height: 1px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  box-shadow: 0 -3px 3px #0003;
+}
+
+.tab2 > li {
+  flex: auto;
+  cursor: pointer;
+  border-color: transparent;
+  border-width: 1px 1px 0 1px;
+  border-style: solid;
+  padding: 7px 10px;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+
+.tab2 > li.active {
+  color: #fff;
+  background: #644;
+  margin-bottom: -1px;
+  border-color: #a56;
+  border-style: solid;
+  box-shadow: 0 -2px 2px #0002;
+}
+
+/* List */
+.lstcl1 {
+  list-style: none;
+  list-style-position: inside;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  overflow: auto;
+}
+
+.lstcl1 > li {
+  width: 33%;
+  float: left;
+  white-space: nowrap;
+}
+
+.lstcl1 > li .lst-wrap {
+  padding: 10px;
+  margin: 10px;
+  background: #333;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  box-shadow: 2px 2px 0 0 #222;
+}
+
+.lstcl1 > li .lst-wrap:hover {
+  background: #3a3a3a;
+  box-shadow: 2px 2px 0 0 #222;
+}
+
+.lstcl1 > li .lst-wrap:active {
+  background: #333;
+}
+
+.lst1 {
+  list-style: none;
+  list-style-position: inside;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+.lst1 > li {
+  border-bottom: 1px solid #555;
+}
+
+.lst1 > li:last-child {
+  border-bottom: none;
+}
+
+.lst1 > li .lst-wrap {
+  padding: 10px;
+}
+
+/* Icon */
+.icon {
+  line-height: 1;
+  overflow: visible;
+}
+
+.icon.icon-close1 {
+  margin-top: -2.5px;
+  font-size: 26px;
+  line-height: 0;
+}
+
+.icon.icon-close1::before {
+  content: "\00d7";
+  font-weight: bold;
+  display: block;
+  margin: 0;
+  padding: 6px;
+}
+
+.icon.icon-plus1 {
+  color: #fff;
+  background: #a56;
+}
+
+.icon.icon-plus1::before {
+  content: "+";
+  font-weight: bold;
+}
+
+.icon.icon-more1 {
+  color: #fff;
+  background: #222;
+}
+
+.icon.icon-more1::before {
+  content: "\2261";
+  font-weight: bold;
+}
+
+.icon.icon-warning1 {
+  font-size: 20px;
+}
+
+.icon.icon-warning1::after {
+  content: "!";
+  font-weight: bold;
+  background: #e11;
+  padding: 10px;
+}
+
+.icon.icon-point1 {
+  position: relative;
+  text-shadow: 0 0 3px #fff;
+}
+
+.icon.icon-point1::after {
+  content: "\25CF";
+}
+
+/* Windows */
+.window {
+  position: absolute;
+}
+
+.window.window1 {
+  background: #a56;
+  box-shadow: 0 0 5px #0006;
+  color: #fff;
+  font-size: 1em;
+  display: none;
+}
+
+.window.window1.display {
+  display: block;
+}
+
+.window.window1::before {
+  top: -5px;
+  position: absolute;
+  display: block;
+  content: " ";
+  width: 10px;
+  height: 10px;
+  background: #a56;
+  transform: rotate(45deg);
+}
+
+.window.window1 .window-frame {
+  width: 100%;
+  overflow: auto;
+  position: relative;
+}
+
+.window.window1 .window-title {
+  font-size: 0.9em;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: #e9a;
+}
+
+.window.window1 .window-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  border-color: #844;
+  cursor: pointer;
+}
+.window.window1 .window-close::after {
+  border-color: #844;
+}
+
+/* Form1 */
+.form1 {
+}
+
+.form1 > fieldset,
+.form1 > fieldset * {
+  padding: 0;
+  margin: 0;
+  color: #fff;
+  outline: none;
+  border: 0;
+  font-size: 1em;
+}
+
+.form1 > fieldset .field {
+  color: #ccc;
+  display: block;
+  width: 100%;
+  overflow: auto;
+  padding: 1px;
+}
+
+.form1 > fieldset .field.horizontal {
+  width: auto;
+  float: left;
+  margin-right: 10px;
+}
+
+.form1 > fieldset .items {
+  width: 100%;
+  overflow: auto;
+}
+
+.form1 > fieldset .field.horizontal.item {
+  margin-top: 3px;
+  margin-bottom: 3px;
+}
+
+.form1 > fieldset .field.horizontal:last-child {
+  margin-right: 0;
+}
+
+.form1 > fieldset .field,
+.form1 > fieldset .field input,
+.form1 > fieldset .field textarea,
+.form1 > fieldset .field button {
+  vertical-align: middle;
+  font-size: 1.05em;
+}
+
+.form1 > fieldset .field {
+  font-size: 0.95em;
+  margin-bottom: 10px;
+}
+
+.form1 > fieldset .field > .textinfo {
+  color: #fff;
+}
+
+.form1 > fieldset .field > .textinfo > .info {
+  padding: 10px;
+  margin: 10px 0;
+  font-size: 1.1em;
+  background: #292929;
+  border: 1px solid #444;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+}
+
+.form1 > fieldset .field:last-child {
+  margin-bottom: 0;
+}
+
+.form1 > fieldset .field:last-child {
+  margin-bottom: 0;
+}
+
+.form1 > fieldset .field > input,
+.form1 > fieldset .field > textarea,
+.form1 > fieldset .field > button {
+  box-sizing: border-box;
+  resize: none;
+}
+
+.form1 > fieldset .field > input::placeholder {
+  color: #666;
+}
+
+.form1 > fieldset .field > input:focus::placeholder {
+  color: #444;
+}
+
+.form1 > fieldset .field > input[type="text"],
+.form1 > fieldset .field > input[type="email"],
+.form1 > fieldset .field > input[type="number"],
+.form1 > fieldset .field > input[type="search"],
+.form1 > fieldset .field > input[type="tel"],
+.form1 > fieldset .field > input[type="url"],
+.form1 > fieldset .field > input[type="password"],
+.form1 > fieldset .field > textarea {
+  width: 100%;
+  padding: 10px;
+  border: 0;
+  background: #2e2e2e;
+  margin-top: 5px;
+  border-bottom: 2px solid #3e3e3e;
+}
+
+.form1 > fieldset .field > textarea {
+  min-height: 120px;
+}
+
+.form1 > fieldset .field.error > .error {
+  margin-top: 5px;
+  color: #f55;
+}
+
+.form1 > fieldset .field > .message {
+  margin-top: 5px;
+  color: #999;
+}
+
+.form1 > fieldset .field > .message * {
+  color: #999;
+}
+
+.form1 > fieldset .field > .message > p {
+  margin-bottom: 5px;
+}
+
+.form1 > fieldset .field > .message > a {
+  color: #e9a;
+}
+
+.form1 > fieldset .field.error > input[type="text"],
+.form1 > fieldset .field.error > input[type="email"],
+.form1 > fieldset .field.error > input[type="number"],
+.form1 > fieldset .field.error > input[type="search"],
+.form1 > fieldset .field.error > input[type="tel"],
+.form1 > fieldset .field.error > input[type="url"],
+.form1 > fieldset .field.error > input[type="password"],
+.form1 > fieldset .field.error > textarea {
+  background: #483535;
+  border-bottom: 2px solid #a83333;
+}
+
+.form1 > fieldset .field > input:disabled,
+.form1 > fieldset .field > textarea:disabled,
+.form1 > fieldset .field > button:disabled {
+  opacity: 0.35;
+}
+
+.form1 > fieldset .field > input:disabled:active,
+.form1 > fieldset .field > textarea:disabled:active,
+.form1 > fieldset .field > button:disabled:active {
+  opacity: 0.5;
+}
+
+.form1 > fieldset .field > input[type="checkbox"],
+.form1 > fieldset .field > input[type="radio"] {
+  background: #2e2e2e;
+  margin-right: 3px;
+}
+
+.form1 > fieldset .field > input[type="checkbox"]:focus,
+.form1 > fieldset .field > input[type="radio"]:focus {
+  outline: 1px solid #e9a;
+}
+
+.form1 > fieldset .field > input[type="text"]:focus,
+.form1 > fieldset .field > input[type="email"]:focus,
+.form1 > fieldset .field > input[type="number"]:focus,
+.form1 > fieldset .field > input[type="search"]:focus,
+.form1 > fieldset .field > input[type="tel"]:focus,
+.form1 > fieldset .field > input[type="url"]:focus,
+.form1 > fieldset .field > input[type="password"]:focus,
+.form1 > fieldset .field > textarea:focus {
+  background: #222;
+  border-bottom: 2px solid #e9a;
+}
+
+.form1 > fieldset .field > button {
+  padding: 8px 13px;
+  font-weight: normal;
+  background: #c78;
+  border-color: #c78;
+  border-width: 2px;
+  border-style: solid;
+}
+
+.form1 > fieldset .field > button:hover {
+  border-color: #a56;
+  background: #c78;
+}
+
+.form1 > fieldset .field > button:active {
+  background: #a56;
+  border-color: #a56;
+}
+
+.form1 > fieldset .field > button:focus {
+  outline: 1px dotted #eee;
+}
+
+.form1 > fieldset .field > button.secondary {
+  float: right;
+  background: transparent;
+  color: #eee;
+  border-color: #eee;
+}
+
+.form1 > fieldset .field > button.secondary:hover {
+  border-color: #ddd;
+  color: #ddd;
+}
+
+.form1 > fieldset .field > button.secondary:active {
+  border-color: #666;
+  color: #666;
+}

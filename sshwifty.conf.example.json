@@ -1,0 +1,21 @@
+{
+  "HostName": "",
+  "SharedKey": "WEB_ACCESS_PASSWORD",
+  "Socks5": "",
+  "Socks5User": "",
+  "Socks5Password": "",
+  "Servers": [
+    {
+      "ListenInterface": "127.0.0.1",
+      "ListenPort": 8182,
+      "InitialTimeout": 3,
+      "ReadTimeout": 60,
+      "WriteTimeout": 60,
+      "HeartbeatTimeout": 20,
+      "ReadDelay": 10,
+      "WriteDelay": 10,
+      "TLSCertificateFile": "",
+      "TLSCertificateKeyFile": ""
+    }
+  ]
+}

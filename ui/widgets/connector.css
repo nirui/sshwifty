@@ -1,0 +1,124 @@
+/*
+// Sshwifty - A Web SSH client
+//
+// Copyright (C) 2019 Rui NI <nirui@gmx.com>
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+@charset "utf-8";
+
+#connector {
+  padding: 0 20px 40px 20px;
+}
+
+#connector-cancel {
+  text-decoration: none;
+  color: #e9a;
+}
+
+#connector-cancel.disabled {
+  color: #444;
+}
+
+#connector-cancel::before {
+  content: "\000AB";
+  margin-right: 3px;
+}
+
+#connector-title {
+  margin-top: 10px;
+  text-align: center;
+  font-size: 0.9em;
+  color: #aaa;
+}
+
+#connector-title > h2 {
+  color: #e9a;
+  font-size: 1.3em;
+  font-weight: bold;
+  margin: 3px 0;
+}
+
+#connector-title.big {
+  margin: 50px 0;
+}
+
+#connector-title.big > h2 {
+  margin: 10px 0;
+}
+
+#connector-fields {
+  margin-top: 10px;
+  font-size: 0.9em;
+}
+
+#connector-continue {
+  margin-top: 10px;
+  font-size: 0.9em;
+}
+
+#connector-proccess {
+  margin-top: 10px;
+  text-align: center;
+  font-size: 0.9em;
+  color: #aaa;
+}
+
+#connector-proccess-message {
+  margin: 30px 0;
+}
+
+#connector-proccess-message > h2 {
+  font-weight: normal;
+  margin: 10px 0;
+  color: #e9a;
+  font-size: 1.2em;
+}
+
+#connector-proccess-message > h2 > span {
+  padding: 2px 10px;
+  border: 2px solid transparent;
+  display: inline-block;
+}
+
+@keyframes connector-proccess-message-alert {
+  0% {
+    border-color: transparent;
+  }
+
+  50% {
+    outline: 2px solid #e9a;
+  }
+
+  60% {
+    border-color: #e9a;
+    outline: none;
+  }
+}
+
+#connector-proccess-message.alert > h2 > span {
+  outline: 2px solid transparent;
+  animation-name: connector-proccess-message-alert;
+  animation-duration: 1.5s;
+  animation-iteration-count: infinite;
+  animation-direction: normal;
+  animation-timing-function: steps(1, end);
+}
+
+#connector-proccess-indicater {
+  width: 100%;
+  margin: 20px auto;
+  padding: 0;
+}

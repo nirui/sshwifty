@@ -1,0 +1,217 @@
+/*
+// Sshwifty - A Web SSH client
+//
+// Copyright (C) 2019 Rui NI <nirui@gmx.com>
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+@charset "utf-8";
+
+#conn-status {
+  z-index: 999999;
+  top: 40px;
+  left: 96px;
+  display: none;
+  width: 500px;
+  background: #262626;
+}
+
+#conn-status .window-frame {
+  max-height: calc(100vh - 40px);
+  overflow: auto;
+}
+
+#conn-status:before {
+  left: 30px;
+}
+
+@media (max-width: 768px) {
+  #conn-status {
+    left: 20px;
+    right: 20px;
+    width: auto;
+  }
+
+  #conn-status:before {
+    left: 91px;
+  }
+}
+
+#conn-status.display {
+  display: block;
+}
+
+#conn-status h1 {
+  padding: 15px 15px 10px 15px;
+  background: #a56;
+}
+
+#conn-status-info {
+  padding: 0 15px 15px 15px;
+  font-size: 0.9em;
+  line-height: 1.5;
+  background: #a56;
+}
+
+#conn-status.green:before {
+  background: #287;
+}
+
+#conn-status.green h1 {
+  color: #6ba;
+  background: #287;
+}
+
+#conn-status.green #conn-status-info {
+  background: #287;
+}
+
+#conn-status.yellow:before {
+  background: #da0;
+}
+
+#conn-status.yellow h1 {
+  color: #fff;
+  background: #da0;
+}
+
+#conn-status.yellow #conn-status-info {
+  background: #da0;
+}
+
+#conn-status.orange:before {
+  background: #b73;
+}
+
+#conn-status.orange h1 {
+  color: #fff;
+  background: #b73;
+}
+
+#conn-status.orange #conn-status-info {
+  background: #b73;
+}
+
+#conn-status.red:before {
+  background: #a33;
+}
+
+#conn-status.red h1 {
+  color: #fff;
+  background: #a33;
+}
+
+#conn-status.red #conn-status-info {
+  background: #a33;
+}
+
+.conn-status-chart {
+}
+
+.conn-status-chart > .counters {
+  width: 100%;
+  overflow: auto;
+  margin-bottom: 10px;
+}
+
+.conn-status-chart > .counters > .counter {
+  width: 50%;
+  display: block;
+  float: left;
+  margin: 10px 0;
+  text-align: center;
+}
+
+.conn-status-chart > .counters > .counter .name {
+  font-size: 0.8em;
+  color: #777;
+  text-transform: uppercase;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.conn-status-chart > .counters > .counter .value {
+  font-size: 1.5em;
+  font-weight: lighter;
+}
+
+.conn-status-chart > .counters > .counter .value span {
+  font-size: 0.7em;
+}
+
+.conn-status-chart > .chart {
+  margin: 0 10px;
+}
+
+.conn-status-chart > .chart g {
+  fill: none;
+  stroke-width: 7px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.conn-status-chart > .chart .zero {
+  stroke: #3a3a3a;
+  stroke-width: 3px;
+}
+
+#conn-status-delay {
+  padding: 15px 0;
+  background: #292929;
+}
+
+#conn-status-delay > .counters > .counter {
+  width: 100%;
+  float: none;
+}
+
+#conn-status-delay-chart-background {
+  --color-start: #e43989;
+  --color-stop: #9a5fca;
+}
+
+#conn-status-delay-chart > g {
+  fill: none;
+  stroke: url(#conn-status-delay-chart-background) #2a6;
+}
+
+#conn-status-traffic {
+  padding: 15px 0;
+}
+
+#conn-status-traffic-chart-in-background {
+  --color-start: #0287a8;
+  --color-stop: #06e7b6;
+}
+
+#conn-status-traffic-chart-in > g {
+  stroke: url(#conn-status-traffic-chart-in-background) #2a6;
+}
+
+#conn-status-traffic-chart-out-background {
+  --color-start: #e46226;
+  --color-stop: #da356c;
+}
+
+#conn-status-traffic-chart-out > g {
+  stroke: url(#conn-status-traffic-chart-out-background) #2a6;
+}
+
+#conn-status-close {
+  /* ID mainly use for document.getElementById */
+  cursor: pointer;
+  right: 10px;
+  top: 20px;
+}

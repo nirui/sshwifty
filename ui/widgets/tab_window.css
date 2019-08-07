@@ -1,0 +1,148 @@
+/*
+// Sshwifty - A Web SSH client
+//
+// Copyright (C) 2019 Rui NI <nirui@gmx.com>
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+@charset "utf-8";
+
+#tab-window {
+  z-index: 999999;
+  top: 40px;
+  right: 0px;
+  display: none;
+  width: 400px;
+  background: #333;
+}
+
+#tab-window .window-frame {
+  max-height: calc(100vh - 40px);
+  overflow: auto;
+}
+
+#tab-window:before {
+  right: 19px;
+  background: #333;
+}
+
+@media (max-width: 768px) {
+  #tab-window {
+    width: 80%;
+  }
+}
+
+#tab-window.display {
+  display: block;
+}
+
+#tab-window-close {
+  cursor: pointer;
+  right: 10px;
+  top: 20px;
+  color: #999;
+}
+
+#tab-window h1 {
+  padding: 15px 15px 0 15px;
+  margin-bottom: 10px;
+  color: #999;
+}
+
+#tab-window-list > li > .lst-wrap {
+  padding: 10px 20px;
+  cursor: pointer;
+}
+
+#tab-window-list > li {
+  border-bottom: none;
+}
+
+#tab-window-tabs {
+  flex: auto;
+  overflow: hidden;
+}
+
+#tab-window-tabs > li {
+  display: flex;
+  position: relative;
+  padding: 15px;
+  opacity: 0.5;
+  color: #999;
+  cursor: pointer;
+}
+
+#tab-window-tabs > li::after {
+  content: " ";
+  display: block;
+  position: absolute;
+  top: 5px;
+  bottom: 5px;
+  left: 0;
+  width: 0;
+  transition: all 0.1s linear;
+  transition-property: width, top, bottom;
+}
+
+#tab-window-tabs > li.active::after {
+  top: 0;
+  bottom: 0;
+}
+
+#tab-window-tabs > li.updated::after {
+  background: #fff3;
+  width: 5px;
+}
+
+#tab-window-tabs > li.error::after {
+  background: #d55;
+  width: 5px;
+}
+
+#tab-window-tabs > li > span.title {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  display: inline-block;
+}
+
+#tab-window-tabs > li > span.title > span.type {
+  display: inline-block;
+  font-size: 0.85em;
+  font-weight: bold;
+  margin-right: 3px;
+  text-transform: uppercase;
+  color: #fff;
+  background: #222;
+  padding: 1px 4px;
+  border-radius: 2px;
+}
+
+#tab-window-tabs > li > .icon-close {
+  display: block;
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  margin-top: -5px;
+  color: #fff6;
+}
+
+#tab-window-tabs > li.active {
+  color: #fff;
+  opacity: 1;
+}
+
+#tab-window-tabs > li.active > span.title {
+  padding-right: 20px;
+}

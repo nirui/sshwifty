@@ -1,0 +1,132 @@
+/*
+// Sshwifty - A Web SSH client
+//
+// Copyright (C) 2019 Rui NI <nirui@gmx.com>
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+@charset "utf-8";
+
+body.landing {
+  background: #945;
+}
+
+#landing {
+  min-height: 100%;
+  font-family: Arial, Helvetica, sans-serif;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  justify-items: center;
+  color: #fff;
+  text-align: center;
+}
+
+#landing-message {
+  font-size: 0.9em;
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 50px;
+  flex: 0 0;
+}
+
+#landing-message a {
+  text-decoration: none;
+  color: #fab;
+}
+
+#landing-message p {
+  margin: 10px 0;
+}
+
+#landing-message p.copy {
+  margin: 20px 0 10px 0;
+  color: #fab;
+}
+
+#landing-message p.copy.copy-first {
+  margin-top: 50px;
+}
+
+#landing-message p.copy a {
+  border: 1px solid #fab;
+  display: inline-block;
+  padding: 3px 7px;
+  margin-left: 5px;
+  border-radius: 5px;
+  line-height: initial;
+}
+
+#landing-message-logo {
+  background: url("./widgets/busy.svg") center center no-repeat;
+  background-size: contain;
+  width: 100%;
+  height: 200px;
+}
+
+#landing-message-info {
+  margin-top: 50px;
+  font-size: 0.9em;
+}
+
+#auth {
+  width: 100%;
+  min-height: 100%;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+#auth-frame {
+  flex: 0 0;
+  padding: 10px;
+}
+
+#auth-content {
+  background: #333;
+  box-shadow: 0 0 3px #111;
+  padding: 30px;
+  max-width: 380px;
+  margin: 0 auto;
+  font-size: 1em;
+}
+
+#auth-content > h1 {
+  margin-bottom: 20px;
+  color: #fab;
+  font-size: 1.2em;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+#auth-content > h1:after {
+  content: "\2731";
+  margin-left: 5px;
+}
+
+#auth-content > form {
+  font-size: 0.9em;
+}
+
+#auth-content > form .field:last-child {
+  margin-top: 30px;
+}
+
+#auth-content > form > fieldset {
+  margin-top: 30px;
+}

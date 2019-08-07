@@ -1,0 +1,442 @@
+/*
+// Sshwifty - A Web SSH client
+//
+// Copyright (C) 2019 Rui NI <nirui@gmx.com>
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+@charset "utf-8";
+
+@import "~roboto-fontface/css/roboto/roboto-fontface.css";
+
+@keyframes home-window-display-flash {
+  0% {
+    top: -2px;
+    opacity: 0;
+    box-shadow: 0 0 0 transparent;
+  }
+
+  20% {
+    height: 20px;
+    box-shadow: 0 0 50px #fff;
+  }
+
+  50% {
+    opacity: 0.5;
+    box-shadow: 0 0 10px #fff;
+  }
+
+  100% {
+    top: 100%;
+    height: 0;
+    opacity: 0;
+    box-shadow: 0 0 0 transparent;
+  }
+}
+
+.home-window-display {
+}
+
+.home-window-display::after {
+  opacity: 0;
+  z-index: 2;
+  content: " ";
+  display: block;
+  position: absolute;
+  width: 100%;
+  height: 0;
+  top: -2px;
+  left: 0;
+  right: 0;
+  background: #fff;
+  animation-name: home-window-display-flash;
+  animation-duration: 0.3s;
+  animation-iteration-count: 1;
+  box-shadow: 0 0 10px #fff;
+}
+
+#home {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  font: 1em "Roboto", sans-serif;
+}
+
+#home-header {
+  flex: 0 0 40px;
+  font-size: 0.9em;
+  color: #fff;
+  width: 100%;
+  overflow: auto;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
+#home-hd-title {
+  font-size: 1.1em;
+  padding: 0 0 0 20px;
+  font-weight: bold;
+  flex: 0 0 65px;
+  text-align: center;
+  overflow: hidden;
+}
+
+#home-hd-delay {
+  font-size: 0.95em;
+  display: flex;
+  flex: 0 0 70px;
+  flex-direction: row;
+  overflow: hidden;
+  margin: 0 10px;
+  color: #aaa;
+  text-decoration: none;
+  justify-items: center;
+  justify-content: center;
+  align-items: center;
+}
+
+@media (max-width: 768px) {
+  #home-hd-title {
+    padding: 0 0 0 10px;
+  }
+
+  #home-hd-delay {
+    flex: 0 0 60px;
+  }
+}
+
+#home-hd-delay-icon {
+  color: #bbb;
+  text-shadow: 0 0 3px #999;
+  transition: linear 0.2s color, text-shadow;
+  margin: 5px;
+  font-size: 0.54em;
+}
+
+#home-hd-delay-value {
+  display: inline-block;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  word-wrap: none;
+}
+
+@keyframes home-hd-delay-icon-flash {
+  0% {
+    opacity: 1;
+  }
+
+  10% {
+    opacity: 0;
+  }
+
+  20% {
+    opacity: 1;
+  }
+
+  30% {
+    opacity: 0;
+  }
+
+  90% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes home-hd-delay-icon-working {
+  0% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+#home-hd-delay-icon.green {
+  color: #1e8;
+  text-shadow: 0 0 3px #1e8;
+}
+
+#home-hd-delay-icon.yellow {
+  color: #ff4;
+  text-shadow: 0 0 3px #ff4;
+}
+
+#home-hd-delay-icon.orange {
+  color: #f80;
+  text-shadow: 0 0 3px #f80;
+}
+
+#home-hd-delay-icon.red {
+  color: #e11;
+  text-shadow: 0 0 3px #e11;
+}
+
+#home-hd-delay-icon.flash {
+  animation-name: home-hd-delay-icon-flash;
+  animation-duration: 1s;
+  animation-iteration-count: infinite;
+}
+
+#home-hd-delay-icon.working {
+  animation-name: home-hd-delay-icon-working;
+  animation-duration: 1.5s;
+  animation-iteration-count: infinite;
+}
+
+#home-hd-plus {
+  flex: 0 0;
+  padding: 0 13px;
+  text-decoration: none;
+  font-size: 22px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+}
+
+@keyframes home-hd-plus-icon-flash {
+  0% {
+    background: #a56;
+  }
+
+  20% {
+    background: #5a7;
+  }
+
+  40% {
+    background: #96a;
+  }
+
+  60% {
+    background: #379;
+  }
+
+  80% {
+    background: #da0;
+  }
+
+  100% {
+    background: #a56;
+  }
+}
+
+#home-hd-plus.working {
+  color: #fff;
+  background: #a56;
+  animation-name: home-hd-plus-icon-flash;
+  animation-duration: 10s;
+  animation-iteration-count: infinite;
+  animation-direction: normal;
+  transition: linear 2s background;
+}
+
+#home-hd-plus.working.intensify {
+  animation-duration: 3s;
+}
+
+#home-hd-tabs {
+  background: #333;
+  flex: auto;
+  overflow: hidden;
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: left;
+  align-items: center;
+}
+
+#home-hd-tabs-tabs {
+  flex: auto;
+  overflow: hidden;
+}
+
+#home-hd-tabs-tabs > li {
+  flex: 0 0 180px;
+  display: flex;
+  position: relative;
+  padding: 0 15px;
+  opacity: 0.5;
+  color: #999;
+}
+
+#home-hd-tabs-tabs > li::after {
+  content: " ";
+  display: block;
+  position: absolute;
+  bottom: 0;
+  right: 10px;
+  left: 10px;
+  height: 0;
+  transition: all 0.1s linear;
+  transition-property: height, right, left;
+}
+
+#home-hd-tabs-tabs > li.active::after {
+  right: 0;
+  left: 0;
+}
+
+#home-hd-tabs-tabs > li.updated::after {
+  background: #fff3;
+  height: 2px;
+}
+
+#home-hd-tabs-tabs > li.error::after {
+  background: #d55;
+  height: 2px;
+}
+
+#home-hd-tabs-tabs > li > span.title {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  display: inline-block;
+}
+
+#home-hd-tabs-tabs > li > span.title > span.type {
+  display: inline-block;
+  font-size: 0.85em;
+  font-weight: bold;
+  margin-right: 3px;
+  text-transform: uppercase;
+  color: #fff;
+  background: #222;
+  padding: 1px 4px;
+  border-radius: 2px;
+}
+
+#home-hd-tabs-tabs > li > .icon-close {
+  display: none;
+}
+
+#home-hd-tabs-tabs > li.active {
+  color: #fff;
+  opacity: 1;
+}
+
+#home-hd-tabs-tabs > li.active > span.title {
+  padding-right: 15px;
+}
+
+#home-hd-tabs-tabs > li.active > .icon-close {
+  display: block;
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  margin-top: -5px;
+  color: #fff6;
+}
+
+#home-hd-tabs-list {
+  display: flex;
+  font-size: 22px;
+  flex: 0 0;
+  padding: 0 13px;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+  text-decoration: none;
+  box-shadow: 0 0 3px #333;
+}
+
+#home-content {
+  flex: auto;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  color: #fff;
+  font-size: 1.2em;
+}
+
+@media (max-width: 768px) {
+  #home-content {
+    font-size: 1em;
+  }
+}
+
+#home-content > .screen {
+  display: flex;
+  justify-content: top;
+  flex-direction: column;
+  font-size: 1em;
+}
+
+#home-content > .screen > .screen-error {
+  display: block;
+  padding: 10px;
+  background: #b44;
+  color: #fff;
+  font-size: 0.75em;
+  flex: 0 0;
+}
+
+#home-content > .screen > .screen-screen {
+  flex: auto;
+}
+
+#home-content-wrap {
+  max-width: 520px;
+  margin: 50px auto;
+  padding: 0 30px;
+  text-align: center;
+}
+
+#home-content h1 {
+  margin: 20px 0;
+}
+
+#home-content p {
+  margin: 10px 0;
+  font-size: 0.9em;
+  color: #eee;
+  line-height: 1.6;
+}
+
+#home-content p.secondary {
+  margin: 5px 0;
+  line-height: 1.5;
+  font-size: 0.7em;
+  color: #aaa;
+}
+
+#home-content p a {
+  color: #e9a;
+}
+
+#home-content hr {
+  height: 2px;
+  background: #3c3c3c;
+  border: none;
+  margin: 30px 0;
+}
+
+#home-content-connect {
+  padding: 5px;
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}

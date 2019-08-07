@@ -1,0 +1,109 @@
+/*
+// Sshwifty - A Web SSH client
+//
+// Copyright (C) 2019 Rui NI <nirui@gmx.com>
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as
+// published by the Free Software Foundation, either version 3 of the
+// License, or (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+@charset "utf-8";
+
+#connect {
+  z-index: 999999;
+  top: 40px;
+  left: 159px;
+  display: none;
+  background: #333;
+  width: 500px;
+}
+
+#connect .window-frame {
+  max-height: calc(100vh - 40px);
+  overflow: auto;
+}
+
+#connect:before {
+  left: 30px;
+  background: #333;
+}
+
+@media (max-width: 768px) {
+  #connect {
+    left: 20px;
+    right: 20px;
+    width: auto;
+  }
+
+  #connect:before {
+    left: 149px;
+  }
+}
+
+#connect.display {
+  display: block;
+}
+
+#connect h1 {
+  padding: 15px 15px 0 15px;
+  margin-bottom: 10px;
+  color: #999;
+}
+
+#connect-close {
+  cursor: pointer;
+  color: #999;
+  right: 10px;
+  top: 20px;
+}
+
+#connect-busy-overlay {
+  z-index: 2;
+  background: #2229 url("busy.svg") center center no-repeat;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  position: absolute;
+  backdrop-filter: blur(1px);
+}
+
+#connect-warning {
+  padding: 10px;
+  font-size: 0.85em;
+  background: #b44;
+  color: #fff;
+}
+
+#connect-warning-icon {
+  float: left;
+  display: block;
+  margin-right: 10px;
+}
+
+#connect-warning-icon::after {
+  background: #c55;
+}
+
+#connect-warning-msg {
+  overflow: auto;
+}
+
+#connect-warning-msg p {
+  margin: 0 0 5px 0;
+}
+
+#connect-warning-msg a {
+  color: #faa;
+  text-decoration: underline;
+}
