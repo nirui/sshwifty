@@ -306,6 +306,15 @@ func (s socket) Get(
 	wsWriter := websocketWriter{Conn: c}
 
 	// Initialize ciphers
+	//
+	// WARNING: The AES-GCM cipher is here for authenticating user login. Yeah
+	//          it is overkill and probably not correct. But I eventually decide
+	//          to keep it as long as it authenticates (Hopefully in a safe and
+	//          secured way).
+	//
+	//          DO NOT rely on this if you want to secured communitcation, in
+	//          that case, you need to use HTTPS.
+	//
 	readNonce := [socketGCMStandardNonceSize]byte{}
 	_, nonceReadErr := io.ReadFull(&wsReader, readNonce[:])
 
