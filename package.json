@@ -1,8 +1,8 @@
 {
-  "name": "webssh",
+  "name": "Sshwifty-UI",
   "version": "0.0.0",
-  "description": "Web SSH Front End Project",
-  "main": "index.js",
+  "description": "Sshwifty Web Front-end Project",
+  "main": "",
   "dependencies": {},
   "devDependencies": {
     "@babel/core": "^7.5.5",
