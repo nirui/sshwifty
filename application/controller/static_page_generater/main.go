@@ -44,7 +44,7 @@ const (
 
 var (
 	staticPages = map[string]staticData{
-		{{ range . }}"{{ .Name }}": 
+		{{ range . }}"{{ .Name }}":
 			parseStaticData({{ .GOPackage }}.{{ .GOVariableName }}()),
 		{{ end }}
 	}
@@ -154,7 +154,7 @@ var (
 // by "go generate", DO NOT EDIT! Also, do not open this file, it maybe too large
 // for your editor. You've been warned.
 //
-// This file may contain third-party binaries. See DEPENDENCES for detail.
+// This file may contain third-party binaries. See DEPENDENCIES.md for detail.
 
 import (
 	"time"
@@ -182,14 +182,14 @@ func {{ .GOVariableName }}() (
 	}
 
 	data, dataErr := hex.DecodeString(raw{{ .GOVariableName }}Data)
-	
+
 	raw{{ .GOVariableName }}Data = ""
 
 	if dataErr != nil {
 		panic(dataErr)
 	}
 
-	return {{ .FileStart }}, {{ .FileEnd }}, 
+	return {{ .FileStart }}, {{ .FileEnd }},
 		{{ .CompressedStart }}, {{ .CompressedEnd }},
 		"{{ .ContentHash }}", "{{ .CompressedHash }}", created, data
 }

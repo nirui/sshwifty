@@ -1,11 +1,11 @@
-# Dependences Of Sshwifty
+# Dependencies used by Sshwifty
 
 Sshwifty uses many third-party components. Those components is required inorder
 for Sshwifty to function.
 
 A list of used components can be found inside `package.json` and `go.mod` file.
 
-Major dependences includes:
+Major dependencies includes:
 
 ## For front-end application
 

@@ -198,10 +198,10 @@ SSHWIFTY_WRITEELAY
 Code of this project is licensed under AGPL, see [LICENSE.md] for detail.
 
 Third-party components used by this project are licensed under their respective
-license. See [DEPENDENCES.md] for dependences used by this project.
+license. See [DEPENDENCIES.md] for dependencies used by this project.
 
 [LICENSE.md]: LICENSE.md
-[DEPENDENCES.md]: DEPENDENCES.md
+[DEPENDENCIES.md]: DEPENDENCIES.md
 
 ## Contribute
 

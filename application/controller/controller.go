@@ -84,7 +84,7 @@ func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		fallthrough
 	case "/LICENSE.md":
 		fallthrough
-	case "/DEPENDENCES.md":
+	case "/DEPENDENCIES.md":
 		err = serveStaticData(r.URL.Path[1:], w, r, clientLogger)
 
 	default:
