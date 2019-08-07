@@ -39,5 +39,6 @@ typings/
 .serverless/
 .fusebox/
 .dynamodb/
-application/controller/status_pages/
+application/controller/static_pages/
+application/controller/static_pages.go
 sshwifty
