@@ -179,9 +179,9 @@ configuration file.
 
 Notice: When you use environment variables to configure Sshwifty, then only one
 Sshwifty HTTP server is then allowed. There is no way to setup mulitple servers
-here. If you need to serve on multiple ports, use configuratio file instead.
+here. If you need to serve on multiple ports, use configuration file instead.
 
-Be adviced: An invalid value inside following environment variables will cause
+Be aware: An invalid value inside following environment variables will cause
 the value to be reset to default during configuration parsing without warning:
 
 ```
