@@ -58,6 +58,7 @@ func testDummyFetchChainGen(dd <-chan []byte) rw.FetchReaderFetcher {
 }
 
 type dummyStreamCommand struct {
+	lock sync.Mutex
 	l         log.Logger
 	w         StreamResponder
 	downWait  sync.WaitGroup
@@ -68,6 +69,7 @@ type dummyStreamCommand struct {
 func newDummyStreamCommand(
 	l log.Logger, w StreamResponder, d network.Dial) FSMMachine {
 	return &dummyStreamCommand{
+		lock:sync.Mutex{},
 		l:         l,
 		w:         w,
 		downWait:  sync.WaitGroup{},
@@ -82,6 +84,8 @@ func (d *dummyStreamCommand) Bootup(
 ) (FSMState, FSMError) {
 	d.downWait.Add(1)
 
+	echoTrans:=d.echoTrans
+
 	go func() {
 		defer func() {
 			d.w.Signal(HeaderClose)
@@ -92,7 +96,7 @@ func (d *dummyStreamCommand) Bootup(
 		buf := make([]byte, 1024)
 
 		for {
-			dt, dtOK := <-d.echoTrans
+			dt, dtOK := <-echoTrans
 
 			if !dtOK {
 				return
@@ -137,6 +141,9 @@ func (d *dummyStreamCommand) run(
 	d.echoData = make([]byte, rLen)
 	copy(d.echoData, b)
 
+	d.lock.Lock()
+	defer d.lock.Unlock()
+
 	if d.echoTrans != nil {
 		d.echoTrans <- d.echoData
 	}
@@ -146,7 +153,11 @@ func (d *dummyStreamCommand) run(
 
 func (d *dummyStreamCommand) Close() error {
 	close(d.echoTrans)
+
+	d.lock.Lock()
 	d.echoTrans = nil
+	d.lock.Unlock()
+
 	d.downWait.Wait()
 
 	return nil
