@@ -48,10 +48,11 @@
   "scripts": {
     "dev": "NODE_ENV=development webpack --mode=development --config=webpack.config.js --watch",
     "generate": "NODE_ENV=production webpack --mode=production --config=webpack.config.js",
-    "build": "npm run generate && CGO_ENABLED=0 go build -ldflags \"-s -w -X github.com/niruix/sshwifty/application.version=$(git describe --always --abbrev=8 --dirty='*' --tag)\"",
+    "build": "npm run generate && CGO_ENABLED=0 go build -ldflags \"-s -w -X github.com/niruix/sshwifty/application.version=$(git describe --always --dirty='*' --tag)\"",
     "lint": "eslint --ext .js,.vue ui",
-    "test": "mocha --require @babel/register --recursive --timeout 3s ./ui/**/*_test.js && go test ./..."
+    "testonly": "mocha --require @babel/register --recursive --timeout 3s ./ui/**/*_test.js && CGO_ENABLED=1 go test ./... -race -timeout 30s",
+    "test": "npm run generate && npm run testonly"
   },
   "author": "",
-  "license": "ISC"
+  "license": "AGPL-3.0"
 }
