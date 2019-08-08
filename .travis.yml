@@ -1,0 +1,77 @@
+language: go
+
+sudo: false
+
+env:
+  global:
+    - GO111MODULE=on
+    - ASC_URL=https://keybase.io/nirui/pgp_keys.asc
+    - PACKAGE=github.com/niruix/sshwifty
+    - VERSION_VARIABLE=github.com/niruix/sshwifty/application.version
+    - BUILD_TARGETS="darwin/386 darwin/amd64 windows/386 windows/amd64 openbsd/386 openbsd/amd64 openbsd/arm openbsd/arm64 freebsd/386 freebsd/amd64 freebsd/arm freebsd/arm64 linux/386 linux/amd64 linux/arm linux/arm64 linux/ppc64 linux/ppc64le linux/mips linux/mipsle linux/mips64 linux/mips64le"
+    - SSHWIFTY_VERSION=$(git describe --always --dirty='*' --tag)
+    - SSHWIFTY_COMMIT=$(git describe --always)
+    - SSHWIFTY_RELEASE=$([[ "$SSHWIFTY_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9.]+\-[a-zA-Z0-9\-]+$ ]] && echo "yes")
+    - SSHWIFTY_DEPLOY=$([[ "$SSHWIFTY_RELEASE" != "yes" || "$GITHUB_USER" == "" || "$GITHUB_TOKEN" == "" ]] || echo "yes")
+    - SSHWIFTY_TEST_COVER=$([[ "$COVERALLS_TOKEN" == "" ]] || echo "yes")
+
+branches:
+  only:
+    - master
+    - dev
+
+go:
+  - stable
+
+before_install:
+  - export
+  - npm install && npm run generate
+  - |
+    if [[ "$SSHWIFTY_TEST_COVER" == "yes" ]]; then
+      go get github.com/go-playground/overalls
+      go get github.com/mattn/goveralls
+    fi
+  - |
+    if [[ "$SSHWIFTY_DEPLOY" == "yes" ]]; then
+      go get github.com/tcnksm/ghr
+      go get github.com/mitchellh/gox
+    fi
+
+script:
+  - go vet ./...
+  - npm run testonly
+
+after_success:
+  - |
+    if [[ "$SSHWIFTY_TEST_COVER" == "yes" ]]; then
+      overalls -project="$PACKAGE" -covermode=count
+      goveralls -coverprofile=./overalls.coverprofile -service travis-ci
+    fi
+
+before_deploy:
+  - curl "$ASC_URL" | gpg --import
+  - mkdir -p ./.tmp/deploy
+  - CGO_ENABLED=0 gox -ldflags "-s -w -X $VERSION_VARIABLE=$SSHWIFTY_VERSION" -osarch "$BUILD_TARGETS" -output "./.tmp/deploy/{{.Dir}}_{{.OS}}_{{.Arch}}/{{.Dir}}_{{.OS}}_{{.Arch}}"
+  - echo $(git show "$SSHWIFTY_COMMIT" --show-signature --shortstat) > ./.tmp/deploy/Note
+  - echo "echo Preparing for \$1 ..." > prepare.sh
+  - echo "(cd \$1 && find . -maxdepth 1 -type f ! -name \"SUM.*\" -exec sha512sum {} \; > SUM.sha512);" >> prepare.sh
+  - echo "(cp *.md \$1/);" >> prepare.sh
+  - echo "(cp ./.tmp/deploy/Note \$1/);" >> prepare.sh
+  - echo "(cd \$1/ && tar -zcvf \"../\$(basename \$(pwd)).tar.gz\" *);" >> prepare.sh
+  - chmod +x ./prepare.sh
+  - find ./.tmp/deploy/ -maxdepth 1 -type d ! -name "deploy" -exec ./prepare.sh {} \;
+  - rm ./prepare.sh -f
+  - find ./.tmp/deploy/ -maxdepth 1 -type d ! -name "deploy" -exec rm {} -rf \;
+  - find ./.tmp/deploy/ -maxdepth 1 -type f -name "*.tar.gz" -execdir sha512sum {} \; > ./.tmp/deploy/SUM.sha512
+  - echo "$GITHUB_USER" > ./deploy_user
+  - echo "$SSHWIFTY_VERSION" > ./deploy_title
+  - echo "ghr -u \"\$(cat ./deploy_user)\" -b \"\$(cat ./.tmp/deploy/Note)\" -delete -prerelease \"\$(cat ./deploy_title)\" ./.tmp/deploy" > ./deploy.sh
+  - chmod +x ./deploy.sh
+
+deploy:
+  provider: script
+  script: ./deploy.sh
+  skip_cleanup: true
+  on:
+    branch: master
+    condition: $SSHWIFTY_DEPLOY = "yes"
