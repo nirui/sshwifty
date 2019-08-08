@@ -3,7 +3,8 @@
 ![Web Interface](Screenshot.png)
 
 Sshwifty is a SSH client that provides a web interface. You can deploy it on
-your computer or server, so you can access SSH servers via a web browser.
+your computer or server, so you can access SSH servers via any device that have
+a  compatible (standard) web browser.
 
 ## Install
 
@@ -32,7 +33,7 @@ $ docker run --detach \
 
 [Docker]: https://www.docker.com
 
-### Compile from source code
+### Compile from source code (Recommanded if you're a developer)
 
 In order to use the source code, you need to install following tools:
 
@@ -71,15 +72,16 @@ Sshwifty can be configured though either file or environment variables. By
 default, the configuration loader will try to load file from default paths
 first, then try environment variables.
 
-You can also specifc your own configuration file by setting `SSHWIFTY_CONFIG`
+You can also specify your own configuration file by setting `SSHWIFTY_CONFIG`
 environment variables. For example:
 
 ```
 $ SSHWIFTY_CONFIG=./sshwifty.conf.json ./sshwifty
 ```
 
-Then, Sshwifty will load the configuration from file `./sshwifty.conf.json`, and
-will never try for environment variable.
+After that, Sshwifty will try to load the configuration from file
+`./sshwifty.conf.json`, and never reach for configuration inside environment
+variables.
 
 ### Configuration file
 
@@ -174,12 +176,13 @@ SSHWIFTY_TLSCERTIFICATEFILE
 SSHWIFTY_TLSCERTIFICATEKEYFILE
 ```
 
-The option they represented is corresponded to their counterpart in the
+The option they represented is corresponded to their counterparts in the
 configuration file.
 
-Notice: When you use environment variables to configure Sshwifty, then only one
+Notice: When you use environment variables to configure Sshwifty, only one
 Sshwifty HTTP server is then allowed. There is no way to setup mulitple servers
-here. If you need to serve on multiple ports, use configuration file instead.
+by using this method. If you need to serve on multiple ports, use configuration
+file instead.
 
 Be aware: An invalid value inside following environment variables will cause
 the value to be reset to default during configuration parsing without warning:
@@ -211,5 +214,7 @@ Upon release (Which is then you're able to read this file), this project will
 enter maintaining state, which includes doing bug fix and security updates.
 Adding new features however, is not a part of the state.
 
-Please don't send pull request. If you need new function, fork it, and maintain
+Please do not send pull request. If you need new feature, fork it, and maintain
 it like one of your own. Appreciated!
+
+Enjoy!
