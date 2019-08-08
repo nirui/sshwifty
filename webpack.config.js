@@ -23,7 +23,7 @@ const webpack = require("webpack"),
   MiniCssExtractPlugin = require("mini-css-extract-plugin"),
   OptimizeCssAssetsPlugin = require("optimize-css-assets-webpack-plugin"),
   VueLoaderPlugin = require("vue-loader/lib/plugin"),
-  FaviconsWebpackPlugin = require("favicons-webpack-plugin"),
+  WebappWebpackPlugin = require("webapp-webpack-plugin"),
   ManifestPlugin = require("webpack-manifest-plugin"),
   CopyPlugin = require("copy-webpack-plugin"),
   TerserPlugin = require("terser-webpack-plugin"),
@@ -286,15 +286,25 @@ module.exports = {
         });
       }
     },
-    new FaviconsWebpackPlugin({
+    new WebappWebpackPlugin({
       logo: path.join(__dirname, "ui", "sshwifty.png"),
-      prefix: "[hash]-",
-      emitStats: false,
-      persistentCache: false,
-      title: "Sswifty"
+      prefix: "",
+      cache: false,
+      favicons: {
+        appName: "Sswifty",
+        appDescription: "Web SSH Client",
+        developerName: "Rui NI",
+        developerURL: "https://vaguly.com",
+        background: "#333",
+        theme_color: "#333",
+        icons: {
+          coast: false,
+          yandex: false
+        }
+      }
     }),
     new HtmlWebpackPlugin({
-      inject: false,
+      inject: true,
       template: require("html-webpack-template"),
       bodyHtmlSnippet: fs.readFileSync(
         path.join(__dirname, "ui", "body.html"),
@@ -304,10 +314,6 @@ module.exports = {
         {
           name: "description",
           content: "Connect to a SSH Server from your web browser"
-        },
-        {
-          name: "theme-color",
-          content: "#333333"
         }
       ],
       mobile: true,
