@@ -67,6 +67,7 @@ before_deploy:
   - echo "$SSHWIFTY_VERSION" > ./deploy_title
   - echo "ghr -u \"\$(cat ./deploy_user)\" -b \"\$(cat ./.tmp/deploy/Note)\" -delete -prerelease \"\$(cat ./deploy_title)\" ./.tmp/deploy" > ./deploy.sh
   - chmod +x ./deploy.sh
+  - cat ./.tmp/deploy/SUM.sha512
 
 deploy:
   provider: script
