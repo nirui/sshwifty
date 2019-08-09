@@ -78,10 +78,10 @@ func (s Server) WithDefault() Server {
 		ReadTimeout:           readTimeout,
 		WriteTimeout:          s.maxDur(s.WriteTimeout, 3*time.Second),
 		HeartbeatTimeout:      s.maxDur(s.ReadTimeout, readTimeout/2),
-		ReadDelay:             0,
-		WriteDelay:            0,
-		TLSCertificateFile:    "",
-		TLSCertificateKeyFile: "",
+		ReadDelay:             s.ReadDelay,
+		WriteDelay:            s.WriteDelay,
+		TLSCertificateFile:    s.TLSCertificateFile,
+		TLSCertificateKeyFile: s.TLSCertificateKeyFile,
 	}
 }
 
