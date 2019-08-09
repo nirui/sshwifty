@@ -160,9 +160,9 @@ func (s *Serving) run(
 
 	defer ls.Close()
 
-	logger.Info("Serving")
-
 	if !cfg.IsTLS() {
+		logger.Info("Serving")
+
 		err = s.server.Serve(ls)
 
 		if err == nil {
@@ -171,6 +171,8 @@ func (s *Serving) run(
 
 		return err
 	}
+
+	logger.Info("Serving TLS")
 
 	if s.server.TLSConfig != nil {
 		s.server.TLSConfig.MinVersion = tls.VersionTLS12
