@@ -57,6 +57,7 @@ before_deploy:
   - echo "(cd \$1 && find . -maxdepth 1 -type f ! -name \"SUM.*\" -exec sha512sum {} \; > SUM.sha512);" >> prepare.sh
   - echo "(cp *.md \$1/);" >> prepare.sh
   - echo "(cp ./.tmp/deploy/Note \$1/);" >> prepare.sh
+  - echo "(cp ./sshwifty.conf.example.json \$1/);" >> prepare.sh
   - echo "(cd \$1/ && tar -zcvf \"../\$(basename \$(pwd)).tar.gz\" *);" >> prepare.sh
   - chmod +x ./prepare.sh
   - find ./.tmp/deploy/ -maxdepth 1 -type d ! -name "deploy" -exec ./prepare.sh {} \;
