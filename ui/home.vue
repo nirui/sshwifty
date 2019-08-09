@@ -90,8 +90,8 @@
           <a
             href="https://en.wikipedia.org/wiki/996_working_hour_system"
             target="blank"
-            >forced overtime work</a
-          >. Sshwifty wouldn't exist if it's author have to work such extreme
+            >implicitly forced overtime work</a
+          >. Sshwifty wouldn't exist if it's author must work such extreme
           hours. If you're benefiting from hobbyist project like this one,
           please consider to
           <a
