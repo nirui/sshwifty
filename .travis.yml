@@ -51,7 +51,7 @@ after_success:
 before_deploy:
   - curl "$ASC_URL" | gpg --import
   - mkdir -p ./.tmp/deploy
-  - CGO_ENABLED=0 gox -ldflags "-s -w -X $VERSION_VARIABLE=$SSHWIFTY_VERSION" -osarch "$BUILD_TARGETS" -output "./.tmp/deploy/{{.Dir}}_{{.OS}}_{{.Arch}}/{{.Dir}}_{{.OS}}_{{.Arch}}"
+  - CGO_ENABLED=0 gox -ldflags "-s -w -X $VERSION_VARIABLE=$SSHWIFTY_VERSION" -osarch "$BUILD_TARGETS" -output "./.tmp/deploy/{{.Dir}}_$SSHWIFTY_VERSION_{{.OS}}_{{.Arch}}/{{.Dir}}_{{.OS}}_{{.Arch}}"
   - echo $(git show "$SSHWIFTY_COMMIT" --show-signature --shortstat) > ./.tmp/deploy/Note
   - echo "echo Preparing for \$1 ..." > prepare.sh
   - echo "(cd \$1 && find . -maxdepth 1 -type f ! -name \"SUM.*\" -exec sha512sum {} \; > SUM.sha512);" >> prepare.sh
