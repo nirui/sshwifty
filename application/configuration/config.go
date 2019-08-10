@@ -79,13 +79,19 @@ func (s Server) WithDefault() Server {
 	readTimeout := s.maxDur(initialTimeout, 3*time.Second)
 	readTimeout = s.maxDur(s.ReadTimeout, readTimeout)
 
+	heartBeatTimeout := s.minDur(s.HeartbeatTimeout, readTimeout/2)
+
+	if heartBeatTimeout <= 0 {
+		heartBeatTimeout = readTimeout / 2
+	}
+
 	return Server{
 		ListenInterface:       s.defaultListenInterface(),
 		ListenPort:            s.defaultListenPort(),
 		InitialTimeout:        initialTimeout,
 		ReadTimeout:           readTimeout,
 		WriteTimeout:          s.maxDur(s.WriteTimeout, 3*time.Second),
-		HeartbeatTimeout:      s.minDur(s.HeartbeatTimeout, readTimeout/2),
+		HeartbeatTimeout:      heartBeatTimeout,
 		ReadDelay:             s.ReadDelay,
 		WriteDelay:            s.WriteDelay,
 		TLSCertificateFile:    s.TLSCertificateFile,
