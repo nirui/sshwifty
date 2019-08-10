@@ -33,6 +33,23 @@ $ docker run --detach \
   niruix/sshwifty:latest
 ```
 
+If you want to use TLS (HTTPS) with the Docker image and don't want to setup
+volumes, you can use  `SSHWIFTY_DOCKER_TLSCERT` and `SSHWIFTY_DOCKER_TLSCERTKEY`
+environment variables when starting the container:
+
+```
+$ docker run --detach \
+  --restart=always \
+  --publish 8182:8182 \
+  --env SSHWIFTY_DOCKER_TLSCERT="$(cat /path/to/domain.crt)"
+  --env SSHWIFTY_DOCKER_TLSCERTKEY="$(cat /path/to/domain.key)"
+  --name sshwifty \
+  niruix/sshwifty:latest
+```
+
+`/path/to/domain.crt` and `/path/to/domain.key` must be valid TLS certificate
+and key file located on the machine which the `docker run` command is executed.
+
 [Docker]: https://www.docker.com
 
 ### Compile from source code (Recommanded if you're a developer)
