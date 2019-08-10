@@ -143,6 +143,9 @@ func File(customPath string) Loader {
 			return loadFile(customPath)
 		}
 
+		log.Info("Loading configuration from one of the default " +
+			"configuration files ...")
+
 		fallbackFileSearchList := make([]string, 0, 3)
 
 		// ~/.config/sshwifty.conf.json
@@ -176,7 +179,7 @@ func File(customPath string) Loader {
 				continue
 			}
 
-			log.Info("Loading configuration from: %s",
+			log.Info("Configuration file \"%s\" has been selected",
 				fallbackFileSearchList[f])
 
 			return loadFile(fallbackFileSearchList[f])
