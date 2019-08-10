@@ -64,6 +64,14 @@ func (s Server) maxDur(cur, def time.Duration) time.Duration {
 	return def
 }
 
+func (s Server) minDur(cur, def time.Duration) time.Duration {
+	if cur < def {
+		return cur
+	}
+
+	return def
+}
+
 // WithDefault build the configuration and fill the blank with default values
 func (s Server) WithDefault() Server {
 	initialTimeout := s.maxDur(s.InitialTimeout, 1*time.Second)
@@ -77,7 +85,7 @@ func (s Server) WithDefault() Server {
 		InitialTimeout:        initialTimeout,
 		ReadTimeout:           readTimeout,
 		WriteTimeout:          s.maxDur(s.WriteTimeout, 3*time.Second),
-		HeartbeatTimeout:      s.maxDur(s.ReadTimeout, readTimeout/2),
+		HeartbeatTimeout:      s.minDur(s.HeartbeatTimeout, readTimeout/2),
 		ReadDelay:             s.ReadDelay,
 		WriteDelay:            s.WriteDelay,
 		TLSCertificateFile:    s.TLSCertificateFile,
