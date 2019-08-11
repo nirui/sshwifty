@@ -1,0 +1,7 @@
+build:
+  config:
+    SSHWIFTY_LISTENPORT: SSHWIFTY_ENV_RENAMED:PORT
+  docker:
+    web: Dockerfile
+run:
+  web: /sshwifty.sh
