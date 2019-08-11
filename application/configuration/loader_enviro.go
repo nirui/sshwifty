@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/niruix/sshwifty/application/log"
 	"github.com/niruix/sshwifty/application/network"
@@ -30,21 +31,31 @@ const (
 	enviroTypeName = "Environment Variable"
 )
 
+func parseEviro(name string) string {
+	v := os.Getenv(name)
+
+	if !strings.HasPrefix(v, "SSHWIFTY_ENV_RENAMED:") {
+		return v
+	}
+
+	return os.Getenv(v[21:])
+}
+
 // Enviro creates an environment variable based configuration loader
 func Enviro() Loader {
 	return func(log log.Logger) (string, Configuration, error) {
 		log.Info("Loading configuration from environment variables ...")
 
 		cfg := fileCfgCommon{
-			HostName:       os.Getenv("SSHWIFTY_HOSTNAME"),
-			SharedKey:      os.Getenv("SSHWIFTY_SHAREDKEY"),
-			Socks5:         os.Getenv("SSHWIFTY_SOCKS5"),
-			Socks5User:     os.Getenv("SSHWIFTY_SOCKS5_USER"),
-			Socks5Password: os.Getenv("SSHWIFTY_SOCKS5_PASSWORD"),
+			HostName:       parseEviro("SSHWIFTY_HOSTNAME"),
+			SharedKey:      parseEviro("SSHWIFTY_SHAREDKEY"),
+			Socks5:         parseEviro("SSHWIFTY_SOCKS5"),
+			Socks5User:     parseEviro("SSHWIFTY_SOCKS5_USER"),
+			Socks5Password: parseEviro("SSHWIFTY_SOCKS5_PASSWORD"),
 		}
 
 		listenPort, listenPortErr := strconv.ParseUint(
-			os.Getenv("SSHWIFTY_LISTENPORT"), 10, 16)
+			parseEviro("SSHWIFTY_LISTENPORT"), 10, 16)
 
 		if listenPortErr != nil {
 			return enviroTypeName, Configuration{}, fmt.Errorf(
@@ -52,25 +63,25 @@ func Enviro() Loader {
 		}
 
 		initialTimeout, _ := strconv.ParseUint(
-			os.Getenv("SSHWIFTY_INITIALTIMEOUT"), 10, 32)
+			parseEviro("SSHWIFTY_INITIALTIMEOUT"), 10, 32)
 
 		readTimeout, _ := strconv.ParseUint(
-			os.Getenv("SSHWIFTY_READTIMEOUT"), 10, 32)
+			parseEviro("SSHWIFTY_READTIMEOUT"), 10, 32)
 
 		writeTimeout, _ := strconv.ParseUint(
-			os.Getenv("SSHWIFTY_WRITETIMEOUT"), 10, 32)
+			parseEviro("SSHWIFTY_WRITETIMEOUT"), 10, 32)
 
 		heartbeatTimeout, _ := strconv.ParseUint(
-			os.Getenv("SSHWIFTY_HEARTBEATTIMEOUT"), 10, 32)
+			parseEviro("SSHWIFTY_HEARTBEATTIMEOUT"), 10, 32)
 
 		readDelay, _ := strconv.ParseUint(
-			os.Getenv("SSHWIFTY_READDELAY"), 10, 32)
+			parseEviro("SSHWIFTY_READDELAY"), 10, 32)
 
 		writeDelay, _ := strconv.ParseUint(
-			os.Getenv("SSHWIFTY_WRITEELAY"), 10, 32)
+			parseEviro("SSHWIFTY_WRITEELAY"), 10, 32)
 
 		cfgSer := fileCfgServer{
-			ListenInterface:       os.Getenv("SSHWIFTY_LISTENINTERFACE"),
+			ListenInterface:       parseEviro("SSHWIFTY_LISTENINTERFACE"),
 			ListenPort:            uint16(listenPort),
 			InitialTimeout:        int(initialTimeout),
 			ReadTimeout:           int(readTimeout),
@@ -78,8 +89,8 @@ func Enviro() Loader {
 			HeartbeatTimeout:      int(heartbeatTimeout),
 			ReadDelay:             int(readDelay),
 			WriteDelay:            int(writeDelay),
-			TLSCertificateFile:    os.Getenv("SSHWIFTY_TLSCERTIFICATEFILE"),
-			TLSCertificateKeyFile: os.Getenv("SSHWIFTY_TLSCERTIFICATEKEYFILE"),
+			TLSCertificateFile:    parseEviro("SSHWIFTY_TLSCERTIFICATEFILE"),
+			TLSCertificateKeyFile: parseEviro("SSHWIFTY_TLSCERTIFICATEKEYFILE"),
 		}
 
 		var dialer network.Dial
