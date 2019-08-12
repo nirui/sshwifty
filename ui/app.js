@@ -38,7 +38,7 @@ import * as sshctl from "./control/ssh.js";
 import * as xhr from "./xhr.js";
 import * as cipher from "./crypto.js";
 
-const maxTimeDiff = 20000;
+const maxTimeDiff = 30000;
 
 const mainTemplate = `
 <home
@@ -157,8 +157,9 @@ function startApp(rootEl) {
               this.loadErr =
                 "The time difference between this client " +
                 "and the backend server is beyond operational limit.\r\n\r\n" +
-                "Please adjust your time so both client and server are " +
-                "running at same date time";
+                "Please try reload the page, and if the problem persisted, " +
+                "consider to adjust your local time so both the client and " +
+                "the server are running at same date time";
 
               return;
             }
