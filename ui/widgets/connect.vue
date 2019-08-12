@@ -53,7 +53,7 @@
       <span id="connect-warning-icon" class="icon icon-warning1"></span>
       <div id="connect-warning-msg">
         <p>
-          <strong>An insecured service may steal your secrects.</strong>
+          <strong>An insecured service may steal your secrets.</strong>
           Always exam the safty of the service before using it.
         </p>
 
