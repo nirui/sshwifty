@@ -22,7 +22,6 @@ import (
 	"io"
 
 	"github.com/niruix/sshwifty/application/log"
-	"github.com/niruix/sshwifty/application/network"
 	"github.com/niruix/sshwifty/application/rw"
 )
 
@@ -342,7 +341,7 @@ func (c *stream) reinit(
 	w streamHandlerSender,
 	l log.Logger,
 	cc *Commands,
-	dialer network.Dial,
+	cfg CommandConfiguration,
 	b []byte,
 ) error {
 	hd := streamInitialHeader{}
@@ -355,7 +354,8 @@ func (c *stream) reinit(
 
 	l = l.Context("Command (%d)", hd.command())
 
-	ccc, cccErr := cc.Run(hd.command(), l, newStreamResponder(w, h), dialer)
+	ccc, cccErr := cc.Run(
+		hd.command(), l, newStreamResponder(w, h), cfg)
 
 	if cccErr != nil {
 		hd.set(0, uint16(StreamErrorCommandUndefined), false)

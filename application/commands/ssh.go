@@ -22,13 +22,11 @@ import (
 	"io"
 	"net"
 	"sync"
-	"time"
 
 	"golang.org/x/crypto/ssh"
 
 	"github.com/niruix/sshwifty/application/command"
 	"github.com/niruix/sshwifty/application/log"
-	"github.com/niruix/sshwifty/application/network"
 	"github.com/niruix/sshwifty/application/rw"
 )
 
@@ -116,8 +114,7 @@ func (s sshRemoteConn) isValid() bool {
 type sshClient struct {
 	w                                    command.StreamResponder
 	l                                    log.Logger
-	dial                                 network.Dial
-	dialTimeout                          time.Duration
+	cfg                                  command.CommandConfiguration
 	remoteCloseWait                      sync.WaitGroup
 	credentialReceive                    chan []byte
 	credentialProcessed                  bool
@@ -132,13 +129,12 @@ type sshClient struct {
 func newSSH(
 	l log.Logger,
 	w command.StreamResponder,
-	dial network.Dial,
+	cfg command.CommandConfiguration,
 ) command.FSMMachine {
 	return &sshClient{
 		w:                                    w,
 		l:                                    l,
-		dial:                                 dial,
-		dialTimeout:                          10 * time.Second,
+		cfg:                                  cfg,
 		remoteCloseWait:                      sync.WaitGroup{},
 		credentialReceive:                    make(chan []byte, 1),
 		credentialProcessed:                  false,
@@ -300,7 +296,7 @@ func (d *sshClient) comfirmRemoteFingerprint(
 
 func (d *sshClient) dialRemote(
 	network, addr string, config *ssh.ClientConfig) (*ssh.Client, error) {
-	conn, err := d.dial(network, addr, config.Timeout)
+	conn, err := d.cfg.Dial(network, addr, config.Timeout)
 
 	if err != nil {
 		return nil, err
@@ -332,7 +328,7 @@ func (d *sshClient) remote(
 		HostKeyCallback: func(h string, r net.Addr, k ssh.PublicKey) error {
 			return d.comfirmRemoteFingerprint(h, r, k, buf[:])
 		},
-		Timeout: d.dialTimeout,
+		Timeout: d.cfg.DialTimeout,
 	})
 
 	if dErr != nil {

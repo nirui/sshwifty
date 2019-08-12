@@ -358,7 +358,11 @@ func (s socket) Get(
 
 	senderLock := sync.Mutex{}
 	cmdExec, cmdExecErr := s.commander.New(
-		s.commonCfg.Dialer, rw.NewFetchReader(func() ([]byte, error) {
+		command.CommandConfiguration{
+			Dial:        s.commonCfg.Dialer,
+			DialTimeout: s.commonCfg.DecideDialTimeout(s.serverCfg.ReadTimeout),
+		},
+		rw.NewFetchReader(func() ([]byte, error) {
 			defer s.increaseNonce(readNonce[:])
 
 			// Size is unencrypted
@@ -402,7 +406,8 @@ func (s socket) Get(
 				readNonce[:],
 				cipherReadBuf[:packageSize],
 				nil)
-		}), socketPackageWriter{
+		}),
+		socketPackageWriter{
 			w: wsWriter,
 			packager: func(w websocketWriter, b []byte) error {
 				start := 0

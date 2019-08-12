@@ -49,7 +49,7 @@ type fileCfgServer struct {
 	TLSCertificateKeyFile string // Location of TLS certificate key
 }
 
-func (f fileCfgServer) minDur(current, min int) int {
+func (f fileCfgServer) durationAtLeast(current, min int) int {
 	if current > min {
 		return current
 	}
@@ -62,17 +62,17 @@ func (f *fileCfgServer) build() Server {
 		ListenInterface: f.ListenInterface,
 		ListenPort:      f.ListenPort,
 		InitialTimeout: time.Duration(
-			f.minDur(f.InitialTimeout, 5)) * time.Second,
+			f.durationAtLeast(f.InitialTimeout, 5)) * time.Second,
 		ReadTimeout: time.Duration(
-			f.minDur(f.ReadTimeout, 30)) * time.Second,
+			f.durationAtLeast(f.ReadTimeout, 30)) * time.Second,
 		WriteTimeout: time.Duration(
-			f.minDur(f.WriteTimeout, 30)) * time.Second,
+			f.durationAtLeast(f.WriteTimeout, 30)) * time.Second,
 		HeartbeatTimeout: time.Duration(
-			f.minDur(f.HeartbeatTimeout, 10)) * time.Second,
+			f.durationAtLeast(f.HeartbeatTimeout, 10)) * time.Second,
 		ReadDelay: time.Duration(
-			f.minDur(f.ReadDelay, 0)) * time.Millisecond,
+			f.durationAtLeast(f.ReadDelay, 0)) * time.Millisecond,
 		WriteDelay: time.Duration(
-			f.minDur(f.WriteDelay, 0)) * time.Millisecond,
+			f.durationAtLeast(f.WriteDelay, 0)) * time.Millisecond,
 		TLSCertificateFile:    f.TLSCertificateFile,
 		TLSCertificateKeyFile: f.TLSCertificateKeyFile,
 	}
@@ -81,10 +81,44 @@ func (f *fileCfgServer) build() Server {
 type fileCfgCommon struct {
 	HostName       string           // Host name
 	SharedKey      string           // Shared key, empty to enable public access
+	DialTimeout    int              // DialTimeout, min 5s
 	Socks5         string           // Socks5 server address, optional
 	Socks5User     string           // Login user for socks5 server, optional
 	Socks5Password string           // Login pass for socks5 server, optional
 	Servers        []*fileCfgServer // Servers
+}
+
+func (f fileCfgCommon) build() (fileCfgCommon, network.Dial, error) {
+	dialTimeout := f.DialTimeout
+
+	if dialTimeout < 3 {
+		dialTimeout = 3
+	}
+
+	var dialer network.Dial
+
+	if len(f.Socks5) <= 0 {
+		dialer = network.TCPDial()
+	} else {
+		sDial, sDialErr := network.BuildSocks5Dial(
+			f.Socks5, f.Socks5User, f.Socks5Password)
+
+		if sDialErr != nil {
+			return fileCfgCommon{}, nil, sDialErr
+		}
+
+		dialer = sDial
+	}
+
+	return fileCfgCommon{
+		HostName:       f.HostName,
+		SharedKey:      f.SharedKey,
+		DialTimeout:    dialTimeout,
+		Socks5:         f.Socks5,
+		Socks5User:     f.Socks5User,
+		Socks5Password: f.Socks5Password,
+		Servers:        f.Servers,
+	}, dialer, nil
 }
 
 func loadFile(filePath string) (string, Configuration, error) {
@@ -105,32 +139,24 @@ func loadFile(filePath string) (string, Configuration, error) {
 		return fileTypeName, Configuration{}, jDecodeErr
 	}
 
-	servers := make([]Server, len(cfg.Servers))
+	finalCfg, dialer, cfgErr := cfg.build()
 
-	for i := range servers {
-		servers[i] = cfg.Servers[i].build()
+	if cfgErr != nil {
+		return fileTypeName, Configuration{}, cfgErr
 	}
 
-	var dialer network.Dial
+	servers := make([]Server, len(finalCfg.Servers))
 
-	if len(cfg.Socks5) <= 0 {
-		dialer = network.TCPDial()
-	} else {
-		sDial, sDialErr := network.BuildSocks5Dial(
-			cfg.Socks5, cfg.Socks5User, cfg.Socks5Password)
-
-		if sDialErr != nil {
-			return fileTypeName, Configuration{}, sDialErr
-		}
-
-		dialer = sDial
+	for i := range servers {
+		servers[i] = finalCfg.Servers[i].build()
 	}
 
 	return fileTypeName, Configuration{
-		HostName:  cfg.HostName,
-		SharedKey: cfg.SharedKey,
-		Dialer:    dialer,
-		Servers:   servers,
+		HostName:    finalCfg.HostName,
+		SharedKey:   finalCfg.SharedKey,
+		Dialer:      dialer,
+		DialTimeout: time.Duration(finalCfg.DialTimeout) * time.Second,
+		Servers:     servers,
 	}, nil
 }
 

@@ -80,7 +80,6 @@ func (s Server) Serve(
 	closeCallback CloseCallback,
 	handlerBuilder HandlerBuilder,
 ) *Serving {
-	ccCfg := commonCfg.WithDefault()
 	ssCfg := serverCfg.WithDefault()
 
 	l := s.logger.Context(
@@ -88,7 +87,7 @@ func (s Server) Serve(
 
 	ss := &Serving{
 		server: http.Server{
-			Handler:           handlerBuilder(ccCfg, ssCfg, l),
+			Handler:           handlerBuilder(commonCfg, ssCfg, l),
 			ReadTimeout:       ssCfg.ReadTimeout,
 			ReadHeaderTimeout: ssCfg.InitialTimeout,
 			WriteTimeout:      ssCfg.WriteTimeout,

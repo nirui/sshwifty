@@ -25,7 +25,6 @@ import (
 	"testing"
 
 	"github.com/niruix/sshwifty/application/log"
-	"github.com/niruix/sshwifty/application/network"
 	"github.com/niruix/sshwifty/application/rw"
 )
 
@@ -58,7 +57,7 @@ func testDummyFetchChainGen(dd <-chan []byte) rw.FetchReaderFetcher {
 }
 
 type dummyStreamCommand struct {
-	lock sync.Mutex
+	lock      sync.Mutex
 	l         log.Logger
 	w         StreamResponder
 	downWait  sync.WaitGroup
@@ -67,9 +66,12 @@ type dummyStreamCommand struct {
 }
 
 func newDummyStreamCommand(
-	l log.Logger, w StreamResponder, d network.Dial) FSMMachine {
+	l log.Logger,
+	w StreamResponder,
+	cfg CommandConfiguration,
+) FSMMachine {
 	return &dummyStreamCommand{
-		lock:sync.Mutex{},
+		lock:      sync.Mutex{},
 		l:         l,
 		w:         w,
 		downWait:  sync.WaitGroup{},
@@ -84,7 +86,7 @@ func (d *dummyStreamCommand) Bootup(
 ) (FSMState, FSMError) {
 	d.downWait.Add(1)
 
-	echoTrans:=d.echoTrans
+	echoTrans := d.echoTrans
 
 	go func() {
 		defer func() {
@@ -178,7 +180,7 @@ func TestHandlerHandleStream(t *testing.T) {
 
 	lock := sync.Mutex{}
 	hhd := newHandler(
-		nil,
+		CommandConfiguration{},
 		&cmds,
 		rw.NewFetchReader(readerSource),
 		wBuffer,

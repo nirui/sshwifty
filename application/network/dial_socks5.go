@@ -42,7 +42,8 @@ func BuildSocks5Dial(
 		timeout time.Duration,
 	) (net.Conn, error) {
 		dial, dialErr := proxy.SOCKS5("tcp", socks5Address, auth, &net.Dialer{
-			Timeout: timeout,
+			Timeout:  timeout,
+			Deadline: time.Now().Add(timeout),
 		})
 
 		if dialErr != nil {

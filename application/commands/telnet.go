@@ -21,11 +21,9 @@ import (
 	"errors"
 	"io"
 	"sync"
-	"time"
 
 	"github.com/niruix/sshwifty/application/command"
 	"github.com/niruix/sshwifty/application/log"
-	"github.com/niruix/sshwifty/application/network"
 	"github.com/niruix/sshwifty/application/rw"
 )
 
@@ -48,28 +46,26 @@ const (
 )
 
 type telnetClient struct {
-	l           log.Logger
-	w           command.StreamResponder
-	dial        network.Dial
-	remoteChan  chan io.WriteCloser
-	remoteConn  io.WriteCloser
-	closeWait   sync.WaitGroup
-	dialTimeout time.Duration
+	l          log.Logger
+	w          command.StreamResponder
+	cfg        command.CommandConfiguration
+	remoteChan chan io.WriteCloser
+	remoteConn io.WriteCloser
+	closeWait  sync.WaitGroup
 }
 
 func newTelnet(
 	l log.Logger,
 	w command.StreamResponder,
-	dial network.Dial,
+	cfg command.CommandConfiguration,
 ) command.FSMMachine {
 	return &telnetClient{
-		l:           l,
-		w:           w,
-		dial:        dial,
-		remoteChan:  make(chan io.WriteCloser, 1),
-		remoteConn:  nil,
-		closeWait:   sync.WaitGroup{},
-		dialTimeout: 10 * time.Second,
+		l:          l,
+		w:          w,
+		cfg:        cfg,
+		remoteChan: make(chan io.WriteCloser, 1),
+		remoteConn: nil,
+		closeWait:  sync.WaitGroup{},
 	}
 }
 
@@ -101,7 +97,7 @@ func (d *telnetClient) remote(addr string) {
 
 	buf := [4096]byte{}
 
-	clientConn, clientConnErr := d.dial("tcp", addr, d.dialTimeout)
+	clientConn, clientConnErr := d.cfg.Dial("tcp", addr, d.cfg.DialTimeout)
 
 	if clientConnErr != nil {
 		errLen := copy(

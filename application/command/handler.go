@@ -25,7 +25,6 @@ import (
 	"time"
 
 	"github.com/niruix/sshwifty/application/log"
-	"github.com/niruix/sshwifty/application/network"
 	"github.com/niruix/sshwifty/application/rw"
 )
 
@@ -105,7 +104,7 @@ func (h streamHandlerSender) Write(b []byte) (int, error) {
 
 // Handler client stream control
 type Handler struct {
-	dialer       network.Dial
+	cfg          CommandConfiguration
 	commands     *Commands
 	receiver     rw.FetchReader
 	sender       handlerSender
@@ -118,7 +117,7 @@ type Handler struct {
 }
 
 func newHandler(
-	dialer network.Dial,
+	cfg CommandConfiguration,
 	commands *Commands,
 	receiver rw.FetchReader,
 	sender io.Writer,
@@ -128,7 +127,7 @@ func newHandler(
 	l log.Logger,
 ) Handler {
 	return Handler{
-		dialer:       dialer,
+		cfg:          cfg,
 		commands:     commands,
 		receiver:     receiver,
 		sender:       handlerSender{writer: sender, lock: senderLock},
@@ -235,7 +234,7 @@ func (e *Handler) handleStream(h Header, d byte, l log.Logger) error {
 	return st.reinit(h, &e.receiver, streamHandlerSender{
 		handlerSender: &e.sender,
 		sendDelay:     e.sendDelay,
-	}, l, e.commands, e.dialer, e.rBuf[:])
+	}, l, e.commands, e.cfg, e.rBuf[:])
 }
 
 func (e *Handler) handleClose(h Header, d byte, l log.Logger) error {

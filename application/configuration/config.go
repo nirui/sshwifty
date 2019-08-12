@@ -121,17 +121,19 @@ func (s Server) Verify() error {
 
 // Configuration contains configuration of the application
 type Configuration struct {
-	HostName  string
-	SharedKey string
-	Dialer    network.Dial
-	Servers   []Server
+	HostName    string
+	SharedKey   string
+	Dialer      network.Dial
+	DialTimeout time.Duration
+	Servers     []Server
 }
 
 // Common settings shared by mulitple servers
 type Common struct {
-	HostName  string
-	SharedKey string
-	Dialer    network.Dial
+	HostName    string
+	SharedKey   string
+	Dialer      network.Dial
+	DialTimeout time.Duration
 }
 
 // Verify verifies current setting
@@ -155,24 +157,31 @@ func (c Configuration) Verify() error {
 
 // Common returns common settings
 func (c Configuration) Common() Common {
-	return Common{
-		HostName:  c.HostName,
-		SharedKey: c.SharedKey,
-		Dialer:    c.Dialer,
-	}
-}
-
-// WithDefault build the configuration and fill the blank with default values
-func (c Common) WithDefault() Common {
 	dialer := c.Dialer
 
 	if dialer == nil {
 		dialer = network.TCPDial()
 	}
 
-	return Common{
-		HostName:  c.HostName,
-		SharedKey: c.SharedKey,
-		Dialer:    dialer,
+	dialTimeout := c.DialTimeout
+
+	if dialTimeout <= 1*time.Second {
+		dialTimeout = 1 * time.Second
 	}
+
+	return Common{
+		HostName:    c.HostName,
+		SharedKey:   c.SharedKey,
+		Dialer:      c.Dialer,
+		DialTimeout: c.DialTimeout,
+	}
+}
+
+// DecideDialTimeout will return a reasonable timeout for dialing
+func (c Common) DecideDialTimeout(max time.Duration) time.Duration {
+	if c.DialTimeout > max {
+		return max
+	}
+
+	return c.DialTimeout
 }

@@ -22,7 +22,6 @@ import (
 	"fmt"
 
 	"github.com/niruix/sshwifty/application/log"
-	"github.com/niruix/sshwifty/application/network"
 )
 
 // Consts
@@ -37,7 +36,11 @@ var (
 )
 
 // Command represents a command handler machine builder
-type Command func(l log.Logger, w StreamResponder, d network.Dial) FSMMachine
+type Command func(
+	l log.Logger,
+	w StreamResponder,
+	cfg CommandConfiguration,
+) FSMMachine
 
 // Commands contains data of all commands
 type Commands [MaxCommandID + 1]Command
@@ -57,7 +60,10 @@ func (c *Commands) Register(id byte, cb Command) {
 
 // Run creates command executer
 func (c Commands) Run(
-	id byte, l log.Logger, w StreamResponder, dial network.Dial) (FSM, error) {
+	id byte,
+	l log.Logger,
+	w StreamResponder,
+	cfg CommandConfiguration) (FSM, error) {
 	if id > MaxCommandID {
 		return FSM{}, ErrCommandRunUndefinedCommand
 	}
@@ -68,5 +74,5 @@ func (c Commands) Run(
 		return FSM{}, ErrCommandRunUndefinedCommand
 	}
 
-	return newFSM(cc(l, w, dial)), nil
+	return newFSM(cc(l, w, cfg)), nil
 }

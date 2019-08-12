@@ -22,9 +22,9 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/niruix/sshwifty/application/log"
-	"github.com/niruix/sshwifty/application/network"
 )
 
 const (
@@ -46,12 +46,21 @@ func Enviro() Loader {
 	return func(log log.Logger) (string, Configuration, error) {
 		log.Info("Loading configuration from environment variables ...")
 
-		cfg := fileCfgCommon{
+		dialTimeout, _ := strconv.ParseUint(
+			parseEviro("SSHWIFTY_DIALTIMEOUT"), 10, 32)
+
+		cfg, dialer, cfgErr := fileCfgCommon{
 			HostName:       parseEviro("SSHWIFTY_HOSTNAME"),
 			SharedKey:      parseEviro("SSHWIFTY_SHAREDKEY"),
+			DialTimeout:    int(dialTimeout),
 			Socks5:         parseEviro("SSHWIFTY_SOCKS5"),
 			Socks5User:     parseEviro("SSHWIFTY_SOCKS5_USER"),
 			Socks5Password: parseEviro("SSHWIFTY_SOCKS5_PASSWORD"),
+		}.build()
+
+		if cfgErr != nil {
+			return enviroTypeName, Configuration{}, fmt.Errorf(
+				"Failed to build the configuration: %s", cfgErr)
 		}
 
 		listenPort, listenPortErr := strconv.ParseUint(
@@ -93,26 +102,12 @@ func Enviro() Loader {
 			TLSCertificateKeyFile: parseEviro("SSHWIFTY_TLSCERTIFICATEKEYFILE"),
 		}
 
-		var dialer network.Dial
-
-		if len(cfg.Socks5) <= 0 {
-			dialer = network.TCPDial()
-		} else {
-			sDial, sDialErr := network.BuildSocks5Dial(
-				cfg.Socks5, cfg.Socks5User, cfg.Socks5Password)
-
-			if sDialErr != nil {
-				return enviroTypeName, Configuration{}, sDialErr
-			}
-
-			dialer = sDial
-		}
-
 		return enviroTypeName, Configuration{
-			HostName:  cfg.HostName,
-			SharedKey: cfg.SharedKey,
-			Dialer:    dialer,
-			Servers:   []Server{cfgSer.build()},
+			HostName:    cfg.HostName,
+			SharedKey:   cfg.SharedKey,
+			Dialer:      dialer,
+			DialTimeout: time.Duration(cfg.DialTimeout) * time.Second,
+			Servers:     []Server{cfgSer.build()},
 		}, nil
 	}
 }
