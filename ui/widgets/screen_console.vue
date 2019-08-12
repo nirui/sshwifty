@@ -131,7 +131,7 @@ class Term {
               alert(
                 "Unable to paste: " +
                   e +
-                  ". Consider paste without using hot key"
+                  ". Please try again without using the Control+Shift+V hot key"
               );
             }
             return;
