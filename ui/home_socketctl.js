@@ -24,7 +24,8 @@ export function build(ctx) {
     "Experiencing median connection delay, consider slow down your input " +
     "to avoid misoperate";
   const connectionDelayHeavy =
-    "Experiencing long connection delay, operation may appear to be sticked";
+    "Experiencing long connection delay, operation may freeze. Consider " +
+    "pause your input until remote is responsive";
 
   const buildEmptyHistory = () => {
     let r = [];
