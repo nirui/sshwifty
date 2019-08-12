@@ -281,8 +281,8 @@ func (s socket) privateKey() string {
 	return s.randomKey
 }
 
-func (s socket) buildCipherKey() [24]byte {
-	key := [24]byte{}
+func (s socket) buildCipherKey() [16]byte {
+	key := [16]byte{}
 	now := strconv.FormatInt(time.Now().Unix()/100, 10)
 
 	copy(key[:], getSocketAuthKey(now, s.privateKey()))

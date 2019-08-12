@@ -105,7 +105,7 @@ class Dial {
         enc.encode(rTime)
       );
 
-    return key.slice(0, 24);
+    return key.slice(0, 16);
   }
 
   /**
