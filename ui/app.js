@@ -57,8 +57,6 @@ const mainTemplate = `
 <loading v-else :error="loadErr"></loading>
 `.trim();
 
-let clientInitialized = false;
-
 function startApp(rootEl) {
   let uiControlColor = new ControlColor();
 
@@ -279,15 +277,12 @@ function startApp(rootEl) {
 }
 
 function initializeClient() {
-  if (clientInitialized) {
+  let landingRoot = document.getElementById("landing");
+
+  if (!landingRoot) {
     return;
   }
 
-  clientInitialized = true;
-
-  document.body.classList.remove("landing");
-
-  let landingRoot = document.getElementById("landing");
   landingRoot.parentNode.removeChild(landingRoot);
 
   let normalRoot = document.createElement("div");
