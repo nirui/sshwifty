@@ -5,7 +5,7 @@ export function build(ctx) {
   const connectionStatusNotConnected = "Sshwifty is not connected";
   const connectionStatusConnecting =
     "Sshwifty is connecting to it's backend server, it should only take " +
-    "less than a second or two";
+    "than a second or two";
   const connectionStatusDisconnected =
     "Sshwifty has disconnected from it's backend server";
   const connectionStatusConnected =
@@ -19,13 +19,13 @@ export function build(ctx) {
     "Connection delay is low, operation should be very responsive";
   const connectionDelayFair =
     "Experiencing minor connection delay, operation should be responded " +
-    "within reasonable time";
+    "within a reasonable time";
   const connectionDelayMedian =
-    "Experiencing median connection delay, consider slow down your input " +
-    "to avoid misoperate";
+    "Experiencing median connection delay, consider to slow down your input " +
+    "to avoid misoperation";
   const connectionDelayHeavy =
-    "Experiencing long connection delay, operation may freeze. Consider " +
-    "pause your input until remote is responsive";
+    "Experiencing bad connection delay, operation may freeze. Consider " +
+    "to pause your input until remote is responsive";
 
   const buildEmptyHistory = () => {
     let r = [];
