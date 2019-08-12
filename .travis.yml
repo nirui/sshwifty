@@ -12,7 +12,7 @@ env:
     - SSHWIFTY_VERSION=$(git describe --always --dirty='*' --tag)
     - SSHWIFTY_COMMIT=$(git describe --always)
     - SSHWIFTY_RELEASE=$([[ "$SSHWIFTY_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+\-[a-zA-Z0-9]+\-release$ ]] && echo "yes")
-    - SSHWIFTY_DEPLOY=$([[ "$SSHWIFTY_RELEASE" != "yes" || "$GITHUB_USER" == "" || "$GITHUB_TOKEN" == "" ]] || echo "yes")
+    - SSHWIFTY_DEPLOY=$([[ "$SSHWIFTY_RELEASE" != "yes" || "$TRAVIS_TAG" == "" || "$GITHUB_USER" == "" || "$GITHUB_TOKEN" == "" ]] || echo "yes")
     - SSHWIFTY_TEST_COVER=$([[ "$COVERALLS_TOKEN" == "" ]] || echo "yes")
 
 branches:
