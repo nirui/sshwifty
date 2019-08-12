@@ -524,8 +524,10 @@ func (d *sshClient) local(
 			_, wErr := remote.writer.Write(rData)
 
 			if wErr != nil {
-				return wErr
+				d.l.Debug("Failed to write data to remote: %s", wErr)
 			}
+
+			return nil
 		}
 
 		return nil

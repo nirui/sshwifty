@@ -180,8 +180,10 @@ func (d *telnetClient) client(
 		_, wErr := remoteConn.Write(rBuf)
 
 		if wErr != nil {
-			return wErr
+			d.l.Debug("Failed to write data to remote: %s", wErr)
 		}
+
+		return nil
 	}
 
 	return nil
