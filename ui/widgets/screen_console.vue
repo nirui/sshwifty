@@ -119,6 +119,34 @@ class Term {
     this.term.textarea.addEventListener("focus", callbacks.focus);
     this.term.textarea.addEventListener("blur", callbacks.blur);
 
+    this.term.textarea.addEventListener("keyup", async ev => {
+      if (ev.ctrlKey && ev.shiftKey) {
+        switch (ev.keyCode) {
+          case 86:
+            try {
+              let text = await window.navigator.clipboard.readText();
+
+              this.writeStr(text);
+            } catch (e) {
+              alert(
+                "Unable to paste: " +
+                  e +
+                  ". Consider paste without using hot key"
+              );
+            }
+            return;
+
+          case 67:
+            try {
+              window.navigator.clipboard.writeText(this.term.getSelection());
+            } catch (e) {
+              alert("Unable to copy: " + e);
+            }
+            return;
+        }
+      }
+    });
+
     this.term.element.addEventListener("click", () => {
       this.term.textarea.blur();
       this.term.textarea.click();
