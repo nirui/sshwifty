@@ -117,7 +117,7 @@ Here is the options that can be used in a configuration file and what it for:
   // Remote dial timeout. This limits how long of time the backend can spend
   // to connect to a remote host. The max timeout will be determined by
   // server configuration (ReadTimeout).
-  // (In Second)
+  // (In Seconds)
   "DialTimeout": 10,
 
   // Socks5 proxy. When set, we will try to connect remote through the given
@@ -142,29 +142,29 @@ Here is the options that can be used in a configuration file and what it for:
 
       // Timeout of initial request. HTTP handshake must be finished within
       // this time
-      // (In Second)
+      // (In Seconds)
       "InitialTimeout": 3,
 
       // How long the connection can be idle before the server disconnects the
       // client
-      // (In Second)
+      // (In Seconds)
       "ReadTimeout": 60,
 
       // How long the server will wait until the client connect is ready to
       // recieve new data
-      // (In Second)
+      // (In Seconds)
       "WriteTimeout": 60,
 
       // The interval between internal echo requests
-      // (In Second)
+      // (In Seconds)
       "HeartbeatTimeout": 20,
 
       // Forced delay between each request
-      // (In Milisecond)
+      // (In Miliseconds)
       "ReadDelay": 10,
 
       // Forced delay between each write
-      // (In Milisecond)
+      // (In Miliseconds)
       "WriteDelay": 10,
 
       // Path to TLS certificate file. Set empty to use HTTP
