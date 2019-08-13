@@ -248,6 +248,9 @@ Upon release (Which is then you're able to read this file), this project will
 enter maintaining state, which includes doing bug fix and security updates.
 Adding new features however, is not a part of the state.
 
+(Notice: Typo, grammar error or invalid use of language in the source code and
+document is categorized as bug, please report them if you found any. Thank you!)
+
 Please do not send pull request. If you need new feature, fork it, and maintain
 it like one of your own. Appreciated!
 
