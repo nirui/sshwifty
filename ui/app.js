@@ -240,17 +240,17 @@ function startApp(rootEl) {
           date: serverDate ? new Date(serverDate) : null
         };
       },
-      async submitAuth(passpharse) {
+      async submitAuth(passphrase) {
         this.authErr = "";
 
         try {
-          let result = await this.doAuth(passpharse);
+          let result = await this.doAuth(passphrase);
 
           switch (result.result) {
             case 200:
               this.socket = this.buildSocket(
                 {
-                  data: passpharse,
+                  data: passphrase,
                   fetch() {
                     return this.data;
                   }
@@ -262,7 +262,7 @@ function startApp(rootEl) {
               break;
 
             case 403:
-              this.authErr = "Authentication has failed. Wrong passpharse?";
+              this.authErr = "Authentication has failed. Wrong passphrase?";
               break;
 
             default:

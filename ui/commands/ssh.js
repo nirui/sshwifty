@@ -28,7 +28,7 @@ import * as strings from "./string.js";
 import Exception from "./exception.js";
 
 const AUTHMETHOD_NONE = 0x01;
-const AUTHMETHOD_PASSPHARSE = 0x01;
+const AUTHMETHOD_PASSPHRASE = 0x01;
 const AUTHMETHOD_PRIVATE_KEY = 0x02;
 
 const COMMAND_ID = 0x01;
@@ -301,15 +301,15 @@ const initialFieldDef = {
       return "";
     }
   },
-  Passpharse: {
-    name: "Passpharse",
+  Passphrase: {
+    name: "Passphrase",
     description: "",
     type: "password",
     value: "",
     example: "----------",
     verify(d) {
       if (d.length <= 0) {
-        throw new Error("Passpharse must be specified");
+        throw new Error("Passphrase must be specified");
       }
 
       if (d.length > MAX_PASSWORD_LEN) {
@@ -318,7 +318,7 @@ const initialFieldDef = {
         );
       }
 
-      return "We'll login with this passpharse";
+      return "We'll login with this passphrase";
     }
   },
   "Private Key": {
@@ -396,7 +396,7 @@ function getAuthMethodFromStr(d) {
       return AUTHMETHOD_NONE;
 
     case "Password":
-      return AUTHMETHOD_PASSPHARSE;
+      return AUTHMETHOD_PASSPHRASE;
 
     case "Private Key":
       return AUTHMETHOD_PRIVATE_KEY;
@@ -694,8 +694,8 @@ class Wizard {
       fieldName = "";
 
     switch (config.auth) {
-      case AUTHMETHOD_PASSPHARSE:
-        fieldName = "Passpharse";
+      case AUTHMETHOD_PASSPHRASE:
+        fieldName = "Passphrase";
         break;
 
       case AUTHMETHOD_PRIVATE_KEY:

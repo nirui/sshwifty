@@ -62,7 +62,7 @@ const (
 // Auth methods
 const (
 	SSHAuthMethodNone       byte = 0x00
-	SSHAuthMethodPasspharse byte = 0x01
+	SSHAuthMethodPassphrase byte = 0x01
 	SSHAuthMethodPrivateKey byte = 0x02
 )
 
@@ -205,7 +205,7 @@ func (d *sshClient) buildAuthMethod(
 			return nil
 		}, nil
 
-	case SSHAuthMethodPasspharse:
+	case SSHAuthMethodPassphrase:
 		return func(b []byte) []ssh.AuthMethod {
 			return []ssh.AuthMethod{
 				ssh.PasswordCallback(func() (string, error) {
@@ -218,13 +218,13 @@ func (d *sshClient) buildAuthMethod(
 						return "", wErr
 					}
 
-					passpharseBytes, passpharseReceived := <-d.credentialReceive
+					passphraseBytes, passphraseReceived := <-d.credentialReceive
 
-					if !passpharseReceived {
+					if !passphraseReceived {
 						return "", ErrSSHAuthCancelled
 					}
 
-					return string(passpharseBytes), nil
+					return string(passphraseBytes), nil
 				}),
 			}
 		}, nil

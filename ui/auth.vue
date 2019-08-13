@@ -28,13 +28,13 @@
             <div
               class="field"
               :class="{
-                error: passpharseErr.length > 0 || error.length > 0
+                error: passphraseErr.length > 0 || error.length > 0
               }"
             >
-              Passpharse
+              Passphrase
 
               <input
-                v-model="passpharse"
+                v-model="passphrase"
                 v-focus="true"
                 :disabled="submitting"
                 type="password"
@@ -45,7 +45,7 @@
               />
 
               <div
-                v-if="passpharseErr.length <= 0 && error.length <= 0"
+                v-if="passphraseErr.length <= 0 && error.length <= 0"
                 class="message"
               >
                 A valid password is required in order to use this
@@ -53,7 +53,7 @@
                 instance
               </div>
               <div v-else class="error">
-                {{ passpharseErr || error }}
+                {{ passphraseErr || error }}
               </div>
             </div>
 
@@ -91,8 +91,8 @@ export default {
   data() {
     return {
       submitting: false,
-      passpharse: "",
-      passpharseErr: ""
+      passphrase: "",
+      passphraseErr: ""
     };
   },
   watch: {
@@ -105,8 +105,8 @@ export default {
   mounted() {},
   methods: {
     auth() {
-      if (this.passpharse.length <= 0) {
-        this.passpharseErr = "Passpharse cannot be empty";
+      if (this.passphrase.length <= 0) {
+        this.passphraseErr = "Passphrase cannot be empty";
 
         return;
       }
@@ -117,9 +117,9 @@ export default {
 
       this.submitting = true;
 
-      this.passpharseErr = "";
+      this.passphraseErr = "";
 
-      this.$emit("auth", this.passpharse);
+      this.$emit("auth", this.passphrase);
     }
   }
 };
