@@ -160,11 +160,11 @@ Here is the options that can be used in a configuration file and what it for:
       "HeartbeatTimeout": 20,
 
       // Forced delay between each request
-      // (In Miliseconds)
+      // (In Milliseconds)
       "ReadDelay": 10,
 
       // Forced delay between each write
-      // (In Miliseconds)
+      // (In Milliseconds)
       "WriteDelay": 10,
 
       // Path to TLS certificate file. Set empty to use HTTP
