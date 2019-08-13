@@ -79,10 +79,11 @@ func (s Server) WithDefault() Server {
 	readTimeout := s.maxDur(initialTimeout, 3*time.Second)
 	readTimeout = s.maxDur(s.ReadTimeout, readTimeout)
 
-	heartBeatTimeout := s.minDur(s.HeartbeatTimeout, readTimeout/2)
+	maxHeartBeatTimeout := time.Duration(float64(readTimeout) * 0.8)
+	heartBeatTimeout := s.minDur(s.HeartbeatTimeout, maxHeartBeatTimeout)
 
 	if heartBeatTimeout <= 0 {
-		heartBeatTimeout = readTimeout / 2
+		heartBeatTimeout = maxHeartBeatTimeout
 	}
 
 	return Server{
