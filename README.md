@@ -192,6 +192,7 @@ Valid environment variables are:
 ```
 SSHWIFTY_HOSTNAME
 SSHWIFTY_SHAREDKEY
+SSHWIFTY_DIALTIMEOUT
 SSHWIFTY_SOCKS5
 SSHWIFTY_SOCKS5_USER
 SSHWIFTY_SOCKS5_PASSWORD
@@ -216,9 +217,11 @@ by using this method. If you need to serve on multiple ports, use configuration
 file instead.
 
 Be aware: An invalid value inside following environment variables will cause
-the value to be reset to default during configuration parsing without warning:
+the value to be sliently reset to default during configuration parsing phase
+without warning:
 
 ```
+SSHWIFTY_DIALTIMEOUT
 SSHWIFTY_INITIALTIMEOUT
 SSHWIFTY_READTIMEOUT
 SSHWIFTY_WRITETIMEOUT
