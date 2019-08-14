@@ -61,7 +61,7 @@ before_deploy:
       echo '(cp *.md $1/);' >> prepare.sh
       echo '(cp ./.tmp/deploy/Note $1/);' >> prepare.sh
       echo '(cp ./sshwifty.conf.example.json $1/);' >> prepare.sh
-      echo '(cd $1/ && tar -zcvf "../$(basename $(pwd)).tar.gz" *);' >> prepare.sh
+      echo '(cd $1/ && tar zpcvf "../$(basename $(pwd)).tar.gz" * --owner=0 --group=0);' >> prepare.sh
       chmod +x ./prepare.sh
       find ./.tmp/deploy/ -maxdepth 1 -type d ! -name "deploy" -exec ./prepare.sh {} \;
       rm ./prepare.sh -f
