@@ -17,6 +17,6 @@ export function build(ctx) {
         alert("Unable to save remote history due to error: " + e);
       }
     },
-    32
+    64
   );
 }
