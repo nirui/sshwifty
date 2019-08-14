@@ -161,8 +161,6 @@ import (
 	"encoding/hex"
 )
 
-var raw{{ .GOVariableName }}Data = ` + "`" + `{{ .Data }}` + "`" + `
-
 // {{ .GOVariableName }} returns static file
 func {{ .GOVariableName }}() (
 	int,        // FileStart
@@ -181,17 +179,19 @@ func {{ .GOVariableName }}() (
 		panic(createErr)
 	}
 
-	data, dataErr := hex.DecodeString(raw{{ .GOVariableName }}Data)
-
-	raw{{ .GOVariableName }}Data = ""
+	data, dataErr := hex.DecodeString(` + "`" + `{{ .Data }}` + "`" + `)
 
 	if dataErr != nil {
 		panic(dataErr)
 	}
 
+	shrinkToFit := make([]byte, len(data))
+
+	copy(shrinkToFit, data)
+
 	return {{ .FileStart }}, {{ .FileEnd }},
 		{{ .CompressedStart }}, {{ .CompressedEnd }},
-		"{{ .ContentHash }}", "{{ .CompressedHash }}", created, data
+		"{{ .ContentHash }}", "{{ .CompressedHash }}", created, shrinkToFit
 }
 `
 )
