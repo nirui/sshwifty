@@ -189,6 +189,10 @@ func (s socket) Head(
 		return ErrSocketAuthFailed
 	}
 
+	// Delay the brute force attack. Use it with connection limits (via
+	// iptables or nginx etc)
+	time.Sleep(500 * time.Millisecond)
+
 	decodedKey, decodedKeyErr := base64.StdEncoding.DecodeString(key)
 
 	if decodedKeyErr != nil {
