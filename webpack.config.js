@@ -335,11 +335,11 @@ module.exports = {
       }
     }),
     new MiniCssExtractPlugin({
-      filename: "[hash]d.css",
-      chunkFilename: "[chunkhash]d.css"
+      filename: "[hash]__.css",
+      chunkFilename: "[chunkhash]__.css"
     }),
     new OptimizeCssAssetsPlugin({
-      assetNameRegExp: /\.dist\.css$/g,
+      assetNameRegExp: /\_\_\.css$/g,
       cssProcessor: require("cssnano"),
       cssProcessorPluginOptions: {
         preset: ["default", { discardComments: { removeAll: true } }]
