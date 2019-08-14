@@ -3,9 +3,7 @@
   "version": "0.0.0",
   "description": "Sshwifty Web Front-end Project",
   "main": "",
-  "dependencies": {
-    "imagemin-webpack-plugin": "^2.4.2"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@babel/core": "^7.5.5",
     "@babel/plugin-transform-runtime": "^7.5.5",
@@ -26,6 +24,7 @@
     "html-loader": "^0.5.5",
     "html-webpack-plugin": "^3.2.0",
     "html-webpack-template": "^6.2.0",
+    "imagemin-webpack-plugin": "^2.4.2",
     "mini-css-extract-plugin": "^0.5.0",
     "mocha": "^6.2.0",
     "normalize.css": "^8.0.1",
