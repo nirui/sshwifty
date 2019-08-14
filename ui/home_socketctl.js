@@ -4,8 +4,8 @@ import * as history from "./history.js";
 export function build(ctx) {
   const connectionStatusNotConnected = "Sshwifty is not connected";
   const connectionStatusConnecting =
-    "Sshwifty is connecting to it's backend server, it should only take " +
-    "than a second or two";
+    "Connecting to Sshwifty backend server. It should only take " +
+    "less than a second, or two";
   const connectionStatusDisconnected =
     "Sshwifty has disconnected from it's backend server";
   const connectionStatusConnected =
