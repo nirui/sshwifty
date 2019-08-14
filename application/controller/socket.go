@@ -349,7 +349,7 @@ func (s socket) Get(
 	}
 
 	// Start service
-	const cipherReadBufSize = 1024
+	const cipherReadBufSize = 4096
 
 	cipherReadBuf := [cipherReadBufSize]byte{}
 	cipherWriteBuf := [cipherReadBufSize]byte{}
