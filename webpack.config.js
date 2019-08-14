@@ -25,6 +25,7 @@ const webpack = require("webpack"),
   VueLoaderPlugin = require("vue-loader/lib/plugin"),
   WebappWebpackPlugin = require("webapp-webpack-plugin"),
   ManifestPlugin = require("webpack-manifest-plugin"),
+  ImageminPlugin = require("imagemin-webpack-plugin").default,
   CopyPlugin = require("copy-webpack-plugin"),
   TerserPlugin = require("terser-webpack-plugin"),
   { CleanWebpackPlugin } = require("clean-webpack-plugin");
@@ -189,16 +190,7 @@ module.exports = {
       },
       {
         test: /\.(gif|png|jpe?g|svg)$/i,
-        use: [
-          "file-loader",
-          {
-            loader: "image-webpack-loader",
-            options: {
-              bypassOnDebug: true,
-              disable: true
-            }
-          }
-        ]
+        use: ["file-loader"]
       },
       {
         test: /\.js$/,
@@ -297,8 +289,15 @@ module.exports = {
         developerURL: "https://vaguly.com",
         background: "#333",
         theme_color: "#333",
+        appleStatusBarStyle: "black",
         icons: {
+          android: { offset: 10, overlayGlow: false, overlayShadow: true },
+          appleIcon: { offset: 10, overlayGlow: false },
+          appleStartup: { offset: 10, overlayGlow: false },
           coast: false,
+          favicons: { overlayGlow: false },
+          firefox: { offset: 20, overlayGlow: false },
+          windows: { offset: 10, overlayGlow: false },
           yandex: false
         }
       }
@@ -327,6 +326,12 @@ module.exports = {
         caseSensitive: true,
         removeComments: true,
         removeEmptyElements: false
+      }
+    }),
+    new ImageminPlugin({
+      disable: process.env.NODE_ENV !== "production",
+      pngquant: {
+        quality: "30-55"
       }
     }),
     new MiniCssExtractPlugin({
