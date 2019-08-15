@@ -458,11 +458,14 @@ class Wizard {
    *
    * @param {function} builder Command builder
    * @param {subscribe.Subscribe} subs Wizard step subscriber
+   * @param {function} done Callback which will be called when the wizard
+   *                        is done
    *
    */
-  constructor(built, subs) {
+  constructor(built, subs, done) {
     this.built = built;
     this.subs = subs;
+    this.done = done;
     this.closed = false;
   }
 
@@ -483,6 +486,7 @@ class Wizard {
 
     if (n.type() === NEXT_DONE) {
       this.close();
+      this.done(n);
     }
 
     return new Next(n);
@@ -629,16 +633,18 @@ class Builder {
    * @param {controls.Controls} controls
    * @param {history.History} history
    * @param {object} config
+   * @param {function} done Callback which will be called when wizard is done
    *
    * @returns {Wizard} Command wizard
    *
    */
-  build(streams, controls, history, config) {
+  build(streams, controls, history, config, done) {
     let subs = new subscribe.Subscribe();
 
     return new Wizard(
       this.builder(new Info(this), config, streams, subs, controls, history),
-      subs
+      subs,
+      done
     );
   }
 
@@ -649,11 +655,12 @@ class Builder {
    * @param {controls.Controls} controls
    * @param {history.History} history
    * @param {string} launcher Launcher format
+   * @param {function} done Callback which will be called when launching is done
    *
    * @returns {Wizard} Command wizard
    *
    */
-  launch(streams, controls, history, launcher) {
+  launch(streams, controls, history, launcher, done) {
     let subs = new subscribe.Subscribe();
 
     return new Wizard(
@@ -665,7 +672,8 @@ class Builder {
         controls,
         history
       ),
-      subs
+      subs,
+      done
     );
   }
 

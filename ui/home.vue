@@ -226,9 +226,13 @@ export default {
     }, 1000);
 
     if (this.query.length > 1 && this.query.indexOf("+") === 0) {
-      this.connectLaunch(this.query.slice(1, this.query.length));
+      this.connectLaunch(this.query.slice(1, this.query.length), success => {
+        if (!success) {
+          return;
+        }
 
-      this.$emit("navigate-to", "");
+        this.$emit("navigate-to", "");
+      });
     }
   },
   beforeDestroy() {
@@ -315,7 +319,8 @@ export default {
             stream,
             this.controls,
             this.connector.historyRec,
-            null
+            null,
+            () => {}
           )
         };
 
@@ -355,7 +360,8 @@ export default {
             stream,
             this.controls,
             this.connector.historyRec,
-            known.data
+            known.data,
+            () => {}
           )
         };
 
@@ -375,7 +381,7 @@ export default {
         query: ll.slice(llSeparatorIdx + 1, ll.length)
       };
     },
-    connectLaunch(launcher) {
+    connectLaunch(launcher, done) {
       this.showConnectWindow();
 
       this.runConnect(stream => {
@@ -398,7 +404,10 @@ export default {
             stream,
             this.controls,
             this.connector.historyRec,
-            ll.query
+            ll.query,
+            n => {
+              done(n.data().success);
+            }
           )
         };
 
