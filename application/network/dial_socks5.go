@@ -24,6 +24,29 @@ import (
 	"golang.org/x/net/proxy"
 )
 
+var (
+	emptyTime = time.Time{}
+)
+
+type socks5Conn struct {
+	net.Conn
+
+	initialReadDeadline time.Time
+}
+
+func (s *socks5Conn) Read(b []byte) (int, error) {
+	if s.initialReadDeadline != emptyTime {
+		s.SetReadDeadline(s.initialReadDeadline)
+		s.initialReadDeadline = emptyTime
+
+		defer s.SetReadDeadline(emptyTime)
+	}
+
+	rLen, rErr := s.Conn.Read(b)
+
+	return rLen, rErr
+}
+
 // BuildSocks5Dial builds a Socks5 dialer
 func BuildSocks5Dial(
 	socks5Address string, userName string, password string) (Dial, error) {
@@ -41,15 +64,26 @@ func BuildSocks5Dial(
 		address string,
 		timeout time.Duration,
 	) (net.Conn, error) {
-		dial, dialErr := proxy.SOCKS5("tcp", socks5Address, auth, &net.Dialer{
+		dialCfg := net.Dialer{
 			Timeout:  timeout,
 			Deadline: time.Now().Add(timeout),
-		})
+		}
+
+		dial, dialErr := proxy.SOCKS5("tcp", socks5Address, auth, &dialCfg)
 
 		if dialErr != nil {
 			return nil, dialErr
 		}
 
-		return dial.Dial(network, address)
+		dialConn, dialErr := dial.Dial(network, address)
+
+		if dialErr != nil {
+			return nil, dialErr
+		}
+
+		return &socks5Conn{
+			Conn:                dialConn,
+			initialReadDeadline: dialCfg.Deadline,
+		}, nil
 	}, nil
 }
