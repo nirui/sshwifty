@@ -17,7 +17,6 @@
 
 const webpack = require("webpack"),
   { exec, spawn } = require("child_process"),
-  fs = require("fs"),
   path = require("path"),
   HtmlWebpackPlugin = require("html-webpack-plugin"),
   MiniCssExtractPlugin = require("mini-css-extract-plugin"),
