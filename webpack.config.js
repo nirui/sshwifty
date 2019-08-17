@@ -178,7 +178,7 @@ module.exports = {
       },
       {
         test: /\.html/,
-        use: ["html-loader"]
+        use: "html-loader"
       },
       {
         test: /\.vue$/,
@@ -190,7 +190,7 @@ module.exports = {
       },
       {
         test: /\.(gif|png|jpe?g|svg)$/i,
-        use: ["file-loader"]
+        use: "file-loader"
       },
       {
         test: /\.js$/,
