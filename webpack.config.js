@@ -304,11 +304,7 @@ module.exports = {
     }),
     new HtmlWebpackPlugin({
       inject: true,
-      template: require("html-webpack-template"),
-      bodyHtmlSnippet: fs.readFileSync(
-        path.join(__dirname, "ui", "body.html"),
-        "utf8"
-      ),
+      template: path.join(__dirname, "ui", "index.html"),
       meta: [
         {
           name: "description",
