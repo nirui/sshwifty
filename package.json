@@ -38,7 +38,6 @@
     "webapp-webpack-plugin": "^2.7.1",
     "webpack": "^4.36.1",
     "webpack-cli": "^3.3.6",
-    "webpack-dev-server": "^3.7.2",
     "webpack-manifest-plugin": "^2.0.4",
     "xterm": "^3.15.0-beta84",
     "xterm-addon-fit": "^0.1.0",
