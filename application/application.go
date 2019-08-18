@@ -126,6 +126,8 @@ func (a Application) run(
 	case syscall.SIGHUP:
 		return true, nil
 
+	case syscall.SIGTERM:
+		fallthrough
 	case os.Kill:
 		fallthrough
 	case os.Interrupt:
