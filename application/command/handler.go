@@ -104,7 +104,7 @@ func (h streamHandlerSender) Write(b []byte) (int, error) {
 
 // Handler client stream control
 type Handler struct {
-	cfg          CommandConfiguration
+	cfg          Configuration
 	commands     *Commands
 	receiver     rw.FetchReader
 	sender       handlerSender
@@ -117,7 +117,7 @@ type Handler struct {
 }
 
 func newHandler(
-	cfg CommandConfiguration,
+	cfg Configuration,
 	commands *Commands,
 	receiver rw.FetchReader,
 	sender io.Writer,

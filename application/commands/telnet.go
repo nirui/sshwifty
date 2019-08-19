@@ -48,7 +48,7 @@ const (
 type telnetClient struct {
 	l          log.Logger
 	w          command.StreamResponder
-	cfg        command.CommandConfiguration
+	cfg        command.Configuration
 	remoteChan chan io.WriteCloser
 	remoteConn io.WriteCloser
 	closeWait  sync.WaitGroup
@@ -57,7 +57,7 @@ type telnetClient struct {
 func newTelnet(
 	l log.Logger,
 	w command.StreamResponder,
-	cfg command.CommandConfiguration,
+	cfg command.Configuration,
 ) command.FSMMachine {
 	return &telnetClient{
 		l:          l,

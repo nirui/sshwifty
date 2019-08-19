@@ -362,7 +362,7 @@ func (s socket) Get(
 
 	senderLock := sync.Mutex{}
 	cmdExec, cmdExecErr := s.commander.New(
-		command.CommandConfiguration{
+		command.Configuration{
 			Dial:        s.commonCfg.Dialer,
 			DialTimeout: s.commonCfg.DecideDialTimeout(s.serverCfg.ReadTimeout),
 		},

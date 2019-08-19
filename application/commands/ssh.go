@@ -166,7 +166,7 @@ func (s sshRemoteConn) isValid() bool {
 type sshClient struct {
 	w                                    command.StreamResponder
 	l                                    log.Logger
-	cfg                                  command.CommandConfiguration
+	cfg                                  command.Configuration
 	remoteCloseWait                      sync.WaitGroup
 	credentialReceive                    chan []byte
 	credentialProcessed                  bool
@@ -181,7 +181,7 @@ type sshClient struct {
 func newSSH(
 	l log.Logger,
 	w command.StreamResponder,
-	cfg command.CommandConfiguration,
+	cfg command.Configuration,
 ) command.FSMMachine {
 	return &sshClient{
 		w:                                    w,

@@ -341,7 +341,7 @@ func (c *stream) reinit(
 	w streamHandlerSender,
 	l log.Logger,
 	cc *Commands,
-	cfg CommandConfiguration,
+	cfg Configuration,
 	b []byte,
 ) error {
 	hd := streamInitialHeader{}

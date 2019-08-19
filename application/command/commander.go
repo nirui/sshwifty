@@ -27,8 +27,8 @@ import (
 	"github.com/niruix/sshwifty/application/rw"
 )
 
-// CommandConfiguration contains configuration data needed to run command
-type CommandConfiguration struct {
+// Configuration contains configuration data needed to run command
+type Configuration struct {
 	Dial        network.Dial
 	DialTimeout time.Duration
 }
@@ -47,7 +47,7 @@ func New(cs Commands) Commander {
 
 // New Adds a new client
 func (c Commander) New(
-	cfg CommandConfiguration,
+	cfg Configuration,
 	receiver rw.FetchReader,
 	sender io.Writer,
 	senderLock *sync.Mutex,

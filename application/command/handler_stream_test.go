@@ -68,7 +68,7 @@ type dummyStreamCommand struct {
 func newDummyStreamCommand(
 	l log.Logger,
 	w StreamResponder,
-	cfg CommandConfiguration,
+	cfg Configuration,
 ) FSMMachine {
 	return &dummyStreamCommand{
 		lock:      sync.Mutex{},
@@ -180,7 +180,7 @@ func TestHandlerHandleStream(t *testing.T) {
 
 	lock := sync.Mutex{}
 	hhd := newHandler(
-		CommandConfiguration{},
+		Configuration{},
 		&cmds,
 		rw.NewFetchReader(readerSource),
 		wBuffer,

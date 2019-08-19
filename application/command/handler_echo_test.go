@@ -78,7 +78,7 @@ func TestHandlerHandleEcho(t *testing.T) {
 	}
 	lock := sync.Mutex{}
 	handler := newHandler(
-		CommandConfiguration{},
+		Configuration{},
 		nil,
 		rw.NewFetchReader(testDummyFetchGen(s)),
 		&w,

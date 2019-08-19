@@ -39,7 +39,7 @@ var (
 type Command func(
 	l log.Logger,
 	w StreamResponder,
-	cfg CommandConfiguration,
+	cfg Configuration,
 ) FSMMachine
 
 // Commands contains data of all commands
@@ -63,7 +63,7 @@ func (c Commands) Run(
 	id byte,
 	l log.Logger,
 	w StreamResponder,
-	cfg CommandConfiguration) (FSM, error) {
+	cfg Configuration) (FSM, error) {
 	if id > MaxCommandID {
 		return FSM{}, ErrCommandRunUndefinedCommand
 	}
