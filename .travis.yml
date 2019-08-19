@@ -51,7 +51,7 @@ after_success:
 
 before_deploy:
   - |
-    if [[ "$SSHWIFTY_DEPLOY" == yes ]]; then
+    if [[ "$SSHWIFTY_DEPLOY" == "yes" ]]; then
       curl "$ASC_URL" | gpg --import
       mkdir -p ./.tmp/deploy
       CGO_ENABLED=0 gox -ldflags "-s -w -X $VERSION_VARIABLE=$SSHWIFTY_VERSION" -osarch "$BUILD_TARGETS" -output "./.tmp/deploy/{{.Dir}}_$(echo $SSHWIFTY_VERSION)_{{.OS}}_{{.Arch}}/{{.Dir}}_{{.OS}}_{{.Arch}}"
