@@ -34,12 +34,30 @@ type socks5Conn struct {
 	initialReadDeadline time.Time
 }
 
+func (s *socks5Conn) SetDeadline(t time.Time) error {
+	s.initialReadDeadline = emptyTime
+
+	return s.Conn.SetDeadline(t)
+}
+
+func (s *socks5Conn) SetReadDeadline(t time.Time) error {
+	s.initialReadDeadline = emptyTime
+
+	return s.Conn.SetReadDeadline(t)
+}
+
+func (s *socks5Conn) SetWriteDeadline(t time.Time) error {
+	s.initialReadDeadline = emptyTime
+
+	return s.Conn.SetWriteDeadline(t)
+}
+
 func (s *socks5Conn) Read(b []byte) (int, error) {
 	if s.initialReadDeadline != emptyTime {
-		s.SetReadDeadline(s.initialReadDeadline)
+		s.Conn.SetReadDeadline(s.initialReadDeadline)
 		s.initialReadDeadline = emptyTime
 
-		defer s.SetReadDeadline(emptyTime)
+		defer s.Conn.SetReadDeadline(emptyTime)
 	}
 
 	rLen, rErr := s.Conn.Read(b)
