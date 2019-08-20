@@ -54,7 +54,7 @@
       <div id="connect-warning-msg">
         <p>
           <strong>An insecured service may steal your secrets.</strong>
-          Always exam the safty of the service before using it.
+          Always exam the safety of the service before using it.
         </p>
 
         <p>
