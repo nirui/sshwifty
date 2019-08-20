@@ -2,9 +2,9 @@
 
 ![Web Interface](Screenshot.png)
 
-Sshwifty is a SSH client that provides a web interface. You can deploy it on
+Sshwifty is a SSH client that provides a web interface. It can be deployed on
 your computer or server, so you can access SSH servers via any device that have
-a  compatible (standard) web browser.
+a compatible (standard) web browser.
 
 ![master Build status](https://travis-ci.org/niruix/sshwifty.svg?branch=master)
 
