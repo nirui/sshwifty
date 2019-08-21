@@ -295,7 +295,7 @@ const initialFieldDef = {
     type: "textdata",
     value:
       "SSH session is handled by the backend. Traffic will be decrypted " +
-      "on the backend server and then be transmitted back to your client.",
+      "on the backend server and then transmit back to your client.",
     example: "",
     verify(d) {
       return "";
