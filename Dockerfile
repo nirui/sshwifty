@@ -1,5 +1,5 @@
 # Build the build base environment
-FROM debian:sid as base
+FROM debian:sid AS base
 COPY . /tmp/.build/sshwifty
 RUN set -ex && \
     cd / && \
@@ -13,7 +13,7 @@ RUN set -ex && \
     try.sh install.sh && rm /install.sh
 
 # Build the base environment for application libraries
-FROM base as libbase
+FROM base AS libbase
 RUN set -ex && \
     cd / && \
     export PATH=$PATH:/ && \
@@ -24,7 +24,7 @@ RUN set -ex && \
         'cd /tmp/.build/sshwifty && try.sh go mod download'
 
 # Main building environment
-FROM libbase as builder
+FROM libbase AS builder
 RUN set -ex && \
     cd / && \
     export PATH=$PATH:/ && \
