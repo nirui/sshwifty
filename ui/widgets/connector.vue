@@ -257,67 +257,77 @@ export default {
       this.$emit("cancel", true);
     },
     cancel() {
+      if (this.working) {
+        return;
+      }
+
       if (this.cancelled) {
         return;
       }
 
       this.cancelled = true;
 
-      if (this.working) {
-        return;
-      }
-
       this.sendCancel();
     },
     buildCurrent(next) {
-      this.current = buildEmptyCurrent();
+      try {
+        this.current = buildEmptyCurrent();
 
-      this.working = this.getConnector().wizard.started();
+        this.working = this.getConnector().wizard.started();
 
-      this.current.type = next.type();
-      this.current.data = next.data();
+        this.current.type = next.type();
+        this.current.data = next.data();
 
-      switch (this.current.type) {
-        case command.NEXT_PROMPT:
-          let fields = this.current.data.inputs();
+        switch (this.current.type) {
+          case command.NEXT_PROMPT:
+            let fields = this.current.data.inputs();
 
-          for (let i in fields) {
-            this.current.fields.push(buildField(i, fields[i]));
-          }
+            for (let i in fields) {
+              this.current.fields.push(buildField(i, fields[i]));
+            }
 
-          this.current.actionText = this.current.data.actionText();
-          this.current.submittable = true;
-          this.current.alert = true;
-          this.current.cancellable = true;
+            this.current.actionText = this.current.data.actionText();
+            this.current.submittable = true;
+            this.current.alert = true;
+            this.current.cancellable = true;
 
-        // Fallthrough
+          // Fallthrough
 
-        case command.NEXT_WAIT:
-          this.current.title = this.current.data.title();
-          this.current.message = this.current.data.message();
-          break;
-
-        case command.NEXT_DONE:
-          this.working = false;
-          this.disabled = true;
-
-          if (!this.current.data.success()) {
-            this.current.title = this.current.data.error();
+          case command.NEXT_WAIT:
+            this.current.title = this.current.data.title();
             this.current.message = this.current.data.message();
-          } else {
-            this.$emit("done", this.current.data.data());
-          }
-          break;
+            break;
 
-        default:
-          throw new Error("Unknown command type");
+          case command.NEXT_DONE:
+            this.working = false;
+            this.disabled = true;
+
+            if (!this.current.data.success()) {
+              this.current.title = this.current.data.error();
+              this.current.message = this.current.data.message();
+            } else {
+              this.$emit("done", this.current.data.data());
+            }
+            break;
+
+          default:
+            throw new Error("Unknown command type");
+        }
+
+        if (!this.working) {
+          this.current.cancellable = false;
+        }
+
+        return next;
+      } catch (e) {
+        this.current.title = "Encountered an error";
+        this.current.message = e;
+
+        this.working = false;
+        this.disabled = true;
+
+        throw e;
       }
-
-      if (!this.working) {
-        this.current.cancellable = false;
-      }
-
-      return next;
     },
     getConnector() {
       if (this.currentConnector === null) {
@@ -377,9 +387,9 @@ export default {
       event.target.style.height = "";
       event.target.style.height = event.target.scrollHeight + "px";
     },
-    async verify(key, field, force) {
+    verify(key, field, force) {
       try {
-        field.message = "" + (await field.field.verify(field.field.value));
+        field.message = "" + field.field.verify(field.field.value);
         field.inputted = true;
         field.verified = true;
         field.error = "";
