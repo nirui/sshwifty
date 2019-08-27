@@ -1,3 +1,4 @@
+<!--
 // Sshwifty - A Web SSH client
 //
 // Copyright (C) 2019 Rui NI <nirui@gmx.com>
@@ -14,20 +15,25 @@
 //
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Error</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+  </head>
+  <body class="app-error">
+    <div id="app-loading">
+      <div id="app-loading-frame">
+        <div id="app-loading-error">
+          &times;
+        </div>
 
-package controller
-
-import (
-	"net/http"
-
-	"github.com/niruix/sshwifty/application/log"
-)
-
-func serveFailure(
-	err Error,
-	w http.ResponseWriter,
-	r *http.Request,
-	l log.Logger,
-) error {
-	return serveStaticPage("error.html", ".html", err.Code(), w, r, l)
-}
+        <h1 id="app-loading-title" class="error">
+          Server was unable to complete the request
+        </h1>
+      </div>
+    </div>
+  </body>
+</html>

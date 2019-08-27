@@ -76,14 +76,9 @@ func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case "/socket":
 		err = serveController(h.socketCtl, w, r, clientLogger)
 
-	case "/index.html":
-		fallthrough
-	case "/error.html":
-		err = ErrNotFound
-
 	default:
-		if len(r.URL.Path) > 0 {
-			err = serveStaticData(
+		if len(r.URL.Path) > 0 && strings.ToUpper(r.Method) == "GET" {
+			err = serveStaticCacheData(
 				r.URL.Path[1:],
 				staticFileExt(r.URL.Path[1:]),
 				w,

@@ -20,6 +20,7 @@ package controller
 import (
 	"mime"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -48,7 +49,7 @@ func staticFileExt(fileName string) string {
 	return strings.ToLower(fileName[extIdx:])
 }
 
-func serveStaticData(
+func serveStaticCacheData(
 	dataName string,
 	fileExt string,
 	w http.ResponseWriter,
@@ -59,20 +60,16 @@ func serveStaticData(
 		return ErrNotFound
 	}
 
-	return serveStaticPage(dataName, fileExt, w, r, l)
+	return serveStaticCachePage(dataName, fileExt, w, r, l)
 }
 
-func serveStaticPage(
+func serveStaticCachePage(
 	dataName string,
 	fileExt string,
 	w http.ResponseWriter,
 	r *http.Request,
 	l log.Logger,
 ) error {
-	if strings.ToUpper(r.Method) != "GET" {
-		return ErrControllerNotImplemented
-	}
-
 	d, dFound := staticPages[dataName]
 
 	if !dFound {
@@ -81,11 +78,13 @@ func serveStaticPage(
 
 	selectedData := d.data
 	selectedDataHash := d.dataHash
+	selectedLength := len(d.data)
 	compressEnabled := false
 
 	if clientSupportGZIP(r) && d.hasCompressed() {
 		selectedData = d.compressd
 		selectedDataHash = d.compressdHash
+		selectedLength = len(d.compressd)
 
 		compressEnabled = true
 
@@ -123,7 +122,59 @@ func serveStaticPage(
 		w.Header().Add("Content-Encoding", "gzip")
 	}
 
-	_, wErr := w.Write([]byte(selectedData))
+	w.Header().Add("Content-Length",
+		strconv.FormatInt(int64(selectedLength), 10))
+
+	_, wErr := w.Write(selectedData)
+
+	return wErr
+}
+
+func serveStaticPage(
+	dataName string,
+	fileExt string,
+	code int,
+	w http.ResponseWriter,
+	r *http.Request,
+	l log.Logger,
+) error {
+	d, dFound := staticPages[dataName]
+
+	if !dFound {
+		return ErrNotFound
+	}
+
+	selectedData := d.data
+	selectedLength := len(d.data)
+	compressEnabled := false
+
+	if clientSupportGZIP(r) && d.hasCompressed() {
+		selectedData = d.compressd
+		selectedLength = len(d.compressd)
+
+		compressEnabled = true
+
+		w.Header().Add("Vary", "Accept-Encoding")
+	}
+
+	mimeType := mime.TypeByExtension(fileExt)
+
+	if len(mimeType) > 0 {
+		w.Header().Add("Content-Type", mimeType)
+	} else {
+		w.Header().Add("Content-Type", "application/binary")
+	}
+
+	if compressEnabled {
+		w.Header().Add("Content-Encoding", "gzip")
+	}
+
+	w.Header().Add("Content-Length",
+		strconv.FormatInt(int64(selectedLength), 10))
+
+	w.WriteHeader(code)
+
+	_, wErr := w.Write(selectedData)
 
 	return wErr
 }

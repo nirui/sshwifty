@@ -323,6 +323,27 @@ module.exports = {
         removeEmptyElements: false
       }
     }),
+    new HtmlWebpackPlugin({
+      filename: "error.html",
+      inject: true,
+      template: path.join(__dirname, "ui", "error.html"),
+      meta: [
+        {
+          name: "description",
+          content: "Connect to a SSH Server from your web browser"
+        }
+      ],
+      mobile: true,
+      lang: "en-US",
+      minify: {
+        html5: true,
+        collapseWhitespace:
+          process.env.NODE_ENV === "development" ? false : true,
+        caseSensitive: true,
+        removeComments: true,
+        removeEmptyElements: false
+      }
+    }),
     new ImageminPlugin({
       disable: process.env.NODE_ENV !== "production",
       pngquant: {
