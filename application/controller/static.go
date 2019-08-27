@@ -48,54 +48,29 @@ func staticFileExt(fileName string) string {
 	return strings.ToLower(fileName[extIdx:])
 }
 
-func serveStaticPage(
+func serveStaticData(
 	dataName string,
+	fileExt string,
 	w http.ResponseWriter,
 	r *http.Request,
 	l log.Logger,
 ) error {
-	d, dFound := staticPages[dataName]
-
-	if !dFound {
+	if fileExt == ".html" || fileExt == ".htm" {
 		return ErrNotFound
 	}
 
-	selectedData := d.data
-
-	if clientSupportGZIP(r) && d.hasCompressed() {
-		selectedData = d.compressd
-
-		w.Header().Add("Vary", "Accept-Encoding")
-		w.Header().Add("Content-Encoding", "gzip")
-	}
-
-	mimeType := mime.TypeByExtension(staticFileExt(dataName))
-
-	if len(mimeType) > 0 {
-		w.Header().Add("Content-Type", mimeType)
-	} else {
-		w.Header().Add("Content-Type", "application/binary")
-	}
-
-	_, wErr := w.Write(selectedData)
-
-	return wErr
+	return serveStaticPage(dataName, fileExt, w, r, l)
 }
 
-func serveStaticData(
+func serveStaticPage(
 	dataName string,
+	fileExt string,
 	w http.ResponseWriter,
 	r *http.Request,
 	l log.Logger,
 ) error {
 	if strings.ToUpper(r.Method) != "GET" {
 		return ErrControllerNotImplemented
-	}
-
-	fileExt := staticFileExt(dataName)
-
-	if fileExt == ".html" || fileExt == ".htm" {
-		return ErrNotFound
 	}
 
 	d, dFound := staticPages[dataName]

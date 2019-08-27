@@ -132,9 +132,9 @@ module.exports = {
   devtool:
     process.env.NODE_ENV === "development" ? "inline-source-map" : "source-map",
   output: {
-    publicPath: "/assets/",
+    publicPath: "/",
     path: path.join(__dirname, ".tmp", "dist"),
-    filename: "[hash]d.js"
+    filename: "_[hash].js"
   },
   resolve: {
     alias: {
@@ -330,11 +330,11 @@ module.exports = {
       }
     }),
     new MiniCssExtractPlugin({
-      filename: "[hash]__.css",
-      chunkFilename: "[chunkhash]__.css"
+      filename: "_[hash].css",
+      chunkFilename: "_[chunkhash].css"
     }),
     new OptimizeCssAssetsPlugin({
-      assetNameRegExp: /\_\_\.css$/g,
+      assetNameRegExp: /^_.*\.css$/g,
       cssProcessor: require("cssnano"),
       cssProcessorPluginOptions: {
         preset: ["default", { discardComments: { removeAll: true } }]

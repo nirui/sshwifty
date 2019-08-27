@@ -76,20 +76,19 @@ func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case "/socket":
 		err = serveController(h.socketCtl, w, r, clientLogger)
 
-	case "/robots.txt":
+	case "/index.html":
 		fallthrough
-	case "/favicon.ico":
-		fallthrough
-	case "/README.md":
-		fallthrough
-	case "/LICENSE.md":
-		fallthrough
-	case "/DEPENDENCIES.md":
-		err = serveStaticData(r.URL.Path[1:], w, r, clientLogger)
+	case "/error.html":
+		err = ErrNotFound
 
 	default:
-		if strings.HasPrefix(r.URL.Path, "/assets/") {
-			err = serveStaticData(r.URL.Path[8:], w, r, clientLogger)
+		if len(r.URL.Path) > 0 {
+			err = serveStaticData(
+				r.URL.Path[1:],
+				staticFileExt(r.URL.Path[1:]),
+				w,
+				r,
+				clientLogger)
 		} else {
 			err = ErrNotFound
 		}

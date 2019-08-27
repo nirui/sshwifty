@@ -31,5 +31,5 @@ func serveFailure(
 ) error {
 	w.WriteHeader(err.Code())
 
-	return serveStaticPage("error.html", w, r, l)
+	return serveStaticPage("error.html", ".html", w, r, l)
 }
