@@ -41,7 +41,12 @@
           </a>
         </div>
         <div class="lst-wrap" @click="select(known.data)">
-          <h2 :title="known.data.title">{{ known.data.title }}</h2>
+          <h2
+            :title="known.data.title"
+            :class="{ highlight: known.data.session }"
+          >
+            {{ known.data.title }}
+          </h2>
           Last: {{ known.data.last.toLocaleString() }}
         </div>
       </li>

@@ -109,3 +109,7 @@
   margin-right: 5px;
   font-weight: normal;
 }
+
+#connect-known-list li h2.highlight::before {
+  color: #eee;
+}

@@ -572,8 +572,8 @@ class Builder {
    */
   constructor(command) {
     this.cid = command.id();
-    this.builder = (n, i, r, u, y, x) => {
-      return command.builder(n, i, r, u, y, x);
+    this.builder = (n, i, r, u, y, x, l) => {
+      return command.builder(n, i, r, u, y, x, l);
     };
     this.launchCmd = (n, i, r, u, y, x) => {
       return command.launch(n, i, r, u, y, x);
@@ -633,16 +633,25 @@ class Builder {
    * @param {controls.Controls} controls
    * @param {history.History} history
    * @param {object} config
+   * @param {object} session
    * @param {function} done Callback which will be called when wizard is done
    *
    * @returns {Wizard} Command wizard
    *
    */
-  build(streams, controls, history, config, done) {
+  build(streams, controls, history, config, session, done) {
     let subs = new subscribe.Subscribe();
 
     return new Wizard(
-      this.builder(new Info(this), config, streams, subs, controls, history),
+      this.builder(
+        new Info(this),
+        config,
+        session,
+        streams,
+        subs,
+        controls,
+        history
+      ),
       subs,
       done
     );

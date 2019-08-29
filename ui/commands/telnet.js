@@ -217,17 +217,19 @@ class Wizard {
    *
    * @param {command.Info} info
    * @param {object} config
+   * @param {object} session
    * @param {streams.Streams} streams
    * @param {subscribe.Subscribe} subs
    * @param {controls.Controls} controls
    * @param {history.History} history
    *
    */
-  constructor(info, config, streams, subs, controls, history) {
+  constructor(info, config, session, streams, subs, controls, history) {
     this.info = info;
     this.hasStarted = false;
     this.streams = streams;
     this.config = config;
+    this.session = session;
     this.step = subs;
     this.controls = controls;
     this.history = history;
@@ -279,9 +281,10 @@ class Wizard {
    *
    * @param {stream.Sender} sender
    * @param {object} configInput
+   * @param {object} sessionData
    *
    */
-  buildCommand(sender, configInput) {
+  buildCommand(sender, configInput, sessionData) {
     let self = this;
 
     let parsedConfig = {
@@ -333,7 +336,8 @@ class Wizard {
           configInput.host,
           new Date(),
           self.info,
-          configInput
+          configInput,
+          sessionData
         );
       },
       async "connect.failed"(rd) {
@@ -355,7 +359,7 @@ class Wizard {
       self.hasStarted = true;
 
       self.streams.request(COMMAND_ID, sd => {
-        return self.buildCommand(sd, this.config);
+        return self.buildCommand(sd, this.config, this.session);
       });
 
       return self.stepWaitForAcceptWait();
@@ -369,7 +373,7 @@ class Wizard {
         self.hasStarted = true;
 
         self.streams.request(COMMAND_ID, sd => {
-          return self.buildCommand(sd, r);
+          return self.buildCommand(sd, r, this.session);
         });
 
         self.step.resolve(self.stepWaitForAcceptWait());
@@ -399,8 +403,8 @@ export class Command {
     return "#6ac";
   }
 
-  builder(info, config, streams, subs, controls, history) {
-    return new Wizard(info, config, streams, subs, controls, history);
+  builder(info, config, session, streams, subs, controls, history) {
+    return new Wizard(info, config, session, streams, subs, controls, history);
   }
 
   launch(info, launcher, streams, subs, controls, history) {
@@ -417,6 +421,7 @@ export class Command {
       {
         host: launcher
       },
+      null,
       streams,
       subs,
       controls,

@@ -320,6 +320,7 @@ export default {
             this.controls,
             this.connector.historyRec,
             null,
+            null,
             () => {}
           )
         };
@@ -361,6 +362,7 @@ export default {
             this.controls,
             this.connector.historyRec,
             known.data,
+            known.session,
             () => {}
           )
         };

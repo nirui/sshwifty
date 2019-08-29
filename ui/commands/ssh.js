@@ -435,17 +435,23 @@ class Wizard {
    *
    * @param {command.Info} info
    * @param {object} config
+   * @param {object} session
    * @param {streams.Streams} streams
    * @param {subscribe.Subscribe} subs
    * @param {controls.Controls} controls
    * @param {history.History} history
    *
    */
-  constructor(info, config, streams, subs, controls, history) {
+  constructor(info, config, session, streams, subs, controls, history) {
     this.info = info;
     this.hasStarted = false;
     this.streams = streams;
     this.config = config;
+    this.session = session
+      ? session
+      : {
+          credential: ""
+        };
     this.step = subs;
     this.controls = controls;
     this.history = history;
@@ -504,14 +510,16 @@ class Wizard {
    *
    * @param {stream.Sender} sender
    * @param {object} configInput
+   * @param {object} sessionData
    *
    */
-  buildCommand(sender, configInput) {
+  buildCommand(sender, configInput, sessionData) {
     let self = this;
 
     let config = {
       user: common.strToUint8Array(configInput.user),
       auth: getAuthMethodFromStr(configInput.authentication),
+      credential: sessionData.credential,
       host: address.parseHostPort(configInput.host, DEFAULT_PORT),
       fingerprint: configInput.fingerprint
     };
@@ -581,7 +589,8 @@ class Wizard {
           configInput.user + "@" + configInput.host,
           new Date(),
           self.info,
-          configInput
+          configInput,
+          sessionData
         );
       },
       async "connect.fingerprint"(rd, sd) {
@@ -607,7 +616,11 @@ class Wizard {
         );
       },
       async "connect.credential"(rd, sd) {
-        self.step.resolve(self.stepCredentialPrompt(rd, sd, config));
+        self.step.resolve(
+          self.stepCredentialPrompt(rd, sd, config, newCredential => {
+            sessionData.credential = newCredential;
+          })
+        );
       },
       "@stdout"(rd) {},
       "@stderr"(rd) {},
@@ -630,7 +643,7 @@ class Wizard {
       self.hasStarted = true;
 
       self.streams.request(COMMAND_ID, sd => {
-        return self.buildCommand(sd, this.config);
+        return self.buildCommand(sd, this.config, this.session);
       });
 
       return self.stepWaitForAcceptWait();
@@ -644,12 +657,16 @@ class Wizard {
         self.hasStarted = true;
 
         self.streams.request(COMMAND_ID, sd => {
-          return self.buildCommand(sd, {
-            user: r.user,
-            authentication: r.authentication,
-            host: r.host,
-            fingerprint: ""
-          });
+          return self.buildCommand(
+            sd,
+            {
+              user: r.user,
+              authentication: r.authentication,
+              host: r.host,
+              fingerprint: ""
+            },
+            this.session
+          );
         });
 
         self.step.resolve(self.stepWaitForAcceptWait());
@@ -712,9 +729,18 @@ class Wizard {
     );
   }
 
-  async stepCredentialPrompt(rd, sd, config) {
+  async stepCredentialPrompt(rd, sd, config, newCredential) {
     let self = this,
       fields = [];
+
+    if (config.credential.length > 0) {
+      sd.send(
+        CLIENT_CONNECT_RESPOND_CREDENTIAL,
+        new TextEncoder("utf-8").encode(config.credential)
+      );
+
+      return this.stepContinueWaitForEstablishWait();
+    }
 
     switch (config.auth) {
       case AUTHMETHOD_PASSPHRASE:
@@ -742,6 +768,8 @@ class Wizard {
           CLIENT_CONNECT_RESPOND_CREDENTIAL,
           new TextEncoder("utf-8").encode(vv)
         );
+
+        newCredential(vv);
 
         self.step.resolve(self.stepContinueWaitForEstablishWait());
       },
@@ -779,8 +807,8 @@ export class Command {
     return "#3c8";
   }
 
-  builder(info, config, streams, subs, controls, history) {
-    return new Wizard(info, config, streams, subs, controls, history);
+  builder(info, config, session, streams, subs, controls, history) {
+    return new Wizard(info, config, session, streams, subs, controls, history);
   }
 
   launch(info, launcher, streams, subs, controls, history) {
@@ -811,6 +839,7 @@ export class Command {
         host: host,
         authentication: auth
       },
+      null,
       streams,
       subs,
       controls,

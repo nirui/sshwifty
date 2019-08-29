@@ -40,9 +40,10 @@ export class History {
    * @param {command.Info} info Command info
    * @param {Date} lastUsed Last used
    * @param {object} data Data
+   * @param {object} sessionData Data which only available for current session
    *
    */
-  save(uname, title, lastUsed, info, data) {
+  save(uname, title, lastUsed, info, data, sessionData) {
     for (let i in this.records) {
       if (this.records[i].uname !== uname) {
         continue;
@@ -58,7 +59,8 @@ export class History {
       type: info.name(),
       color: info.color(),
       last: lastUsed.getTime(),
-      data: data
+      data: data,
+      session: sessionData
     });
 
     if (this.records.length > this.maxItems) {
@@ -68,7 +70,28 @@ export class History {
       );
     }
 
-    this.saver(this, this.records);
+    this.store();
+  }
+
+  /**
+   * Save current records to storage
+   *
+   */
+  store() {
+    let r = [];
+
+    for (let i in this.records) {
+      r.push({
+        uname: this.records[i].uname,
+        title: this.records[i].title,
+        type: this.records[i].type,
+        color: this.records[i].color,
+        last: this.records[i].last,
+        data: this.records[i].data
+      });
+    }
+
+    this.saver(this, r);
   }
 
   /**
@@ -106,7 +129,8 @@ export class History {
         type: this.records[i].type,
         color: this.records[i].color,
         last: new Date(this.records[i].last),
-        data: this.records[i].data
+        data: this.records[i].data,
+        session: this.records[i].session
       });
     }
 
