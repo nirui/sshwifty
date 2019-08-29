@@ -415,11 +415,11 @@ export default {
 
       return field.verified;
     },
-    async verifyAll() {
+    verifyAll() {
       let verified = true;
 
       for (let i in this.current.fields) {
-        if (await this.verify(i, this.current.fields[i], true)) {
+        if (this.verify(i, this.current.fields[i], true)) {
           continue;
         }
 
@@ -437,7 +437,7 @@ export default {
         return;
       }
 
-      if (!(await this.verifyAll())) {
+      if (!this.verifyAll()) {
         return;
       }
 
