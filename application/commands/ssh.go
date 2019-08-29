@@ -72,7 +72,7 @@ type sshAuthMethodBuilder func(b []byte) []ssh.AuthMethod
 // Errors
 var (
 	ErrSSHAuthCancelled = errors.New(
-		"Authenication has been cancelled")
+		"Authentication has been cancelled")
 
 	ErrSSHInvalidAuthMethod = errors.New(
 		"Invalid auth method")
