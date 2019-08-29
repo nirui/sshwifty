@@ -32,8 +32,8 @@ const webpack = require("webpack"),
 let appSpawnProc = null,
   appBuildProc = null;
 
-const killAppSpawnProc = then => {
-  if (appSpawnProc === null) {
+const killSpawnProc = (proc, then) => {
+  if (proc === null) {
     then();
 
     return;
@@ -41,23 +41,21 @@ const killAppSpawnProc = then => {
 
   process.stdout.write("Shutdown application ...\n");
 
-  process.kill(-appSpawnProc.proc.pid, "SIGINT");
+  process.kill(-proc.proc.pid, "SIGINT");
 
   let forceKill = setTimeout(() => {
-    process.kill(-appSpawnProc.proc.pid);
+    process.kill(-proc.proc.pid);
   }, 3000);
 
-  appSpawnProc.waiter.then(() => {
+  proc.waiter.then(() => {
     clearTimeout(forceKill);
-
-    appSpawnProc = null;
 
     then();
   });
 };
 
 const startAppSpawnProc = onExit => {
-  killAppSpawnProc(() => {
+  killSpawnProc(appSpawnProc, () => {
     let mEnv = {};
 
     for (let i in process.env) {
@@ -97,6 +95,7 @@ const startAppSpawnProc = onExit => {
 
           onExit();
           resolve(n);
+          appSpawnProc = null;
         });
       });
 
@@ -117,7 +116,7 @@ const killAllProc = () => {
     appBuildProc = null;
   }
 
-  killAppSpawnProc(() => {
+  killSpawnProc(appSpawnProc, () => {
     process.exit(0);
   });
 };
@@ -239,19 +238,20 @@ module.exports = {
       apply: compiler => {
         compiler.hooks.afterEmit.tap("AfterEmitPlugin", () => {
           if (appBuildProc !== null) {
+            let aBuildProc = appBuildProc;
+            appBuildProc = null;
+
             process.stdout.write(
               "Killing the previous source code generater ...\n"
             );
 
-            appBuildProc.stdin.end();
-            appBuildProc.stdout.destroy();
-            appBuildProc.stderr.destroy();
-            appBuildProc.kill();
-
-            appBuildProc = null;
+            aBuildProc.stdin.end();
+            aBuildProc.stdout.destroy();
+            aBuildProc.stderr.destroy();
+            aBuildProc.kill();
           }
 
-          killAppSpawnProc(() => {
+          killSpawnProc(appSpawnProc, () => {
             process.stdout.write("Generating source code ...\n");
 
             appBuildProc = exec(
