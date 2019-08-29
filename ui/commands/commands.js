@@ -675,7 +675,7 @@ class Builder {
     return new Wizard(
       this.launchCmd(
         new Info(this),
-        launcher,
+        decodeURI(launcher),
         streams,
         subs,
         controls,
@@ -694,7 +694,7 @@ class Builder {
    * @return {string} Launcher string
    */
   launcher(config) {
-    return this.name() + ":" + this.launcherCmd(config);
+    return this.name() + ":" + encodeURI(this.launcherCmd(config));
   }
 }
 
