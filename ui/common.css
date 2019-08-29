@@ -413,6 +413,7 @@ body {
 }
 
 .form1 > fieldset .field > input[type="text"],
+.form1 > fieldset .field > input[type="file"],
 .form1 > fieldset .field > input[type="email"],
 .form1 > fieldset .field > input[type="number"],
 .form1 > fieldset .field > input[type="search"],
@@ -455,6 +456,7 @@ body {
 }
 
 .form1 > fieldset .field.error > input[type="text"],
+.form1 > fieldset .field.error > input[type="file"],
 .form1 > fieldset .field.error > input[type="email"],
 .form1 > fieldset .field.error > input[type="number"],
 .form1 > fieldset .field.error > input[type="search"],

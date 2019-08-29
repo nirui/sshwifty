@@ -323,13 +323,14 @@ const initialFieldDef = {
   },
   "Private Key": {
     name: "Private Key",
-    description: "Like the one inside ~/.ssh/id_rsa, can&apos;t be encrypted",
-    type: "textarea",
+    description:
+      "Like the one inside ~/.ssh/id_rsa, can&apos;t be encrypted<br /><br />" +
+      "To decrypt the Private Key, use command: <i>" +
+      "openssl rsa -in /path/to/encrypted_private_key -out " +
+      "/path/to/decrypted_private_key</i>",
+    type: "textfile",
     value: "",
-    example:
-      "-----BEGIN RSA PRIVATE KEY-----\r\n" +
-      "..... yBQZobkBQ50QqhDivQz4i1Pb33Z0Znjnzjoid4 ....\r\n" +
-      "-----END RSA PRIVATE KEY-----",
+    example: "",
     verify(d) {
       if (d.length <= 0) {
         throw new Error("Private Key must be specified");
@@ -341,7 +342,29 @@ const initialFieldDef = {
         );
       }
 
-      return "We'll login with this private key";
+      let lines = d.split("\n");
+
+      for (let i in lines) {
+        if (lines[i].indexOf("-") === 0) {
+          continue;
+        }
+
+        if (lines[i].indexOf("Proc-Type: 4,ENCRYPTED") === 0) {
+          throw new Error("Cannot use encrypted Private Key file");
+        }
+
+        if (lines[i].indexOf(":") > 0) {
+          continue;
+        }
+
+        if (lines[i].indexOf("MII") < 0) {
+          throw new Error("Cannot use encrypted Private Key file");
+        }
+
+        break;
+      }
+
+      return "We'll login with this Private Key";
     }
   },
   Authentication: {
@@ -691,15 +714,15 @@ class Wizard {
 
   async stepCredentialPrompt(rd, sd, config) {
     let self = this,
-      fieldName = "";
+      fields = [];
 
     switch (config.auth) {
       case AUTHMETHOD_PASSPHRASE:
-        fieldName = "Passphrase";
+        fields = [{ name: "Passphrase" }];
         break;
 
       case AUTHMETHOD_PRIVATE_KEY:
-        fieldName = "Private Key";
+        fields = [{ name: "Private Key" }];
         break;
 
       default:
@@ -713,7 +736,7 @@ class Wizard {
       "Please input your credential",
       "Login",
       r => {
-        let vv = r[fieldName.toLowerCase()];
+        let vv = r[fields[0].name.toLowerCase()];
 
         sd.send(
           CLIENT_CONNECT_RESPOND_CREDENTIAL,
@@ -732,7 +755,7 @@ class Wizard {
           )
         );
       },
-      command.fields(initialFieldDef, [{ name: fieldName }])
+      command.fields(initialFieldDef, fields)
     );
   }
 }

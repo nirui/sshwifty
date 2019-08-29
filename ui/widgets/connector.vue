@@ -114,6 +114,29 @@
           @change="verify(key, field, true)"
         ></textarea>
 
+        <input
+          v-if="field.field.type === 'textfile'"
+          type="file"
+          autocomplete="off"
+          :placeholder="field.field.example"
+          :name="field.field.name + '-file'"
+          :autofocus="field.autofocus"
+          @change="importFile($event.target, field)"
+        />
+        <input
+          v-if="field.field.type === 'textfile'"
+          v-model="field.field.value"
+          v-focus="field.autofocus"
+          type="text"
+          autocomplete="off"
+          :name="field.field.name"
+          :placeholder="field.field.example"
+          :autofocus="field.autofocus"
+          style="display: none"
+          @input="verify(key, field, false)"
+          @change="verify(key, field, true)"
+        />
+
         <div v-if="field.field.type === 'textdata'" class="textinfo">
           <div class="info">{{ field.field.value }}</div>
         </div>
@@ -386,6 +409,36 @@ export default {
       event.target.style.overflowY = "hidden";
       event.target.style.height = "";
       event.target.style.height = event.target.scrollHeight + "px";
+    },
+    importFile(el, field) {
+      if (el.files.length <= 0) {
+        return;
+      }
+
+      el.disabled = "disabled";
+
+      let r = new FileReader();
+
+      r.onload = () => {
+        let s = el.nextSibling;
+
+        for (;;) {
+          if (s.tagName !== "INPUT") {
+            s = s.nextSibling;
+
+            continue;
+          }
+
+          field.field.value = r.result;
+          s.dispatchEvent(new Event("change"));
+
+          break;
+        }
+
+        el.disabled = "";
+      };
+
+      r.readAsText(el.files[0], "utf-8");
     },
     verify(key, field, force) {
       try {
