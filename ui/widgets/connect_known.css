@@ -108,8 +108,11 @@
   font-size: 0.8em;
   margin-right: 5px;
   font-weight: normal;
+  padding: 0 2px;
+  border-radius: 2px;
 }
 
 #connect-known-list li h2.highlight::before {
   color: #eee;
+  background: #555;
 }
