@@ -324,10 +324,17 @@ const initialFieldDef = {
   "Private Key": {
     name: "Private Key",
     description:
-      "Like the one inside ~/.ssh/id_rsa, can&apos;t be encrypted<br /><br />" +
-      "To decrypt the Private Key, use command: <i>" +
-      "openssl rsa -in /path/to/encrypted_private_key -out " +
-      "/path/to/decrypted_private_key</i>",
+      'Like the one inside <i style="color: #fff; font-style: normal;">' +
+      "~/.ssh/id_rsa</i>, can&apos;t be encrypted<br /><br />" +
+      'To decrypt the Private Key, use command: <i style="color: #fff;' +
+      ' font-style: normal;">ssh-keygen -f /path/to/private_key -p</i><br />' +
+      "<br />" +
+      "It is strongly recommanded to use one Private Key per SSH server if " +
+      "the Private Key will be submitted to Sshwifty. To generate a new SSH " +
+      'key pair, use command <i style="color: #fff; font-style: normal;">' +
+      "ssh-keygen -o -f /path/to/my_server_key</i> and then deploy the " +
+      'generated <i style="color: #fff; font-style: normal;">' +
+      "/path/to/my_server_key.pub</i> file onto the target SSH server",
     type: "textfile",
     value: "",
     example: "",
@@ -342,10 +349,17 @@ const initialFieldDef = {
         );
       }
 
-      let lines = d.split("\n");
+      const lines = d.trim().split("\n");
+      let firstLineReaded = false;
 
       for (let i in lines) {
-        if (lines[i].indexOf("-") === 0) {
+        if (!firstLineReaded && lines[i].indexOf("-") === 0) {
+          firstLineReaded = true;
+
+          if (lines[i].indexOf("RSA") < 0) {
+            break;
+          }
+
           continue;
         }
 
