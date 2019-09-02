@@ -353,11 +353,13 @@ const initialFieldDef = {
       let firstLineReaded = false;
 
       for (let i in lines) {
-        if (!firstLineReaded && lines[i].indexOf("-") === 0) {
-          firstLineReaded = true;
+        if (!firstLineReaded) {
+          if (lines[i].indexOf("-") === 0) {
+            firstLineReaded = true;
 
-          if (lines[i].indexOf("RSA") < 0) {
-            break;
+            if (lines[i].indexOf("RSA") <= 0) {
+              break;
+            }
           }
 
           continue;
