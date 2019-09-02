@@ -419,6 +419,8 @@ func (d *sshClient) dialRemote(
 	c, chans, reqs, err := ssh.NewClientConn(&sshConn, addr, config)
 
 	if err != nil {
+		sshConn.Close()
+
 		return nil, nil, err
 	}
 
