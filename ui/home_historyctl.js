@@ -1,10 +1,16 @@
 import { History } from "./commands/history.js";
 
 export function build(ctx) {
-  let rec = JSON.parse(localStorage.getItem("knowns"));
+  let rec = [];
 
-  if (!rec) {
-    rec = [];
+  try {
+    rec = JSON.parse(localStorage.getItem("knowns"));
+
+    if (!rec) {
+      rec = [];
+    }
+  } catch (e) {
+    alert("Unable to load data of Known remotes: " + e);
   }
 
   return new History(
