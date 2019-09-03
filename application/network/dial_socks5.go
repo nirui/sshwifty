@@ -18,6 +18,7 @@
 package network
 
 import (
+	"context"
 	"net"
 	"time"
 
@@ -28,41 +29,30 @@ var (
 	emptyTime = time.Time{}
 )
 
-type socks5Conn struct {
-	net.Conn
-
-	initialReadDeadline time.Time
+type socks5Dial struct {
+	net.Dialer
 }
 
-func (s *socks5Conn) SetDeadline(t time.Time) error {
-	s.initialReadDeadline = emptyTime
+func (s socks5Dial) Dial(
+	network, address string) (net.Conn, error) {
+	conn, dErr := s.Dialer.Dial(network, address)
 
-	return s.Conn.SetDeadline(t)
-}
-
-func (s *socks5Conn) SetReadDeadline(t time.Time) error {
-	s.initialReadDeadline = emptyTime
-
-	return s.Conn.SetReadDeadline(t)
-}
-
-func (s *socks5Conn) SetWriteDeadline(t time.Time) error {
-	s.initialReadDeadline = emptyTime
-
-	return s.Conn.SetWriteDeadline(t)
-}
-
-func (s *socks5Conn) Read(b []byte) (int, error) {
-	if s.initialReadDeadline != emptyTime {
-		s.Conn.SetReadDeadline(s.initialReadDeadline)
-		s.initialReadDeadline = emptyTime
-
-		defer s.Conn.SetReadDeadline(emptyTime)
+	if dErr == nil {
+		conn.SetReadDeadline(time.Now().Add(s.Dialer.Timeout))
 	}
 
-	rLen, rErr := s.Conn.Read(b)
+	return conn, dErr
+}
 
-	return rLen, rErr
+func (s socks5Dial) DialContext(
+	ctx context.Context, network, address string) (net.Conn, error) {
+	conn, dErr := s.Dialer.DialContext(ctx, network, address)
+
+	if dErr == nil {
+		conn.SetReadDeadline(time.Now().Add(s.Dialer.Timeout))
+	}
+
+	return conn, dErr
 }
 
 // BuildSocks5Dial builds a Socks5 dialer
@@ -82,9 +72,11 @@ func BuildSocks5Dial(
 		address string,
 		timeout time.Duration,
 	) (net.Conn, error) {
-		dialCfg := net.Dialer{
-			Timeout:  timeout,
-			Deadline: time.Now().Add(timeout),
+		dialCfg := socks5Dial{
+			Dialer: net.Dialer{
+				Timeout:  timeout,
+				Deadline: time.Now().Add(timeout),
+			},
 		}
 
 		dial, dialErr := proxy.SOCKS5("tcp", socks5Address, auth, &dialCfg)
@@ -99,9 +91,8 @@ func BuildSocks5Dial(
 			return nil, dialErr
 		}
 
-		return &socks5Conn{
-			Conn:                dialConn,
-			initialReadDeadline: dialCfg.Deadline,
-		}, nil
+		dialConn.SetReadDeadline(emptyTime)
+
+		return dialConn, nil
 	}, nil
 }
