@@ -347,7 +347,7 @@ module.exports = {
     new ImageminPlugin({
       disable: process.env.NODE_ENV !== "production",
       pngquant: {
-        quality: "15-25"
+        quality: "10-20"
       }
     }),
     new MiniCssExtractPlugin({
