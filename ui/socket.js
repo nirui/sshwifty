@@ -319,7 +319,7 @@ export class Socket {
         }
       });
 
-      streamHandler.serve();
+      streamHandler.serve().catch(() => {});
 
       callbacks.connected();
 
