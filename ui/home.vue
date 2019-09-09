@@ -51,6 +51,7 @@
         tabs-class="tab1"
         list-trigger-class="icon icon-more1"
         @current="switchTab"
+        @retap="retapTab"
         @list="showTabsWindow"
         @close="closeTab"
       ></tabs>
@@ -135,6 +136,7 @@
       tabs-class="tab1 tab1-list"
       @display="windows.tabs = $event"
       @current="switchTab"
+      @retap="retapTab"
       @close="closeTab"
     ></tab-window></div
 ></template>
@@ -471,6 +473,9 @@ export default {
 
       this.tab.tabs[this.tab.current].indicator.updated = false;
       await this.tab.tabs[this.tab.current].control.enabled();
+    },
+    async retapTab(tab) {
+      await this.tab.tabs[tab].control.retap();
     },
     async closeTab(index) {
       if (this.tab.tabs[index].status.closing) {

@@ -33,9 +33,9 @@
             ? tabInfo.control.activeColor()
             : tabInfo.control.color())
       "
-      @click="switchTo(idx)"
+      @click.self="switchTab(idx)"
     >
-      <span class="title" :title="tabInfo.name">
+      <span class="title" :title="tabInfo.name" @click="switchTab(idx)">
         <span
           class="type"
           :title="tabInfo.info.name()"
@@ -60,7 +60,7 @@ export default {
     },
     tab: {
       type: Number,
-      default: 0
+      default: -1
     },
     tabs: {
       type: Array,
@@ -73,18 +73,18 @@ export default {
   },
   watch: {
     tab(newVal) {
-      this.switchTo(newVal);
+      this.switchTabTo(newVal);
     },
     tabs(newVal) {
       if (newVal.length > this.tab) {
         return;
       }
 
-      this.switchTo(newVal.length - 1);
+      this.switchTabTo(newVal.length - 1);
     }
   },
   methods: {
-    switchTo(index) {
+    switchTabTo(index) {
       if (index < 0 || index >= this.tabs.length) {
         return;
       }
@@ -94,6 +94,19 @@ export default {
       }
 
       this.$emit("current", index);
+    },
+    switchTab(index) {
+      if (index < 0 || index >= this.tabs.length) {
+        return;
+      }
+
+      if (this.tab === index) {
+        this.$emit("retap", index);
+
+        return;
+      }
+
+      return this.switchTabTo(index);
     },
     closeAt(index) {
       this.$emit("close", index);

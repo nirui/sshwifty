@@ -32,6 +32,7 @@
       :tabs="tabs"
       :tabs-class="tabsClass"
       @current="$emit('current', $event)"
+      @retap="$emit('retap', $event)"
       @close="$emit('close', $event)"
     ></tab-list>
   </window>
@@ -55,7 +56,7 @@ export default {
     },
     tab: {
       type: Number,
-      default: 0
+      default: -1
     },
     tabs: {
       type: Array,

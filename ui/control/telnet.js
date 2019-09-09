@@ -399,6 +399,8 @@ class Control {
     this.enable = false;
   }
 
+  retap() {}
+
   receive() {
     return this.subs.subscribe();
   }
