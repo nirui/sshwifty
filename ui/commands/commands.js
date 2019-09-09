@@ -16,7 +16,6 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import Exception from "./exception.js";
-import * as stream from "../stream/streams.js";
 import * as subscribe from "../stream/subscribe.js";
 
 export const NEXT_PROMPT = 1;
