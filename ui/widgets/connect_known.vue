@@ -19,7 +19,7 @@
 
 <template>
   <div id="connect-known-list">
-    <ul class="lstcl1">
+    <ul class="hlst lstcl1">
       <li v-for="(known, kk) in knownList" :key="kk">
         <div class="labels">
           <span class="type" :style="'background-color: ' + known.data.color">

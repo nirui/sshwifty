@@ -154,42 +154,19 @@ body {
 }
 
 /* List */
-.lstcl1 {
+.lst-nostyle {
   list-style: none;
   list-style-position: inside;
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  overflow: auto;
 }
 
-.lstcl1 > li {
-  width: 33%;
+.hlst {
+}
+
+.hlst > li {
   float: left;
-  white-space: nowrap;
-}
-
-.lstcl1 > li .lst-wrap {
-  padding: 10px;
-  margin: 10px;
-  background: #333;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  box-shadow: 2px 2px 0 0 #222;
-}
-
-.lstcl1 > li .lst-wrap:hover {
-  background: #3a3a3a;
-  box-shadow: 2px 2px 0 0 #222;
-}
-
-.lstcl1 > li .lst-wrap:active {
-  background: #333;
 }
 
 .lst1 {
-  list-style: none;
-  list-style-position: inside;
   margin: 0;
   padding: 0;
   width: 100%;
@@ -205,6 +182,38 @@ body {
 
 .lst1 > li .lst-wrap {
   padding: 10px;
+}
+
+.hlst.lstcl1 {
+  list-style: none;
+  list-style-position: inside;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  overflow: auto;
+}
+
+.hlst.lstcl1 > li {
+  width: 33%;
+  white-space: nowrap;
+}
+
+.hlst.lstcl1 > li .lst-wrap {
+  padding: 10px;
+  margin: 10px;
+  background: #333;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  box-shadow: 2px 2px 0 0 #222;
+}
+
+.hlst.lstcl1 > li .lst-wrap:hover {
+  background: #3a3a3a;
+  box-shadow: 2px 2px 0 0 #222;
+}
+
+.hlst.lstcl1 > li .lst-wrap:active {
+  background: #333;
 }
 
 /* Icon */
