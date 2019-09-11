@@ -319,7 +319,7 @@ class Control {
     this.sender = data.send;
     this.closer = data.close;
     this.closed = false;
-    this.echoEnabled = true;
+    this.localEchoEnabled = true;
     this.subs = new subscribe.Subscribe();
     this.enable = false;
     this.windowDim = {
@@ -336,13 +336,7 @@ class Control {
       },
       {
         setEcho(newVal) {
-          if (newVal) {
-            self.echoEnabled = false;
-
-            return;
-          }
-
-          self.echoEnabled = true;
+          self.localEchoEnabled = !newVal;
         },
         getWindowDim() {
           return self.windowDim;
@@ -373,7 +367,7 @@ class Control {
   }
 
   echo() {
-    return this.echoEnabled;
+    return this.localEchoEnabled;
   }
 
   resize(dim) {
