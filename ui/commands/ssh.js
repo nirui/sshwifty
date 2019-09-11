@@ -27,7 +27,7 @@ import * as history from "./history.js";
 import * as strings from "./string.js";
 import Exception from "./exception.js";
 
-const AUTHMETHOD_NONE = 0x01;
+const AUTHMETHOD_NONE = 0x00;
 const AUTHMETHOD_PASSPHRASE = 0x01;
 const AUTHMETHOD_PRIVATE_KEY = 0x02;
 
