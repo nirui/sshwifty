@@ -20,4 +20,116 @@
 @charset "utf-8";
 
 #home-content > .screen > .screen-screen > .screen-console {
+  position: relative;
+}
+
+#home-content > .screen > .screen-screen > .screen-console > .console-toolbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  max-height: 100%;
+  overflow: auto;
+  background: #222;
+  color: #fff;
+  box-shadow: 0 0 5px #0006;
+}
+
+#home-content
+  > .screen
+  > .screen-screen
+  > .screen-console
+  > .console-toolbar
+  > .console-toolbar-item {
+  padding: 15px;
+  float: left;
+}
+
+#home-content
+  > .screen
+  > .screen-screen
+  > .screen-console
+  > .console-toolbar
+  > .console-toolbar-item
+  .tb-title {
+  font-size: 0.8em;
+  text-transform: uppercase;
+  margin: 0 0 5px 10px;
+  color: #fff9;
+  text-shadow: 1px 1px 1px #0005;
+}
+
+#home-content
+  > .screen
+  > .screen-screen
+  > .screen-console
+  > .console-toolbar
+  > .console-toolbar-item
+  .tb-item {
+  display: block;
+  font-size: 0.7em;
+  padding: 10px;
+  text-decoration: none;
+  color: inherit;
+  border-radius: 3px;
+}
+
+#home-content
+  > .screen
+  > .screen-screen
+  > .screen-console
+  > .console-toolbar
+  > .console-toolbar-item
+  .tb-item:active {
+  background: #fff3;
+}
+
+#home-content
+  > .screen
+  > .screen-screen
+  > .screen-console
+  > .console-toolbar
+  > .console-toolbar-item
+  .tb-item
+  > .tb-key-icon {
+  margin: 0 5px;
+  background: #fff2;
+  color: #fff;
+}
+
+#home-content
+  > .screen
+  > .screen-screen
+  > .screen-console
+  > .console-toolbar
+  > .console-toolbar-item
+  .tb-item
+  > .tb-key-icon:first-child {
+  margin-left: 0;
+}
+
+#home-content
+  > .screen
+  > .screen-screen
+  > .screen-console
+  > .console-toolbar
+  > .console-toolbar-item
+  .tb-item
+  > .tb-key-icon:last-child {
+  margin-right: 0;
+}
+
+#home-content
+  > .screen
+  > .screen-screen
+  > .screen-console
+  > .console-toolbar
+  > .console-toolbar-item
+  .tb-item:active
+  .tb-key-icon {
+  opacity: 0.5;
+}
+
+#home-content > .screen > .screen-screen > .screen-console > .console-console {
 }

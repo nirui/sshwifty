@@ -99,7 +99,7 @@ const hostnameCharators = {
  * @returns {boolean} Return true if given string is all number, false otherwise
  *
  */
-function isNumber(d) {
+export function isNumber(d) {
   for (let i = 0; i < d.length; i++) {
     if (!numCharators[d[i]]) {
       return false;
@@ -117,7 +117,7 @@ function isNumber(d) {
  * @returns {boolean} Return true if given string is all hex, false otherwise
  *
  */
-function isHex(d) {
+export function isHex(d) {
   let dd = d.toLowerCase();
 
   for (let i = 0; i < dd.length; i++) {

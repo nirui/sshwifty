@@ -448,6 +448,7 @@ export default {
           name: data.name,
           info: data.info,
           control: data.control,
+          toolbar: false,
           indicator: {
             error: "",
             updated: false
@@ -475,7 +476,9 @@ export default {
       await this.tab.tabs[this.tab.current].control.enabled();
     },
     async retapTab(tab) {
-      await this.tab.tabs[tab].control.retap();
+      this.tab.tabs[tab].toolbar = !this.tab.tabs[tab].toolbar;
+
+      await this.tab.tabs[tab].control.retap(this.tab.tabs[tab].toolbar);
     },
     async closeTab(index) {
       if (this.tab.tabs[index].status.closing) {

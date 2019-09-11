@@ -399,7 +399,7 @@ class Control {
     this.enable = false;
   }
 
-  retap() {}
+  retap(isOn) {}
 
   receive() {
     return this.subs.subscribe();

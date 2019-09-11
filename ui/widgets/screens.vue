@@ -23,12 +23,13 @@
 
     <div
       v-for="(screenInfo, idx) in screens"
-      v-if="screens.length > 0"
       :key="screenInfo.id"
       :style="'visibility: ' + (screen === idx ? 'visible' : 'hidden')"
       class="screen"
       style="top: 0; right: 0; left: 0; bottom: 0; padding： 0; margin: 0; overflow: auto; position: absolute;"
     >
+      <h1 style="display:none;">Main Interface</h1>
+
       <div v-if="screenInfo.indicator.error.length > 0" class="screen-error">
         {{ screenInfo.indicator.error }}
       </div>
@@ -39,6 +40,9 @@
           :active="screen === idx"
           :control="screenInfo.control"
           :change="screenInfo.indicator"
+          :toolbar="screenInfo.toolbar"
+          :style="'background-color: ' + screenInfo.control.activeColor()"
+          style="top: 0; right: 0; left: 0; bottom: 0; padding： 0; margin: 0; position: absolute; overflow: hidden"
           @stopped="stopped(idx, $event)"
           @updated="updated(idx)"
         ></component>

@@ -276,6 +276,15 @@ body {
   content: "\25CF";
 }
 
+.icon.icon-keyboardkey1 {
+  background: #fff;
+  color: #999;
+  padding: 4px 6px;
+  display: inline-block;
+  border-radius: 3px;
+  box-shadow: 1px 1px 0 2px #0003;
+}
+
 /* Windows */
 .window {
   position: absolute;

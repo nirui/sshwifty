@@ -18,21 +18,58 @@
 -->
 
 <template>
-  <div
-    class="screen-console"
-    :style="'background-color: ' + control.activeColor()"
-    style="top: 0; right: 0; left: 0; bottom: 0; padding： 0; margin: 0; position: absolute; overflow: hidden"
-  />
+  <div class="screen-console">
+    <div
+      class="console-console"
+      style="top: 0; right: 0; left: 0; bottom: 0; padding： 0; margin: 0; z-index: 0; position: absolute; overflow: hidden"
+    >
+      <h2 style="display:none;">Console</h2>
+    </div>
+
+    <!--
+      Tell you this: the background transparent below is probably the most
+      important transparent setting in the entire application. Make sure user
+      can see through it so they can operate the console while keep the toolbar
+      open.
+    -->
+    <div
+      v-if="toolbar"
+      class="console-toolbar"
+      :style="'background-color: ' + control.activeColor() + 'ee'"
+    >
+      <h2 style="display:none;">Tool bar</h2>
+
+      <div
+        v-for="(keyType, keyTypeIdx) in screenKeys"
+        :key="keyTypeIdx"
+        class="console-toolbar-item"
+      >
+        <h3 class="tb-title">{{ keyType.title }}</h3>
+
+        <ul class="hlst lst-nostyle">
+          <li v-for="(key, keyIdx) in keyType.keys" :key="keyIdx">
+            <a
+              class="tb-item"
+              href="javascript:;"
+              @click="sendSpecialKey(key[1])"
+              v-html="$options.filters.specialKeyHTML(key[0])"
+            ></a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
 import { Terminal } from "xterm";
 import { WebLinksAddon } from "xterm-addon-web-links";
 import { FitAddon } from "xterm-addon-fit";
+import { isNumber } from "../commands/common.js";
+import { consoleScreenKeys } from "./screen_console_keys.js";
 
 import "./screen_console.css";
 import "xterm/css/xterm.css";
-import { isNumber } from "util";
 
 class Term {
   constructor(control) {
@@ -54,6 +91,16 @@ class Term {
     });
 
     this.term.onData(data => {
+      if (process.env.NODE_ENV === "development") {
+        let keyCodes = [];
+
+        for (let i = 0; i < data.length; i++) {
+          keyCodes.push(data.charCodeAt(i));
+        }
+
+        console.log("Sending", keyCodes);
+      }
+
       control.send(data);
     });
 
@@ -68,12 +115,19 @@ class Term {
         !ev.domEvent.ctrlKey &&
         !ev.domEvent.metaKey;
 
-      if (ev.domEvent.keyCode === 13) {
-        this.writeStr("\r\n");
-      } else if (ev.domEvent.keyCode === 8) {
-        this.writeStr("\b \b");
-      } else if (printable) {
-        this.writeStr(ev.key);
+      switch (ev.domEvent.key.toLowerCase()) {
+        case "enter":
+          this.writeStr("\r\n");
+          break;
+
+        case "backspace":
+          this.writeStr("\b \b");
+          break;
+
+        default:
+          if (printable) {
+            this.writeStr(ev.key);
+          }
       }
     });
 
@@ -156,6 +210,14 @@ class Term {
     this.refit();
   }
 
+  dispatch(event) {
+    try {
+      this.term.textarea.dispatchEvent(event);
+    } catch (e) {
+      process.env.NODE_ENV === "development" && console.trace(e);
+    }
+  }
+
   writeStr(d) {
     try {
       this.term.write(d);
@@ -210,6 +272,14 @@ class Term {
 // like to keep it that way.
 
 export default {
+  filters: {
+    specialKeyHTML(key) {
+      const head = '<span class="tb-key-icon icon icon-keyboardkey1">',
+        tail = "</span>";
+
+      return head + key.split("+").join(tail + "+" + head) + tail;
+    }
+  },
   props: {
     active: {
       type: Boolean,
@@ -222,10 +292,15 @@ export default {
     change: {
       type: Object,
       default: () => null
+    },
+    toolbar: {
+      type: Boolean,
+      default: false
     }
   },
   data() {
     return {
+      screenKeys: consoleScreenKeys,
       term: new Term(this.control),
       runner: null
     };
@@ -258,7 +333,7 @@ export default {
     init() {
       let self = this;
 
-      this.term.init(this.$el, {
+      this.term.init(this.$el.getElementsByClassName("console-console")[0], {
         focus(e) {
           document.addEventListener("keyup", self.localKeypress);
           document.addEventListener("keydown", self.localKeypress);
@@ -326,6 +401,14 @@ export default {
       this.runner = null;
 
       await runner;
+    },
+    sendSpecialKey(key) {
+      if (!this.term) {
+        return;
+      }
+
+      this.term.dispatch(new KeyboardEvent("keydown", key));
+      this.term.dispatch(new KeyboardEvent("keyup", key));
     }
   }
 };
