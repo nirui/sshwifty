@@ -152,8 +152,9 @@ Here is all the options of a configuration file:
       // (In Seconds)
       "ReadTimeout": 60,
 
-      // How long the server will wait until the client connect is ready to
-      // recieve new data
+      // How long the server will wait until the client connection is ready to
+      // recieve new data. If this timeout is exceed, the connection will be
+      // closed.
       // (In Seconds)
       "WriteTimeout": 60,
 
@@ -215,7 +216,7 @@ configuration file.
 
 Notice: When you're using environment variables to configure Sshwifty, only one
 Sshwifty HTTP server is then allowed. There is no way to setup mulitple servers
-under this method of configure. If you need to serve on multiple ports, use
+under this method of configuration. If you need to serve on multiple ports, use
 configuration file instead.
 
 Be aware: An invalid value inside following environment variables will cause
@@ -245,6 +246,7 @@ license. See [DEPENDENCIES.md] for dependencies used by this project.
 ## Contribute
 
 This is a hobbyist project, meaning I don't have too many time to put into it.
+Sorry.
 
 Upon release (Which is then you're able to read this file), this project will
 enter _maintaining_ state, which includes doing bug fix and security updates.
