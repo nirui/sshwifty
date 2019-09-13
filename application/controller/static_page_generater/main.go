@@ -27,6 +27,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"mime"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -61,6 +62,7 @@ func parseStaticData(
 	compressedHash string,
 	creation time.Time,
 	data []byte,
+	contentType string,
 ) staticData {
 	return staticData{
 		data: data[fileStart:fileEnd],
@@ -68,6 +70,7 @@ func parseStaticData(
 		compressd: data[compressedStart:compressedEnd],
 		compressdHash: compressedHash,
 		created: creation,
+		contentType: contentType,
 	}
 }
 `
@@ -79,11 +82,13 @@ import "compress/gzip"
 import "encoding/base64"
 import "time"
 import "crypto/sha256"
+import "mime"
+import "strings"
 
 // WARNING: THIS GENERATION IS FOR DEBUG / DEVELOPMENT ONLY, DO NOT
 // USE IT IN PRODUCTION!
 
-func staticFileGen(filePath string) staticData {
+func staticFileGen(fileName, filePath string) staticData {
 	content, readErr := ioutil.ReadFile(filePath)
 
 	if readErr != nil {
@@ -93,7 +98,7 @@ func staticFileGen(filePath string) staticData {
 	compressed := bytes.NewBuffer(make([]byte, 0, 1024))
 
 	compresser, compresserBuildErr := gzip.NewWriterLevel(
-		compressed, gzip.BestCompression)
+		compressed, gzip.BestSpeed)
 
 	if compresserBuildErr != nil {
 		panic(fmt.Sprintln("Cannot build data compresser:", compresserBuildErr))
@@ -122,8 +127,22 @@ func staticFileGen(filePath string) staticData {
 		return h.Sum(nil)
 	}
 
+	fileExtDotIdx := strings.LastIndex(fileName, ".")
+	fileExt := ""
+
+	if fileExtDotIdx >= 0 {
+		fileExt = fileName[fileExtDotIdx:len(fileName)]
+	}
+
+	mimeType := mime.TypeByExtension(fileExt)
+
+	if len(mimeType) <= 0 {
+		mimeType = "application/binary"
+	}
+
 	return staticData{
 		data: content[0:contentLen],
+		contentType: mimeType,
 		dataHash: base64.StdEncoding.EncodeToString(
 			getHash(content[0:contentLen])[:8]),
 		compressd: content[contentLen:],
@@ -136,7 +155,7 @@ func staticFileGen(filePath string) staticData {
 var (
 	staticPages = map[string]staticData{
 		{{ range . }}"{{ .Name }}": staticFileGen(
-			"{{ .Path }}",
+			"{{ .Name }}", "{{ .Path }}",
 		),
 		{{ end }}
 	}
@@ -171,6 +190,7 @@ func {{ .GOVariableName }}() (
 	string,     // CompressedHash
 	time.Time,  // Time of creation
 	[]byte,     // Data
+	string,     // ContentType
 ) {
 	created, createErr := time.Parse(
 		time.RFC1123, "{{ .Date.Format "Mon, 02 Jan 2006 15:04:05 MST" }}")
@@ -188,10 +208,12 @@ func {{ .GOVariableName }}() (
 	shrinkToFit := make([]byte, len(data))
 
 	copy(shrinkToFit, data)
+	data = nil
 
 	return {{ .FileStart }}, {{ .FileEnd }},
 		{{ .CompressedStart }}, {{ .CompressedEnd }},
-		"{{ .ContentHash }}", "{{ .CompressedHash }}", created, shrinkToFit
+		"{{ .ContentHash }}", "{{ .CompressedHash }}",
+		created, shrinkToFit, "{{ .ContentType }}"
 }
 `
 )
@@ -207,10 +229,12 @@ type parsedFile struct {
 	GOPackage       string
 	Path            string
 	Data            string
+	Type            string
 	FileStart       int
 	FileEnd         int
 	CompressedStart int
 	CompressedEnd   int
+	ContentType     string
 	ContentHash     string
 	CompressedHash  string
 	Date            time.Time
@@ -283,6 +307,19 @@ func parseFile(
 
 	goFileName := "Static" + strconv.FormatInt(int64(id), 10)
 
+	fileExtDotIdx := strings.LastIndex(name, ".")
+	fileExt := ""
+
+	if fileExtDotIdx >= 0 {
+		fileExt = name[fileExtDotIdx:len(name)]
+	}
+
+	mimeType := mime.TypeByExtension(fileExt)
+
+	if len(mimeType) <= 0 {
+		mimeType = "application/binary"
+	}
+
 	return parsedFile{
 		Name:            name,
 		GOVariableName:  strings.Title(goFileName),
@@ -294,6 +331,7 @@ func parseFile(
 		FileEnd:         contentLen,
 		CompressedStart: contentLen,
 		CompressedEnd:   len(content),
+		ContentType:     mimeType,
 		ContentHash: base64.StdEncoding.EncodeToString(
 			getHash(content[0:contentLen])[:8]),
 		CompressedHash: base64.StdEncoding.EncodeToString(

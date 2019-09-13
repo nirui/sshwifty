@@ -18,7 +18,6 @@
 package controller
 
 import (
-	"mime"
 	"net/http"
 	"strconv"
 	"strings"
@@ -33,6 +32,7 @@ type staticData struct {
 	compressd     []byte
 	compressdHash string
 	created       time.Time
+	contentType   string
 }
 
 func (s staticData) hasCompressed() bool {
@@ -60,12 +60,11 @@ func serveStaticCacheData(
 		return ErrNotFound
 	}
 
-	return serveStaticCachePage(dataName, fileExt, w, r, l)
+	return serveStaticCachePage(dataName, w, r, l)
 }
 
 func serveStaticCachePage(
 	dataName string,
-	fileExt string,
 	w http.ResponseWriter,
 	r *http.Request,
 	l log.Logger,
@@ -110,13 +109,7 @@ func serveStaticCachePage(
 	w.Header().Add("Cache-Control", "public, max-age=31536000")
 	w.Header().Add("ETag", "\""+selectedDataHash+"\"")
 
-	mimeType := mime.TypeByExtension(fileExt)
-
-	if len(mimeType) > 0 {
-		w.Header().Add("Content-Type", mimeType)
-	} else {
-		w.Header().Add("Content-Type", "application/binary")
-	}
+	w.Header().Add("Content-Type", d.contentType)
 
 	if compressEnabled {
 		w.Header().Add("Content-Encoding", "gzip")
@@ -132,7 +125,6 @@ func serveStaticCachePage(
 
 func serveStaticPage(
 	dataName string,
-	fileExt string,
 	code int,
 	w http.ResponseWriter,
 	r *http.Request,
@@ -157,13 +149,7 @@ func serveStaticPage(
 		w.Header().Add("Vary", "Accept-Encoding")
 	}
 
-	mimeType := mime.TypeByExtension(fileExt)
-
-	if len(mimeType) > 0 {
-		w.Header().Add("Content-Type", mimeType)
-	} else {
-		w.Header().Add("Content-Type", "application/binary")
-	}
+	w.Header().Add("Content-Type", d.contentType)
 
 	if compressEnabled {
 		w.Header().Add("Content-Encoding", "gzip")

@@ -29,5 +29,5 @@ func serveFailure(
 	r *http.Request,
 	l log.Logger,
 ) error {
-	return serveStaticPage("error.html", ".html", err.Code(), w, r, l)
+	return serveStaticPage("error.html", err.Code(), w, r, l)
 }
