@@ -16,7 +16,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 const webpack = require("webpack"),
-  { exec, spawn } = require("child_process"),
+  { spawn } = require("child_process"),
   path = require("path"),
   HtmlWebpackPlugin = require("html-webpack-plugin"),
   MiniCssExtractPlugin = require("mini-css-extract-plugin"),
@@ -87,15 +87,18 @@ const startAppSpawnProc = onExit => {
         });
 
         proc.on("exit", n => {
+          process.stdout.write("Application process is exited.\n");
+
           if (closed) {
             return;
           }
 
           closed = true;
 
-          onExit();
-          resolve(n);
           appSpawnProc = null;
+          resolve(n);
+
+          onExit();
         });
       });
 
@@ -106,14 +109,65 @@ const startAppSpawnProc = onExit => {
   });
 };
 
+const startBuildSpawnProc = onExit => {
+  killSpawnProc(appBuildProc, () => {
+    let mEnv = {};
+
+    for (let i in process.env) {
+      mEnv[i] = process.env[i];
+    }
+
+    mEnv["NODE_ENV"] = process.env.NODE_ENV;
+
+    process.stdout.write("Generating source code ...\n");
+
+    let proc = spawn("go", ["generate", "./..."], {
+        env: mEnv,
+        detached: true
+      }),
+      waiter = new Promise(resolve => {
+        let closed = false;
+
+        proc.stdout.on("data", msg => {
+          process.stdout.write(msg.toString());
+        });
+
+        proc.stderr.on("data", msg => {
+          process.stderr.write(msg.toString());
+        });
+
+        proc.on("exit", n => {
+          process.stdout.write("Code generation process is exited.\n");
+
+          if (closed) {
+            return;
+          }
+
+          closed = true;
+
+          appBuildProc = null;
+          resolve(n);
+
+          onExit();
+        });
+      });
+
+    appBuildProc = {
+      proc,
+      waiter
+    };
+  });
+};
+
 const killAllProc = () => {
   if (appBuildProc !== null) {
-    appBuildProc.stdin.end();
-    appBuildProc.stdout.destroy();
-    appBuildProc.stderr.destroy();
-    appBuildProc.kill();
+    killSpawnProc(appBuildProc, () => {
+      killSpawnProc(appSpawnProc, () => {
+        process.exit(0);
+      });
+    });
 
-    appBuildProc = null;
+    return;
   }
 
   killSpawnProc(appSpawnProc, () => {
@@ -133,7 +187,7 @@ module.exports = {
   output: {
     publicPath: "/",
     path: path.join(__dirname, ".tmp", "dist"),
-    filename: "_[hash].js"
+    filename: process.env.NODE_ENV === "development" ? "[id].js" : "[hash].js"
   },
   resolve: {
     alias: {
@@ -141,6 +195,17 @@ module.exports = {
     }
   },
   optimization: {
+    splitChunks:
+      process.env.NODE_ENV === "development"
+        ? {}
+        : {
+            chunks: "all",
+            minSize: 30000,
+            automaticNameDelimiter: ".",
+            automaticNameMaxLength: 16,
+            name: true
+          },
+    minimize: process.env.NODE_ENV !== "development",
     minimizer:
       process.env.NODE_ENV === "development"
         ? []
@@ -197,178 +262,167 @@ module.exports = {
       }
     ]
   },
-  plugins: [
-    new webpack.ProgressPlugin(),
-    new webpack.SourceMapDevToolPlugin(),
-    new webpack.DefinePlugin(
-      process.env.NODE_ENV === "production"
-        ? {
-            "process.env": {
-              NODE_ENV: JSON.stringify(process.env.NODE_ENV)
-            }
-          }
-        : {}
-    ),
-    new webpack.LoaderOptionsPlugin({
-      options: {
-        handlebarsLoader: {}
-      }
-    }),
-    new CleanWebpackPlugin(),
-    new CopyPlugin([
-      {
-        from: path.join(__dirname, "ui", "robots.txt"),
-        to: path.join(__dirname, ".tmp", "dist")
-      },
-      {
-        from: path.join(__dirname, "README.md"),
-        to: path.join(__dirname, ".tmp", "dist")
-      },
-      {
-        from: path.join(__dirname, "DEPENDENCIES.md"),
-        to: path.join(__dirname, ".tmp", "dist")
-      },
-      {
-        from: path.join(__dirname, "LICENSE.md"),
-        to: path.join(__dirname, ".tmp", "dist")
-      }
-    ]),
-    new VueLoaderPlugin(),
-    {
-      apply: compiler => {
-        compiler.hooks.afterEmit.tap("AfterEmitPlugin", () => {
-          if (appBuildProc !== null) {
-            let aBuildProc = appBuildProc;
-            appBuildProc = null;
-
-            process.stdout.write(
-              "Killing the previous source code generater ...\n"
-            );
-
-            aBuildProc.stdin.end();
-            aBuildProc.stdout.destroy();
-            aBuildProc.stderr.destroy();
-            aBuildProc.kill();
-          }
-
-          killSpawnProc(appSpawnProc, () => {
-            process.stdout.write("Generating source code ...\n");
-
-            appBuildProc = exec(
-              "NODE_ENV=" + process.env.NODE_ENV + " go generate ./...",
-              (err, stdout, stderr) => {
-                process.stdout.write("Source code is generated ...\n");
-
-                appBuildProc = null;
-
-                if (stdout) process.stdout.write(stdout);
-                if (stderr) process.stderr.write(stderr);
-
-                if (process.env.NODE_ENV !== "development") {
-                  return;
-                }
-
-                startAppSpawnProc(() => {
-                  appSpawnProc = null;
-                });
+  plugins: (function() {
+    var plugins = [
+      new webpack.SourceMapDevToolPlugin(),
+      new webpack.DefinePlugin(
+        process.env.NODE_ENV === "production"
+          ? {
+              "process.env": {
+                NODE_ENV: JSON.stringify(process.env.NODE_ENV)
               }
-            );
-          });
-        });
-      }
-    },
-    new WebappWebpackPlugin({
-      logo: path.join(__dirname, "ui", "sshwifty.png"),
-      prefix: "",
-      cache: false,
-      favicons: {
-        appName: "Sswifty",
-        appDescription: "Web SSH Client",
-        developerName: "Rui NI",
-        developerURL: "https://vaguly.com",
-        background: "#333",
-        theme_color: "#333",
-        appleStatusBarStyle: "black",
-        icons: {
-          android: { offset: 10, overlayGlow: false, overlayShadow: true },
-          appleIcon: { offset: 10, overlayGlow: false },
-          appleStartup: { offset: 10, overlayGlow: false },
-          coast: false,
-          favicons: { overlayGlow: false },
-          firefox: { offset: 20, overlayGlow: false },
-          windows: { offset: 10, overlayGlow: false },
-          yandex: false
+            }
+          : {}
+      ),
+      new webpack.LoaderOptionsPlugin({
+        options: {
+          handlebarsLoader: {}
         }
-      }
-    }),
-    new HtmlWebpackPlugin({
-      inject: true,
-      template: path.join(__dirname, "ui", "index.html"),
-      meta: [
+      }),
+      new CopyPlugin([
         {
-          name: "description",
-          content: "Connect to a SSH Server from your web browser"
-        }
-      ],
-      mobile: true,
-      lang: "en-US",
-      inlineManifestWebpackName: "webpackManifest",
-      title: "Sshwifty Web SSH Client",
-      minify: {
-        html5: true,
-        collapseWhitespace:
-          process.env.NODE_ENV === "development" ? false : true,
-        caseSensitive: true,
-        removeComments: true,
-        removeEmptyElements: false
-      }
-    }),
-    new HtmlWebpackPlugin({
-      filename: "error.html",
-      inject: true,
-      template: path.join(__dirname, "ui", "error.html"),
-      meta: [
+          from: path.join(__dirname, "ui", "robots.txt"),
+          to: path.join(__dirname, ".tmp", "dist")
+        },
         {
-          name: "description",
-          content: "Connect to a SSH Server from your web browser"
+          from: path.join(__dirname, "README.md"),
+          to: path.join(__dirname, ".tmp", "dist")
+        },
+        {
+          from: path.join(__dirname, "DEPENDENCIES.md"),
+          to: path.join(__dirname, ".tmp", "dist")
+        },
+        {
+          from: path.join(__dirname, "LICENSE.md"),
+          to: path.join(__dirname, ".tmp", "dist")
         }
-      ],
-      mobile: true,
-      lang: "en-US",
-      minify: {
-        html5: true,
-        collapseWhitespace:
-          process.env.NODE_ENV === "development" ? false : true,
-        caseSensitive: true,
-        removeComments: true,
-        removeEmptyElements: false
-      }
-    }),
-    new ImageminPlugin({
-      disable: process.env.NODE_ENV !== "production",
-      pngquant: {
-        quality: "10-20"
-      }
-    }),
-    new MiniCssExtractPlugin({
-      filename: "_[hash].css",
-      chunkFilename: "_[chunkhash].css"
-    }),
-    new OptimizeCssAssetsPlugin({
-      assetNameRegExp: /^_.*\.css$/g,
-      cssProcessor: require("cssnano"),
-      cssProcessorPluginOptions: {
-        preset: ["default", { discardComments: { removeAll: true } }]
+      ]),
+      new VueLoaderPlugin(),
+      {
+        apply(compiler) {
+          compiler.hooks.afterEmit.tapAsync(
+            "AfterEmitPlugin",
+            (_param, callback) => {
+              killSpawnProc(appBuildProc, () => {
+                startBuildSpawnProc(() => {
+                  callback();
+
+                  if (process.env.NODE_ENV !== "development") {
+                    return;
+                  }
+
+                  startAppSpawnProc(() => {
+                    process.stdout.write("Application is closed\n");
+                  });
+                });
+              });
+            }
+          );
+        }
       },
-      canPrint: true
-    }),
-    new webpack.BannerPlugin({
-      banner:
-        "This file is a part of Sshwifty Project. Automatically " +
-        "generated at " +
-        new Date().toTimeString() +
-        ", DO NOT MODIFIY"
-    }),
-    new ManifestPlugin()
-  ]
+      new WebappWebpackPlugin({
+        logo: path.join(__dirname, "ui", "sshwifty.png"),
+        prefix: "",
+        cache: false,
+        favicons: {
+          appName: "Sswifty",
+          appDescription: "Web SSH Client",
+          developerName: "Rui NI",
+          developerURL: "https://vaguly.com",
+          background: "#333",
+          theme_color: "#333",
+          appleStatusBarStyle: "black",
+          icons: {
+            android: { offset: 10, overlayGlow: false, overlayShadow: true },
+            appleIcon: { offset: 10, overlayGlow: false },
+            appleStartup: { offset: 10, overlayGlow: false },
+            coast: false,
+            favicons: { overlayGlow: false },
+            firefox: { offset: 20, overlayGlow: false },
+            windows: { offset: 10, overlayGlow: false },
+            yandex: false
+          }
+        }
+      }),
+      new HtmlWebpackPlugin({
+        inject: true,
+        template: path.join(__dirname, "ui", "index.html"),
+        meta: [
+          {
+            name: "description",
+            content: "Connect to a SSH Server from your web browser"
+          }
+        ],
+        mobile: true,
+        lang: "en-US",
+        inlineManifestWebpackName: "webpackManifest",
+        title: "Sshwifty Web SSH Client",
+        minify: {
+          html5: true,
+          collapseWhitespace:
+            process.env.NODE_ENV === "development" ? false : true,
+          caseSensitive: true,
+          removeComments: true,
+          removeEmptyElements: false
+        }
+      }),
+      new HtmlWebpackPlugin({
+        filename: "error.html",
+        inject: true,
+        template: path.join(__dirname, "ui", "error.html"),
+        meta: [
+          {
+            name: "description",
+            content: "Connect to a SSH Server from your web browser"
+          }
+        ],
+        mobile: true,
+        lang: "en-US",
+        minify: {
+          html5: true,
+          collapseWhitespace:
+            process.env.NODE_ENV === "development" ? false : true,
+          caseSensitive: true,
+          removeComments: true,
+          removeEmptyElements: false
+        }
+      }),
+      new ImageminPlugin({
+        disable: process.env.NODE_ENV === "development",
+        pngquant: {
+          quality: "5-15"
+        }
+      }),
+      new MiniCssExtractPlugin({
+        filename:
+          process.env.NODE_ENV === "development" ? "[id].css" : "[hash].css",
+        chunkFilename:
+          process.env.NODE_ENV === "development"
+            ? "[id].css"
+            : "[chunkhash].css"
+      }),
+      new OptimizeCssAssetsPlugin({
+        assetNameRegExp: /\.css$/,
+        cssProcessor: require("cssnano"),
+        cssProcessorPluginOptions: {
+          preset: ["default", { discardComments: { removeAll: true } }]
+        },
+        canPrint: true
+      }),
+      new webpack.BannerPlugin({
+        banner:
+          "This file is a part of Sshwifty Project. Automatically " +
+          "generated at " +
+          new Date().toTimeString() +
+          ", DO NOT MODIFIY"
+      }),
+      new ManifestPlugin()
+    ];
+
+    if (process.env.NODE_ENV !== "development") {
+      plugins.push(new CleanWebpackPlugin());
+    }
+
+    return plugins;
+  })()
 };
