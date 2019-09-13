@@ -38,6 +38,8 @@ import * as sshctl from "./control/ssh.js";
 import * as xhr from "./xhr.js";
 import * as cipher from "./crypto.js";
 
+const backendQueryRetryDelay = 2000;
+
 const maxTimeDiff = 30000;
 
 const mainTemplate = `
@@ -202,6 +204,12 @@ function startApp(rootEl) {
 
             case 403:
               this.page = "auth";
+              break;
+
+            case 0:
+              setTimeout(() => {
+                this.tryInitialAuth();
+              }, backendQueryRetryDelay);
               break;
 
             default:
