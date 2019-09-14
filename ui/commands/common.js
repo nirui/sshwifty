@@ -15,9 +15,11 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import * as iconv from "iconv-lite";
+
 import Exception from "./exception.js";
 
-export const charsetPresets = [
+const availableEncodings = [
   "utf-8",
   "ibm866",
   "iso-8859-2",
@@ -27,7 +29,6 @@ export const charsetPresets = [
   "iso-8859-6",
   "iso-8859-7",
   "iso-8859-8",
-  "iso-8859-8i",
   "iso-8859-10",
   "iso-8859-13",
   "iso-8859-14",
@@ -52,10 +53,29 @@ export const charsetPresets = [
   "euc-jp",
   "shift-jis",
   "euc-kr",
-  "iso-2022-kr",
   "utf-16be",
   "utf-16le"
 ];
+
+export const charsetPresets = (() => {
+  let r = [];
+
+  for (let i in availableEncodings) {
+    try {
+      if (!iconv.encodingExists(availableEncodings[i])) {
+        continue;
+      }
+
+      new TextDecoder(availableEncodings[i]);
+
+      r.push(availableEncodings[i]);
+    } catch (e) {
+      // Do nothing
+    }
+  }
+
+  return r;
+})();
 
 const numCharators = {
   "0": true,
