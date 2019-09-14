@@ -158,33 +158,33 @@ class Parser {
       case cmdWill:
         if (!oldVal) {
           this.sendNego(cmdDo, option);
-
-          newVal(true);
         }
+
+        newVal(true, cmdWill);
         return;
 
       case cmdWont:
         if (oldVal) {
           this.sendNego(cmdDont, option);
-
-          newVal(false);
         }
+
+        newVal(false, cmdWont);
         return;
 
       case cmdDo:
         if (!oldVal) {
           this.sendNego(cmdWill, option);
-
-          newVal(true);
         }
+
+        newVal(true, cmdDo);
         return;
 
       case cmdDont:
         if (oldVal) {
           this.sendNego(cmdWont, option);
-
-          newVal(false);
         }
+
+        newVal(false, cmdDont);
         return;
     }
   }
@@ -218,18 +218,33 @@ class Parser {
 
     switch (o[0]) {
       case optEcho:
-        return this.handleOption(d[0], o[0], this.options.echoEnabled, d => {
-          this.options.echoEnabled = d;
+        return this.handleOption(
+          d[0],
+          o[0],
+          this.options.echoEnabled,
+          (d, action) => {
+            this.options.echoEnabled = d;
 
-          this.callbacks.setEcho(this.options.echoEnabled);
-        });
+            switch (action) {
+              case cmdWill:
+              case cmdDont:
+                this.callbacks.setEcho(false);
+                break;
+
+              case cmdWont:
+              case cmdDo:
+                this.callbacks.setEcho(true);
+                break;
+            }
+          }
+        );
 
       case optSuppressGoAhead:
         return this.handleOption(
           d[0],
           o[0],
           this.options.suppressGoAhead,
-          d => {
+          (d, _action) => {
             this.options.suppressGoAhead = d;
           }
         );
@@ -353,7 +368,7 @@ class Control {
       },
       {
         setEcho(newVal) {
-          self.localEchoEnabled = !newVal;
+          self.localEchoEnabled = newVal;
         },
         getWindowDim() {
           return self.windowDim;
@@ -364,7 +379,7 @@ class Control {
     let runWait = this.parser.run();
 
     data.events.place("inband", rd => {
-      return new Promise((resolve, reject) => {
+      return new Promise((resolve, _reject) => {
         self.parser.feed(rd, () => {
           resolve(true);
         });
@@ -410,10 +425,22 @@ class Control {
     this.enable = false;
   }
 
-  retap(isOn) {}
+  retap(_isOn) {}
 
   receive() {
     return this.subs.subscribe();
+  }
+
+  searchNextIAC(start, data) {
+    for (let i = start; i < data.length; i++) {
+      if (data[i] !== cmdIAC) {
+        continue;
+      }
+
+      return i;
+    }
+
+    return -1;
   }
 
   send(data) {
@@ -421,7 +448,23 @@ class Control {
       return;
     }
 
-    return this.sender(new TextEncoder("utf-8").encode(data));
+    let currentLen = 0;
+    const enc = new TextEncoder("utf-8").encode(data);
+
+    while (currentLen < enc.length) {
+      const iacPos = this.searchNextIAC(currentLen, enc);
+
+      if (iacPos < 0) {
+        this.sender(enc.slice(currentLen, enc.length));
+
+        return;
+      }
+
+      this.sender(enc.slice(currentLen, iacPos + 1));
+      this.sender(enc.slice(iacPos, iacPos + 1));
+
+      currentLen = iacPos + 1;
+    }
   }
 
   color() {
