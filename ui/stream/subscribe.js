@@ -79,10 +79,6 @@ export class Subscribe {
    *
    */
   subscribe() {
-    if (this.disabled) {
-      throw new Exception(this.disabled, false);
-    }
-
     if (this.pending.length > 0) {
       let p = this.pending.shift();
 
@@ -96,6 +92,10 @@ export class Subscribe {
         default:
           throw new Exception("Unknown pending type", false);
       }
+    }
+
+    if (this.disabled) {
+      throw new Exception(this.disabled, false);
     }
 
     let self = this;
