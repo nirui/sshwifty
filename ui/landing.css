@@ -64,7 +64,7 @@ body.landing {
   border: 1px solid #fab;
   display: inline-block;
   padding: 3px 7px;
-  margin-left: 5px;
+  margin: 5px;
   border-radius: 5px;
   line-height: initial;
 }
