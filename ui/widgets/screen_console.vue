@@ -117,15 +117,18 @@ class Term {
 
       switch (ev.domEvent.key.toLowerCase()) {
         case "enter":
+          ev.domEvent.preventDefault();
           this.writeStr("\r\n");
           break;
 
         case "backspace":
+          ev.domEvent.preventDefault();
           this.writeStr("\b \b");
           break;
 
         default:
           if (printable) {
+            ev.domEvent.preventDefault();
             this.writeStr(ev.key);
           }
       }

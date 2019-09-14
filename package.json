@@ -39,9 +39,10 @@
     "webpack": "^4.39.3",
     "webpack-cli": "^3.3.8",
     "webpack-manifest-plugin": "^2.0.4",
-    "xterm": "^3.15.0-vscode1",
-    "xterm-addon-fit": "^0.1.0",
-    "xterm-addon-web-links": "^0.1.0"
+    "xterm": "^4.0.1",
+    "xterm-addon-fit": "^0.2.1",
+    "xterm-addon-web-links": "^0.2.1",
+    "xterm-addon-webgl": "^0.2.1"
   },
   "scripts": {
     "dev": "NODE_ENV=development webpack --mode=development --config=webpack.config.js --watch",
