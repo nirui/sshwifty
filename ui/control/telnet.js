@@ -15,6 +15,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import * as iconv from "iconv-lite";
+
 import * as subscribe from "../stream/subscribe.js";
 import * as reader from "../stream/reader.js";
 import * as color from "../commands/color.js";
@@ -331,12 +333,14 @@ class Control {
     this.colorM = color;
     this.colors = this.colorM.get();
 
-    if (!data.charset || data.charset === "utf-8") {
+    this.charset = data.charset;
+
+    if (this.charset === "utf-8") {
       this.charsetDecoder = d => {
         return d;
       };
     } else {
-      let dec = new TextDecoder(data.charset),
+      let dec = new TextDecoder(this.charset),
         enc = new TextEncoder();
 
       this.charsetDecoder = d => {
@@ -449,7 +453,7 @@ class Control {
     }
 
     let currentLen = 0;
-    const enc = new TextEncoder("utf-8").encode(data);
+    const enc = new iconv.encode(data, this.charset);
 
     while (currentLen < enc.length) {
       const iacPos = this.searchNextIAC(currentLen, enc);
