@@ -74,7 +74,7 @@ class Dial {
           return reject(e);
         };
 
-      ws.addEventListener("open", event => {
+      ws.addEventListener("open", _event => {
         myRes(ws);
       });
 
@@ -86,7 +86,7 @@ class Dial {
         myRej(event);
       });
 
-      ws.addEventListener("error", event => {
+      ws.addEventListener("error", _event => {
         ws.close();
       });
     });
@@ -143,20 +143,7 @@ class Dial {
 
           bufferReader.readAsArrayBuffer(data);
         });
-      }),
-      sdDataConvert = rawData => {
-        return rawData;
-      },
-      sd = new sender.Sender(
-        async rawData => {
-          let data = await sdDataConvert(rawData);
-
-          ws.send(data.buffer);
-          callbacks.outbound(data);
-        },
-        15,
-        4096 - 64 // Server has a 4096 bytes receive buffer, can be no greater
-      );
+      });
 
     ws.addEventListener("message", event => {
       callbacks.inbound(event.data);
@@ -165,12 +152,44 @@ class Dial {
     });
 
     ws.addEventListener("error", event => {
-      rd.close();
+      event.toString = () => {
+        return "WebSocket Error (" + event.code + ")";
+      };
+
+      rd.closeWithReason(event);
     });
 
-    ws.addEventListener("close", event => {
-      rd.close();
+    ws.addEventListener("close", _event => {
+      rd.closeWithReason("Connection is closed");
     });
+
+    let sdDataConvert = rawData => {
+        return rawData;
+      },
+      getSdDataConvert = () => {
+        return sdDataConvert;
+      },
+      sd = new sender.Sender(
+        async rawData => {
+          try {
+            let data = await getSdDataConvert()(rawData);
+
+            ws.send(data.buffer);
+            callbacks.outbound(data);
+          } catch (e) {
+            ws.close();
+            rd.closeWithReason(e);
+
+            if (process.env.NODE_ENV === "development") {
+              console.error(e);
+            }
+
+            throw e;
+          }
+        },
+        15,
+        4096 - 64 // Server has a 4096 bytes receive buffer, can be no greater
+      );
 
     let senderNonce = crypt.generateNonce();
     sd.send(senderNonce);
@@ -213,7 +232,7 @@ class Dial {
 
         r.feed(new reader.Buffer(new Uint8Array(decoded), () => {}), () => {});
       } catch (e) {
-        r.close();
+        r.closeWithReason(e);
       }
     });
 
@@ -319,9 +338,15 @@ export class Socket {
         }
       });
 
-      streamHandler.serve().catch(() => {});
-
       callbacks.connected();
+
+      streamHandler.serve().catch(e => {
+        if (process.env.NODE_ENV !== "development") {
+          return;
+        }
+
+        console.trace(e);
+      });
 
       this.streamHandler = streamHandler;
     } catch (e) {

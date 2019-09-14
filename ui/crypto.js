@@ -33,7 +33,7 @@ export async function hmac512(secret, data) {
     ["sign", "verify"]
   );
 
-  return crypto.subtle.sign("HMAC", key, data);
+  return crypto.subtle.sign(key.algorithm, key, data);
 }
 
 export const GCMNonceSize = 12;

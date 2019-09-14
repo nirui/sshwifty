@@ -167,7 +167,7 @@ export function build(ctx) {
       this.message = "ERR";
       this.classStyle = "red flash";
       this.windowClass = "red";
-      this.status.description = connectionStatusDisconnected + ". Error: " + e;
+      this.status.description = connectionStatusDisconnected + ": " + e;
     },
     failed(e) {
       ctx.connector.inputting = false;

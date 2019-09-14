@@ -29,6 +29,7 @@ export class Subscribe {
     this.res = null;
     this.rej = null;
     this.pending = [];
+    this.disabled = null;
   }
 
   /**
@@ -78,6 +79,10 @@ export class Subscribe {
    *
    */
   subscribe() {
+    if (this.disabled) {
+      throw new Exception(this.disabled, false);
+    }
+
     if (this.pending.length > 0) {
       let p = this.pending.shift();
 
@@ -110,5 +115,15 @@ export class Subscribe {
         reject(e);
       };
     });
+  }
+
+  /**
+   * Disable current subscriber when all internal data is readed
+   *
+   * @param {string} reason Reason of the disable
+   *
+   */
+  disable(reason) {
+    this.disabled = reason;
   }
 }

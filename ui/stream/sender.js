@@ -66,11 +66,7 @@ export class Sender {
 
     this.subscribe.reject(new Exception("Sender has been closed", false));
 
-    try {
-      await this.sendingPoc;
-    } catch (e) {
-      // Do nothing
-    }
+    this.sendingPoc.catch(() => {});
 
     this.reject(new Exception("Sending has been cancelled", true));
   }

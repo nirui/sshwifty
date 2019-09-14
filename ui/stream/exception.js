@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-export default class Exception {
+export default class Exception extends Error {
   /**
    * constructor
    *
@@ -24,17 +24,8 @@ export default class Exception {
    *
    */
   constructor(message, temporary) {
-    this.message = message;
-    this.temporary = temporary;
-  }
+    super(message);
 
-  /**
-   * Return the error string
-   *
-   * @returns {string} Error message
-   *
-   */
-  toString() {
-    return this.message;
+    this.temporary = temporary;
   }
 }

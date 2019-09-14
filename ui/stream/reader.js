@@ -222,12 +222,23 @@ export class Multiple {
    *
    */
   close() {
+    return this.closeWithReason("Reader is closed");
+  }
+
+  /**
+   * close current reading
+   *
+   * @param {string} reason Reason
+   *
+   */
+  closeWithReason(reason) {
     if (this.closed) {
       return;
     }
 
     this.closed = true;
-    this.subscribe.reject(new Exception("Reader is closed", false));
+    this.subscribe.reject(new Exception(reason, false));
+    this.subscribe.disable(reason);
   }
 
   /**
@@ -317,17 +328,23 @@ export class Reader {
    *
    */
   close() {
+    return this.closeWithReason("Reader is closed");
+  }
+
+  /**
+   * close current reading
+   *
+   * @param {string} reason Reason
+   *
+   */
+  closeWithReason(reason) {
     if (this.closed) {
       return;
     }
 
     this.closed = true;
-    this.buffers.reject(
-      new Exception(
-        "Reader is closed, and thus " + "cannot be operated on",
-        false
-      )
-    );
+    this.buffers.reject(new Exception(reason, false));
+    this.buffers.disable(reason);
 
     return this.multiple.close();
   }
