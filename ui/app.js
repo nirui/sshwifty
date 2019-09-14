@@ -116,7 +116,7 @@ function startApp(rootEl) {
         return this.authErr.length > 0 || this.loadErr.length > 0;
       },
       async getSocketAuthKey(privateKey, randomKey) {
-        const enc = new TextEncoder("utf-8");
+        const enc = new TextEncoder();
 
         return new Uint8Array(
           await cipher.hmac512(enc.encode(privateKey), enc.encode(randomKey))

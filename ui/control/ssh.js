@@ -91,7 +91,7 @@ class Control {
       return;
     }
 
-    return this.sender(new TextEncoder("utf-8").encode(data));
+    return this.sender(new TextEncoder().encode(data));
   }
 
   color() {

@@ -97,7 +97,7 @@ class Dial {
    *
    */
   async buildKeyString() {
-    const enc = new TextEncoder("utf-8");
+    const enc = new TextEncoder();
 
     let rTime = Number(Math.trunc(new Date().getTime() / 100000)),
       key = await crypt.hmac512(

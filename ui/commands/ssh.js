@@ -752,7 +752,7 @@ class Wizard {
     if (config.credential.length > 0) {
       sd.send(
         CLIENT_CONNECT_RESPOND_CREDENTIAL,
-        new TextEncoder("utf-8").encode(config.credential)
+        new TextEncoder().encode(config.credential)
       );
 
       return this.stepContinueWaitForEstablishWait();
@@ -782,7 +782,7 @@ class Wizard {
 
         sd.send(
           CLIENT_CONNECT_RESPOND_CREDENTIAL,
-          new TextEncoder("utf-8").encode(vv)
+          new TextEncoder().encode(vv)
         );
 
         newCredential(vv);
