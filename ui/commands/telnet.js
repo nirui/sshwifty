@@ -208,6 +208,24 @@ const initialFieldDef = {
 
       return "Look like " + addr.type + " address";
     }
+  },
+  Encoding: {
+    name: "Encoding",
+    description: "The character encoding of the server",
+    type: "select",
+    value: "utf-8",
+    example: common.charsetPresets.join(","),
+    verify(d) {
+      for (let i in common.charsetPresets) {
+        if (common.charsetPresets[i] !== d) {
+          continue;
+        }
+
+        return "";
+      }
+
+      throw new Error('The character encoding "' + d + '" is not supported');
+    }
   }
 };
 
@@ -288,7 +306,8 @@ class Wizard {
     let self = this;
 
     let parsedConfig = {
-      host: address.parseHostPort(configInput.host, DEFAULT_PORT)
+      host: address.parseHostPort(configInput.host, DEFAULT_PORT),
+      charset: configInput.charset
     };
 
     return new Telnet(sender, parsedConfig, {
@@ -319,6 +338,7 @@ class Wizard {
               configInput.host,
               self.info,
               self.controls.get("Telnet", {
+                charset: parsedConfig.charset,
                 send(data) {
                   return commandHandler.sendData(data);
                 },
@@ -359,7 +379,14 @@ class Wizard {
       self.hasStarted = true;
 
       self.streams.request(COMMAND_ID, sd => {
-        return self.buildCommand(sd, this.config, this.session);
+        return self.buildCommand(
+          sd,
+          {
+            host: this.config.host,
+            charset: this.config.charset ? this.config.charset : "utf-8"
+          },
+          this.session
+        );
       });
 
       return self.stepWaitForAcceptWait();
@@ -373,13 +400,20 @@ class Wizard {
         self.hasStarted = true;
 
         self.streams.request(COMMAND_ID, sd => {
-          return self.buildCommand(sd, r, this.session);
+          return self.buildCommand(
+            sd,
+            {
+              host: r.host,
+              charset: r.encoding
+            },
+            this.session
+          );
         });
 
         self.step.resolve(self.stepWaitForAcceptWait());
       },
       () => {},
-      command.fields(initialFieldDef, [{ name: "Host" }])
+      command.fields(initialFieldDef, [{ name: "Host" }, { name: "Encoding" }])
     );
   }
 }
@@ -408,18 +442,39 @@ export class Command {
   }
 
   launch(info, launcher, streams, subs, controls, history) {
+    const d = launcher.split("|", 2);
+
+    if (d.length <= 0) {
+      throw new Exception('Given launcher "' + launcher + '" was invalid');
+    }
+
     try {
-      initialFieldDef["Host"].verify(launcher);
+      initialFieldDef["Host"].verify(d[0]);
     } catch (e) {
       throw new Exception(
         'Given launcher "' + launcher + '" was invalid: ' + e
       );
     }
 
+    let charset = "utf-8";
+
+    if (d.length > 1) {
+      try {
+        initialFieldDef["Encoding"].verify(d[1]);
+
+        charset = d[1];
+      } catch (e) {
+        throw new Exception(
+          'Given launcher "' + launcher + '" was invalid: ' + e
+        );
+      }
+    }
+
     return this.builder(
       info,
       {
-        host: launcher
+        host: d[0],
+        charset: charset
       },
       null,
       streams,
@@ -430,6 +485,6 @@ export class Command {
   }
 
   launcher(config) {
-    return config.host;
+    return config.host + (config.charset ? "|" + config.charset : "");
   }
 }

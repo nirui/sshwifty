@@ -316,6 +316,23 @@ class Control {
     this.colorM = color;
     this.colors = this.colorM.get();
 
+    if (!data.charset || data.charset === "utf-8") {
+      this.charsetDecoder = d => {
+        return d;
+      };
+    } else {
+      let dec = new TextDecoder(data.charset),
+        enc = new TextEncoder();
+
+      this.charsetDecoder = d => {
+        return enc.encode(
+          dec.decode(d, {
+            stream: true
+          })
+        );
+      };
+    }
+
     this.sender = data.send;
     this.closer = data.close;
     this.closed = false;
@@ -332,7 +349,7 @@ class Control {
     this.parser = new Parser(
       this.sender,
       d => {
-        self.subs.resolve(d);
+        self.subs.resolve(this.charsetDecoder(d));
       },
       {
         setEcho(newVal) {

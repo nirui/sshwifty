@@ -356,7 +356,6 @@ body {
   display: block;
   width: 100%;
   overflow: auto;
-  padding: 1px;
 }
 
 .form1 > fieldset .field.horizontal {
@@ -381,6 +380,7 @@ body {
 
 .form1 > fieldset .field,
 .form1 > fieldset .field input,
+.form1 > fieldset .field select,
 .form1 > fieldset .field textarea,
 .form1 > fieldset .field button {
   vertical-align: middle;
@@ -416,6 +416,7 @@ body {
 }
 
 .form1 > fieldset .field > input,
+.form1 > fieldset .field > select,
 .form1 > fieldset .field > textarea,
 .form1 > fieldset .field > button {
   box-sizing: border-box;
@@ -438,6 +439,7 @@ body {
 .form1 > fieldset .field > input[type="tel"],
 .form1 > fieldset .field > input[type="url"],
 .form1 > fieldset .field > input[type="password"],
+.form1 > fieldset .field > select,
 .form1 > fieldset .field > textarea {
   width: 100%;
   padding: 10px;
@@ -481,18 +483,21 @@ body {
 .form1 > fieldset .field.error > input[type="tel"],
 .form1 > fieldset .field.error > input[type="url"],
 .form1 > fieldset .field.error > input[type="password"],
+.form1 > fieldset .field.error > select,
 .form1 > fieldset .field.error > textarea {
   background: #483535;
   border-bottom: 2px solid #a83333;
 }
 
 .form1 > fieldset .field > input:disabled,
+.form1 > fieldset .field > select:disabled,
 .form1 > fieldset .field > textarea:disabled,
 .form1 > fieldset .field > button:disabled {
   opacity: 0.35;
 }
 
 .form1 > fieldset .field > input:disabled:active,
+.form1 > fieldset .field > select:disabled:active,
 .form1 > fieldset .field > textarea:disabled:active,
 .form1 > fieldset .field > button:disabled:active {
   opacity: 0.5;
@@ -516,6 +521,7 @@ body {
 .form1 > fieldset .field > input[type="tel"]:focus,
 .form1 > fieldset .field > input[type="url"]:focus,
 .form1 > fieldset .field > input[type="password"]:focus,
+.form1 > fieldset .field > select:focus,
 .form1 > fieldset .field > textarea:focus {
   background: #222;
   border-bottom: 2px solid #e9a;
