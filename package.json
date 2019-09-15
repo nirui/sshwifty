@@ -42,8 +42,7 @@
     "webpack-manifest-plugin": "^2.0.4",
     "xterm": "^4.0.1",
     "xterm-addon-fit": "^0.2.1",
-    "xterm-addon-web-links": "^0.2.1",
-    "xterm-addon-webgl": "^0.2.1"
+    "xterm-addon-web-links": "^0.2.1"
   },
   "scripts": {
     "dev": "NODE_ENV=development webpack --mode=development --config=webpack.config.js --watch",
