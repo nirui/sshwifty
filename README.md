@@ -233,6 +233,24 @@ SSHWIFTY_READDELAY
 SSHWIFTY_WRITEELAY
 ```
 
+## FAQ
+
+### Why the software says "The time difference is beyond operational limit"?
+
+This software requires both the client and the server is running at the same
+date time.
+
+Please reload the page. If the error message won't go away, consider resync the
+time on both the client and the server with a trusted time server.
+
+### Why I got error "TypeError: Cannot read property 'importKey' of undefined"
+
+It's usually because your web browser is not support WebCrypt API, or the
+support has been disabled.
+
+If you're using Google Chrome, please use HTTPS when connect to Sshwifty. Chrome
+will disable WebCrypt and many other APIs when the connection is not safe.
+
 ## License
 
 Code of this project is licensed under AGPL, see [LICENSE.md] for detail.
