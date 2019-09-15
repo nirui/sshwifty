@@ -28,6 +28,11 @@
   width: 500px;
 }
 
+#connect-frame {
+  z-index: 0;
+  position: relative;
+}
+
 #connect .window-frame {
   max-height: calc(100vh - 40px);
   overflow: auto;

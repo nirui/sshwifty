@@ -24,50 +24,52 @@
     :display="display"
     @display="$emit('display', $event)"
   >
-    <h1 class="window-title">Establish connection with</h1>
+    <div id="connect-frame">
+      <h1 class="window-title">Establish connection with</h1>
 
-    <slot v-if="inputting"></slot>
+      <slot v-if="inputting"></slot>
 
-    <connect-switch
-      v-if="!inputting"
-      :knowns-length="knowns.length"
-      :tab="tab"
-      @switch="switchTab"
-    ></connect-switch>
+      <connect-switch
+        v-if="!inputting"
+        :knowns-length="knowns.length"
+        :tab="tab"
+        @switch="switchTab"
+      ></connect-switch>
 
-    <connect-new
-      v-if="tab === 'new' && !inputting"
-      :connectors="connectors"
-      @select="selectConnector"
-    ></connect-new>
+      <connect-new
+        v-if="tab === 'new' && !inputting"
+        :connectors="connectors"
+        @select="selectConnector"
+      ></connect-new>
 
-    <connect-known
-      v-if="tab === 'known' && !inputting"
-      :knowns="knowns"
-      :launcher-builder="knownsLauncherBuilder"
-      @select="selectKnown"
-      @remove="removeKnown"
-    ></connect-known>
+      <connect-known
+        v-if="tab === 'known' && !inputting"
+        :knowns="knowns"
+        :launcher-builder="knownsLauncherBuilder"
+        @select="selectKnown"
+        @remove="removeKnown"
+      ></connect-known>
 
-    <div id="connect-warning">
-      <span id="connect-warning-icon" class="icon icon-warning1"></span>
-      <div id="connect-warning-msg">
-        <p>
-          <strong>An insecured service may steal your secrets.</strong>
-          Always exam the safety of the service before using it.
-        </p>
+      <div id="connect-warning">
+        <span id="connect-warning-icon" class="icon icon-warning1"></span>
+        <div id="connect-warning-msg">
+          <p>
+            <strong>An insecured service may steal your secrets.</strong>
+            Always exam the safety of the service before using it.
+          </p>
 
-        <p>
-          Sshwifty is a free software, you can deploy it on your own trusted
-          infrastructure.
-          <a href="https://github.com/niruix/sshwifty" target="_blank"
-            >Learn more</a
-          >
-        </p>
+          <p>
+            Sshwifty is a free software, you can deploy it on your own trusted
+            infrastructure.
+            <a href="https://github.com/niruix/sshwifty" target="_blank"
+              >Learn more</a
+            >
+          </p>
+        </div>
       </div>
-    </div>
 
-    <div v-if="busy" id="connect-busy-overlay"></div>
+      <div v-if="busy" id="connect-busy-overlay"></div>
+    </div>
   </window>
 </template>
 
