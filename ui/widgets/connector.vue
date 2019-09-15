@@ -137,6 +137,26 @@
           @change="verify(key, field, true)"
         />
 
+        <select
+          v-if="field.field.type === 'select'"
+          v-model="field.field.value"
+          autocomplete="off"
+          :name="field.field.name"
+          :value="field.field.value"
+          @input="verify(key, field, false)"
+          @change="verify(key, field, true)"
+        >
+          <option
+            v-for="(option, oKey) in field.field.example.split(',')"
+            :key="oKey"
+            :value="option"
+            :selected="field.field.value === option"
+            :aria-selected="field.field.value === option"
+          >
+            {{ option }}
+          </option>
+        </select>
+
         <div v-if="field.field.type === 'textdata'" class="textinfo">
           <div class="info">{{ field.field.value }}</div>
         </div>
@@ -160,27 +180,6 @@
             />
             {{ option }}
           </label>
-        </div>
-
-        <div v-if="field.field.type === 'select'" class="field">
-          <select
-            v-model="field.field.value"
-            autocomplete="off"
-            :name="field.field.name"
-            :value="field.field.value"
-            @input="verify(key, field, false)"
-            @change="verify(key, field, true)"
-          >
-            <option
-              v-for="(option, oKey) in field.field.example.split(',')"
-              :key="oKey"
-              :value="option"
-              :selected="field.field.value === option"
-              :aria-selected="field.field.value === option"
-            >
-              {{ option }}
-            </option>
-          </select>
         </div>
 
         <div v-if="field.error.length > 0" class="error">{{ field.error }}</div>
