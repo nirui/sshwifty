@@ -453,7 +453,13 @@ class Control {
     }
 
     let currentLen = 0;
-    const enc = new iconv.encode(data, this.charset);
+    let enc = null;
+
+    if (this.charset !== "utf-8") {
+      enc = new iconv.encode(data, this.charset);
+    } else {
+      enc = new TextEncoder().encode(data);
+    }
 
     while (currentLen < enc.length) {
       const iacPos = this.searchNextIAC(currentLen, enc);
