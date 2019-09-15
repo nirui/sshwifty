@@ -200,7 +200,8 @@ module.exports = {
         ? {}
         : {
             chunks: "all",
-            minSize: 30000,
+            minSize: 128000,
+            maxSize: 244000,
             automaticNameDelimiter: ".",
             automaticNameMaxLength: 16,
             name: true
@@ -390,7 +391,7 @@ module.exports = {
       new ImageminPlugin({
         disable: process.env.NODE_ENV === "development",
         pngquant: {
-          quality: "5-15"
+          quality: "3-10"
         }
       }),
       new MiniCssExtractPlugin({
