@@ -22,7 +22,7 @@
  * @param {Uint8Array} data Data to be HMAC'ed
  */
 export async function hmac512(secret, data) {
-  const key = await crypto.subtle.importKey(
+  const key = await window.crypto.subtle.importKey(
     "raw",
     secret,
     {
@@ -33,10 +33,11 @@ export async function hmac512(secret, data) {
     ["sign", "verify"]
   );
 
-  return crypto.subtle.sign(key.algorithm, key, data);
+  return window.crypto.subtle.sign(key.algorithm, key, data);
 }
 
 export const GCMNonceSize = 12;
+export const GCMKeyBitLen = 128;
 
 /**
  * Build AES GCM Encryption/Decryption key
@@ -44,10 +45,16 @@ export const GCMNonceSize = 12;
  * @param {Uint8Array} keyData Key data
  */
 export function buildGCMKey(keyData) {
-  return crypto.subtle.importKey("raw", keyData, "aes-gcm", false, [
-    "encrypt",
-    "decrypt"
-  ]);
+  return window.crypto.subtle.importKey(
+    "raw",
+    keyData,
+    {
+      name: "AES-GCM",
+      length: GCMKeyBitLen
+    },
+    false,
+    ["encrypt", "decrypt"]
+  );
 }
 
 /**
@@ -58,7 +65,11 @@ export function buildGCMKey(keyData) {
  * @param {Uint8Array} plaintext Data to be encrypted
  */
 export function encryptGCM(key, iv, plaintext) {
-  return crypto.subtle.encrypt({ name: "aes-gcm", iv: iv }, key, plaintext);
+  return window.crypto.subtle.encrypt(
+    { name: "AES-GCM", iv: iv, tagLength: GCMKeyBitLen },
+    key,
+    plaintext
+  );
 }
 
 /**
@@ -69,7 +80,11 @@ export function encryptGCM(key, iv, plaintext) {
  * @param {Uint8Array} cipherText Data to be decrypted
  */
 export function decryptGCM(key, iv, cipherText) {
-  return crypto.subtle.decrypt({ name: "aes-gcm", iv: iv }, key, cipherText);
+  return window.crypto.subtle.decrypt(
+    { name: "AES-GCM", iv: iv, tagLength: GCMKeyBitLen },
+    key,
+    cipherText
+  );
 }
 
 /**
@@ -77,7 +92,7 @@ export function decryptGCM(key, iv, cipherText) {
  *
  */
 export function generateNonce() {
-  return crypto.getRandomValues(new Uint8Array(GCMNonceSize));
+  return window.crypto.getRandomValues(new Uint8Array(GCMNonceSize));
 }
 
 /**
