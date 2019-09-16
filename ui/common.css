@@ -506,9 +506,11 @@ body {
 .form1 > fieldset .field > input[type="checkbox"],
 .form1 > fieldset .field > input[type="radio"] {
   background: #2e2e2e;
-  margin-right: 3px;
+  margin: 1px 3px 1px 1px;
 }
 
+.form1 > fieldset .field > input[type="checkbox"]:active,
+.form1 > fieldset .field > input[type="radio"]:active,
 .form1 > fieldset .field > input[type="checkbox"]:focus,
 .form1 > fieldset .field > input[type="radio"]:focus {
   outline: 1px solid #e9a;
