@@ -244,7 +244,7 @@ const initialFieldDef = {
     description: "",
     type: "text",
     value: "",
-    example: "root",
+    example: "guest",
     verify(d) {
       if (d.length <= 0) {
         throw new Error("Username must be specified");
