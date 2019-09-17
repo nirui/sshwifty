@@ -52,13 +52,18 @@ after_success:
 before_deploy:
   - |
     if [[ "$SSHWIFTY_DEPLOY" == "yes" ]]; then
-      curl "$ASC_URL" | gpg --import
       mkdir -p ./.tmp/deploy
+      curl "$ASC_URL" > ./.tmp/deploy/gpg.keys
+      cat ./.tmp/deploy/gpg.keys | gpg --import
       CGO_ENABLED=0 gox -ldflags "-s -w -X $VERSION_VARIABLE=$SSHWIFTY_VERSION" -osarch "$BUILD_TARGETS" -output "./.tmp/deploy/{{.Dir}}_$(echo $SSHWIFTY_VERSION)_{{.OS}}_{{.Arch}}/{{.Dir}}_{{.OS}}_{{.Arch}}"
-      echo $(git show "$SSHWIFTY_COMMIT" --show-signature --shortstat) > ./.tmp/deploy/Note
+      echo "$SSHWIFTY_VERSION" > ./.tmp/deploy/Note
+      echo >> ./.tmp/deploy/Note
+      echo "Following updates is included since the last release $(git describe --abbrev=0 --tags $(git rev-list --tags --skip=1 --max-count=1))" >> ./.tmp/deploy/Note
+      git log $(git describe --abbrev=0 --tags $(git rev-list --tags --skip=1 --max-count=1))..HEAD --pretty=format:"- %h %s - (%an) %GK %G?" >> ./.tmp/deploy/Note
       echo 'echo Preparing for $1 ...;' > prepare.sh
       echo '(cd $1/ && find . -maxdepth 1 -type f ! -name "SUM.*" -exec sha512sum {} \; > SUM.sha512);' >> prepare.sh
       echo '(cp *.md $1/);' >> prepare.sh
+      echo '(cp ./.tmp/deploy/gpg.keys $1/);' >> prepare.sh
       echo '(cp ./.tmp/deploy/Note $1/);' >> prepare.sh
       echo '(cp ./sshwifty.conf.example.json $1/);' >> prepare.sh
       echo '(cd $1/ && tar zpcvf "../$(basename $(pwd)).tar.gz" * --owner=0 --group=0);' >> prepare.sh
@@ -69,7 +74,7 @@ before_deploy:
       find ./.tmp/deploy/ -maxdepth 1 -type f -name "*.tar.gz" -execdir sha512sum {} \; > ./.tmp/deploy/SUM.sha512
       echo "$GITHUB_USER" > ./deploy_user
       echo "$SSHWIFTY_VERSION-prebuild" > ./deploy_title
-      echo 'ghr -u "$(cat ./deploy_user)" -b "$(cat ./.tmp/deploy/Note)" -delete -prerelease "$(cat ./deploy_title)" ./.tmp/deploy' > ./deploy.sh
+      echo 'ghr -u "$(cat ./deploy_user)" -t "$(cat ./deploy_title)" -b "$(cat ./.tmp/deploy/Note)" -delete -prerelease "$(cat ./deploy_title)" ./.tmp/deploy' > ./deploy.sh
       chmod +x ./deploy.sh
       cat ./.tmp/deploy/SUM.sha512
     fi
