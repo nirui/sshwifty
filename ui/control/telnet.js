@@ -336,8 +336,14 @@ class Control {
     this.charset = data.charset;
 
     if (this.charset === "utf-8") {
+      let enc = new TextEncoder();
+
       this.charsetDecoder = d => {
         return d;
+      };
+
+      this.charsetEncoder = dStr => {
+        return enc.encode(dStr);
       };
     } else {
       let dec = new TextDecoder(this.charset),
@@ -349,6 +355,10 @@ class Control {
             stream: true
           })
         );
+      };
+
+      this.charsetEncoder = dStr => {
+        return iconv.encode(dStr, this.charset);
       };
     }
 
@@ -453,13 +463,7 @@ class Control {
     }
 
     let currentLen = 0;
-    let enc = null;
-
-    if (this.charset !== "utf-8") {
-      enc = new iconv.encode(data, this.charset);
-    } else {
-      enc = new TextEncoder().encode(data);
-    }
+    const enc = this.charsetEncoder(data);
 
     while (currentLen < enc.length) {
       const iacPos = this.searchNextIAC(currentLen, enc);
