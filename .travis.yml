@@ -74,7 +74,7 @@ before_deploy:
       find ./.tmp/deploy/ -maxdepth 1 -type f -name "*.tar.gz" -execdir sha512sum {} \; > ./.tmp/deploy/SUM.sha512
       echo "$GITHUB_USER" > ./deploy_user
       echo "$SSHWIFTY_VERSION-prebuild" > ./deploy_title
-      echo 'ghr -u "$(cat ./deploy_user)" -t "$(cat ./deploy_title)" -b "$(cat ./.tmp/deploy/Note)" -delete -prerelease "$(cat ./deploy_title)" ./.tmp/deploy' > ./deploy.sh
+      echo 'ghr -u "$(cat ./deploy_user)" -n "$(cat ./deploy_title)" -b "$(cat ./.tmp/deploy/Note)" -delete -prerelease "$(cat ./deploy_title)" ./.tmp/deploy' > ./deploy.sh
       chmod +x ./deploy.sh
       cat ./.tmp/deploy/SUM.sha512
     fi
