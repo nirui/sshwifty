@@ -26,6 +26,7 @@ import (
 	"net/http"
 	"strconv"
 	"sync"
+	"time"
 
 	"github.com/niruix/sshwifty/application/configuration"
 	"github.com/niruix/sshwifty/application/log"
@@ -111,11 +112,15 @@ func (s Server) Wait() {
 }
 
 func (s *Serving) buildListener(
-	ip string, port uint16) (*net.TCPListener, error) {
+	ip string,
+	port uint16,
+	readTimeout time.Duration,
+	writeTimeout time.Duration,
+) (listener, error) {
 	ipAddr := net.ParseIP(ip)
 
 	if ipAddr == nil {
-		return nil, ErrInvalidIPAddress
+		return listener{}, ErrInvalidIPAddress
 	}
 
 	ipPort := net.JoinHostPort(
@@ -124,10 +129,20 @@ func (s *Serving) buildListener(
 	addr, addrErr := net.ResolveTCPAddr("tcp", ipPort)
 
 	if addrErr != nil {
-		return nil, addrErr
+		return listener{}, addrErr
 	}
 
-	return net.ListenTCP("tcp", addr)
+	ll, llErr := net.ListenTCP("tcp", addr)
+
+	if llErr != nil {
+		return listener{}, llErr
+	}
+
+	return listener{
+		TCPListener:  ll,
+		readTimeout:  readTimeout,
+		writeTimeout: writeTimeout,
+	}, nil
 }
 
 // run starts the server
@@ -137,7 +152,6 @@ func (s *Serving) run(
 	closeCallback CloseCallback,
 ) error {
 	var err error
-	var ls *net.TCPListener
 
 	defer func() {
 		if err == nil || err == http.ErrServerClosed {
@@ -151,7 +165,12 @@ func (s *Serving) run(
 		closeCallback(err)
 	}()
 
-	ls, err = s.buildListener(cfg.ListenInterface, cfg.ListenPort)
+	ls, err := s.buildListener(
+		cfg.ListenInterface,
+		cfg.ListenPort,
+		cfg.ReadTimeout,
+		cfg.WriteTimeout,
+	)
 
 	if err != nil {
 		return err

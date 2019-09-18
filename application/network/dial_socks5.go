@@ -25,10 +25,6 @@ import (
 	"golang.org/x/net/proxy"
 )
 
-var (
-	emptyTime = time.Time{}
-)
-
 type socks5Dial struct {
 	net.Dialer
 }
