@@ -91,16 +91,6 @@ class Term {
     });
 
     this.term.onData(data => {
-      if (process.env.NODE_ENV === "development") {
-        let keyCodes = [];
-
-        for (let i = 0; i < data.length; i++) {
-          keyCodes.push(data.charCodeAt(i));
-        }
-
-        console.log("Sending", keyCodes);
-      }
-
       control.send(data);
     });
 
