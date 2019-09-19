@@ -46,3 +46,32 @@ export function getRands(n, min, max) {
 
   return r;
 }
+
+/**
+ * Separate given buffer to multiple ones based on input max length
+ *
+ * @param {Uint8Array} buf Buffer to separate
+ * @param {number} max Max length of each buffer
+ *
+ * @returns {Array<Uint8Array>} Separated buffers
+ *
+ */
+export function separateBuffer(buf, max) {
+  let start = 0,
+    result = [];
+
+  while (start < buf.length) {
+    let remain = buf.length - start;
+
+    if (remain <= max) {
+      result.push(buf.slice(start, start + remain));
+
+      return result;
+    }
+
+    remain = max;
+
+    result.push(buf.slice(start, start + remain));
+    start += remain;
+  }
+}

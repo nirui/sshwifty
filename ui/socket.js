@@ -187,7 +187,6 @@ class Dial {
             throw e;
           }
         },
-        15,
         4096 - 64 // Server has a 4096 bytes receive buffer, can be no greater
       );
 

@@ -139,7 +139,7 @@ export class Streams {
     }
 
     try {
-      this.sender.clear();
+      this.sender.close();
     } catch (e) {
       process.env.NODE_ENV === "development" && console.trace(e);
     }
