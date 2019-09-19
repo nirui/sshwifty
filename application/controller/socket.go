@@ -354,11 +354,11 @@ func (s socket) Get(
 
 	// Start service
 	const cipherReadBufSize = 4096
+	const cipherMaxDataPayloadLen = cipherReadBufSize - 2
 
 	cipherReadBuf := [cipherReadBufSize]byte{}
 	cipherWriteBuf := [cipherReadBufSize]byte{}
-
-	maxWriteLen := cipherReadBufSize - (writeCipher.Overhead() + 2)
+	maxWriteLen := int(cipherReadBufSize) - (writeCipher.Overhead() + 2)
 
 	senderLock := sync.Mutex{}
 	cmdExec, cmdExecErr := s.commander.New(
@@ -381,7 +381,7 @@ func (s socket) Get(
 			packageSize <<= 8
 			packageSize |= uint16(cipherReadBuf[1])
 
-			if packageSize <= 0 {
+			if packageSize <= 0 || packageSize > cipherMaxDataPayloadLen {
 				return nil, ErrSocketInvalidDataPackage
 			}
 
@@ -392,11 +392,8 @@ func (s socket) Get(
 					return nil, rErr
 				}
 
-				return readCipher.Open(rData[:0], readNonce[:], rData, nil)
-			}
-
-			if packageSize > cipherReadBufSize {
-				return nil, ErrSocketInvalidDataPackage
+				return readCipher.Open(
+					cipherReadBuf[:0], readNonce[:], rData, nil)
 			}
 
 			_, rErr = io.ReadFull(&wsReader, cipherReadBuf[:packageSize])
