@@ -47,13 +47,13 @@ export class Subscribe {
    * @param {any} d Resolve data which will be send to the subscriber
    */
   resolve(d) {
-    if (this.res === null) {
-      this.pending.push([typeResolve, d]);
+    if (this.res !== null) {
+      this.res(d);
 
       return;
     }
 
-    this.res(d);
+    this.pending.push([typeResolve, d]);
   }
 
   /**
@@ -63,13 +63,13 @@ export class Subscribe {
    *
    */
   reject(e) {
-    if (this.rej === null) {
-      this.pending.push([typeReject, e]);
+    if (this.rej !== null) {
+      this.rej(e);
 
       return;
     }
 
-    this.rej(e);
+    this.pending.push([typeReject, e]);
   }
 
   /**
