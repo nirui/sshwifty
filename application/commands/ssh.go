@@ -28,6 +28,7 @@ import (
 
 	"github.com/niruix/sshwifty/application/command"
 	"github.com/niruix/sshwifty/application/log"
+	"github.com/niruix/sshwifty/application/network"
 	"github.com/niruix/sshwifty/application/rw"
 )
 
@@ -109,6 +110,7 @@ var (
 type sshRemoteConnWrapper struct {
 	net.Conn
 
+	writerConn          network.WriteTimeoutConn
 	requestTimeoutRetry func(s *sshRemoteConnWrapper) bool
 }
 
@@ -138,6 +140,10 @@ func (s *sshRemoteConnWrapper) Read(b []byte) (int, error) {
 			return rLen, rErr
 		}
 	}
+}
+
+func (s *sshRemoteConnWrapper) Write(b []byte) (int, error) {
+	return s.writerConn.Write(b)
 }
 
 type sshRemoteConn struct {
@@ -364,17 +370,18 @@ func (d *sshClient) disableRemoteReadTimeoutRetry() {
 }
 
 func (d *sshClient) dialRemote(
-	network,
+	networkName,
 	addr string,
 	config *ssh.ClientConfig) (*ssh.Client, func(), error) {
-	conn, err := d.cfg.Dial(network, addr, config.Timeout)
+	conn, err := d.cfg.Dial(networkName, addr, config.Timeout)
 
 	if err != nil {
 		return nil, nil, err
 	}
 
 	sshConn := &sshRemoteConnWrapper{
-		Conn: conn,
+		Conn:       conn,
+		writerConn: network.NewWriteTimeoutConn(conn, d.cfg.DialTimeout),
 		requestTimeoutRetry: func(s *sshRemoteConnWrapper) bool {
 			d.remoteReadTimeoutRetryLock.Lock()
 			defer d.remoteReadTimeoutRetryLock.Unlock()
@@ -393,6 +400,9 @@ func (d *sshClient) dialRemote(
 		},
 	}
 
+	// Set timeout for writer, otherwise the Timeout writer will never
+	// be triggered
+	sshConn.SetWriteDeadline(time.Now().Add(d.cfg.DialTimeout))
 	sshConn.SetReadDeadline(time.Now().Add(config.Timeout))
 
 	c, chans, reqs, err := ssh.NewClientConn(sshConn, addr, config)
@@ -527,11 +537,7 @@ func (d *sshClient) remote(
 	d.remoteConnReceive <- sshRemoteConn{
 		writer: in,
 		closer: func() error {
-			sErr := session.Close()
-
-			if sErr != nil {
-				return sErr
-			}
+			session.Close()
 
 			return conn.Close()
 		},
@@ -626,6 +632,8 @@ func (d *sshClient) local(
 			_, wErr := remote.writer.Write(rData)
 
 			if wErr != nil {
+				remote.closer()
+
 				d.l.Debug("Failed to write data to remote: %s", wErr)
 			}
 

@@ -19,11 +19,13 @@ package commands
 
 import (
 	"errors"
-	"io"
+	"net"
 	"sync"
+	"time"
 
 	"github.com/niruix/sshwifty/application/command"
 	"github.com/niruix/sshwifty/application/log"
+	"github.com/niruix/sshwifty/application/network"
 	"github.com/niruix/sshwifty/application/rw"
 )
 
@@ -49,8 +51,8 @@ type telnetClient struct {
 	l          log.Logger
 	w          command.StreamResponder
 	cfg        command.Configuration
-	remoteChan chan io.WriteCloser
-	remoteConn io.WriteCloser
+	remoteChan chan net.Conn
+	remoteConn net.Conn
 	closeWait  sync.WaitGroup
 }
 
@@ -63,7 +65,7 @@ func newTelnet(
 		l:          l,
 		w:          w,
 		cfg:        cfg,
-		remoteChan: make(chan io.WriteCloser, 1),
+		remoteChan: make(chan net.Conn, 1),
 		remoteConn: nil,
 		closeWait:  sync.WaitGroup{},
 	}
@@ -78,8 +80,6 @@ func (d *telnetClient) Bootup(
 		return nil, command.ToFSMError(
 			addrErr, TelnetRequestErrorBadRemoteAddress)
 	}
-
-	// TODO: Test whether or not the address is allowed
 
 	d.closeWait.Add(1)
 	go d.remote(addr.String())
@@ -118,7 +118,13 @@ func (d *telnetClient) remote(addr string) {
 		return
 	}
 
-	d.remoteChan <- clientConn
+	// Set timeout for writer, otherwise the Timeout writer will never
+	// be triggered
+	clientConn.SetWriteDeadline(time.Now().Add(d.cfg.DialTimeout))
+	timeoutClientConn := network.NewWriteTimeoutConn(
+		clientConn, d.cfg.DialTimeout)
+
+	d.remoteChan <- &timeoutClientConn
 
 	for {
 		rLen, rErr := clientConn.Read(buf[d.w.HeaderSize():])
@@ -136,7 +142,7 @@ func (d *telnetClient) remote(addr string) {
 	}
 }
 
-func (d *telnetClient) getRemote() (io.WriteCloser, error) {
+func (d *telnetClient) getRemote() (net.Conn, error) {
 	if d.remoteConn != nil {
 		return d.remoteConn, nil
 	}
@@ -176,6 +182,8 @@ func (d *telnetClient) client(
 		_, wErr := remoteConn.Write(rBuf)
 
 		if wErr != nil {
+			remoteConn.Close()
+
 			d.l.Debug("Failed to write data to remote: %s", wErr)
 		}
 
