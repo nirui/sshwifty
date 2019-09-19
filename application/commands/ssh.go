@@ -636,8 +636,6 @@ func (d *sshClient) local(
 
 				d.l.Debug("Failed to write data to remote: %s", wErr)
 			}
-
-			return nil
 		}
 
 		return nil

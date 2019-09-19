@@ -186,8 +186,6 @@ func (d *telnetClient) client(
 
 			d.l.Debug("Failed to write data to remote: %s", wErr)
 		}
-
-		return nil
 	}
 
 	return nil
