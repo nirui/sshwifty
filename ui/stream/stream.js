@@ -19,6 +19,7 @@ import Exception from "./exception.js";
 import * as header from "./header.js";
 import * as reader from "./reader.js";
 import * as sender from "./sender.js";
+import * as common from "./common.js";
 
 export class Sender {
   /**
@@ -63,6 +64,43 @@ export class Sender {
     d.set(data, 3);
 
     return this.sender.send(d);
+  }
+
+  /**
+   * Sends data to remote, if the data is too long, it will be separated into
+   * different stream requests
+   *
+   * @param {number} marker binary marker
+   * @param {Uint8Array} data data to be sent
+   *
+   * @throws {Exception} When the sender already been closed
+   *
+   */
+  async sendData(marker, data) {
+    if (this.closed) {
+      throw new Exception(
+        "Sender already been closed. No data can be send",
+        false
+      );
+    }
+
+    let dataSeg = common.separateBuffer(data, header.STREAM_MAX_LENGTH),
+      reqHeader = new header.Header(header.STREAM);
+
+    reqHeader.set(this.id);
+
+    for (let i in dataSeg) {
+      let stHeader = new header.Stream(0, 0),
+        d = new Uint8Array(dataSeg[i].length + 3);
+
+      stHeader.set(marker, dataSeg[i].length);
+
+      d[0] = reqHeader.value();
+      d.set(stHeader.buffer(), 1);
+      d.set(dataSeg[i], 3);
+
+      await this.sender.send(d);
+    }
   }
 
   /**

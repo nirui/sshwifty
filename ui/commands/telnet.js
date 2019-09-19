@@ -153,7 +153,7 @@ class Telnet {
    *
    */
   sendData(data) {
-    return this.sender.send(0x00, data);
+    return this.sender.sendData(0x00, data);
   }
 
   /**

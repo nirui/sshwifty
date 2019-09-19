@@ -200,7 +200,7 @@ class SSH {
    *
    */
   async sendData(data) {
-    return this.sender.send(CLIENT_DATA_STDIN, data);
+    return this.sender.sendData(CLIENT_DATA_STDIN, data);
   }
 
   /**
