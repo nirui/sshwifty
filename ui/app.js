@@ -294,15 +294,15 @@ function initializeClient() {
 
   if (process.env.NODE_ENV === "development") {
     console.log("Currently in Development environment");
-
-    window.addEventListener("unhandledrejection", function(e) {
-      console.error("Error:", e);
-    });
-
-    window.addEventListener("error", function(e) {
-      console.error("Error:", e);
-    });
   }
+
+  window.addEventListener("unhandledrejection", function(e) {
+    console.error("Error:", e);
+  });
+
+  window.addEventListener("error", function(e) {
+    console.error("Error:", e);
+  });
 
   landingRoot.parentNode.removeChild(landingRoot);
 
