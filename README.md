@@ -38,18 +38,19 @@ volumes, you can use  `SSHWIFTY_DOCKER_TLSCERT` and `SSHWIFTY_DOCKER_TLSCERTKEY`
 environment variables when starting the container:
 
 ```
+$ openssl req \
+  -newkey rsa:4096 -nodes -keyout domain.key -x509 -days 90 -out domain.crt
 $ docker run --detach \
   --restart=always \
   --publish 8182:8182 \
-  --env SSHWIFTY_DOCKER_TLSCERT="$(cat /path/to/domain.crt)" \
-  --env SSHWIFTY_DOCKER_TLSCERTKEY="$(cat /path/to/domain.key" \
+  --env SSHWIFTY_DOCKER_TLSCERT="$(cat domain.crt)" \
+  --env SSHWIFTY_DOCKER_TLSCERTKEY="$(cat domain.key)" \
   --name sshwifty \
   niruix/sshwifty:latest
 ```
 
-`/path/to/domain.crt` and `/path/to/domain.key` must point to valid TLS
-certificate and key file located on the machine which the `docker run` command
-is executed.
+The `domain.crt` and `domain.key` must be valid TLS certificate and key file
+located on the machine which the `docker run` command will be executed.
 
 [Docker]: https://www.docker.com
 
