@@ -41,8 +41,8 @@ environment variables when starting the container:
 $ docker run --detach \
   --restart=always \
   --publish 8182:8182 \
-  --env SSHWIFTY_DOCKER_TLSCERT="$(cat /path/to/domain.crt)"
-  --env SSHWIFTY_DOCKER_TLSCERTKEY="$(cat /path/to/domain.key)"
+  --env SSHWIFTY_DOCKER_TLSCERT="$(cat /path/to/domain.crt)" \
+  --env SSHWIFTY_DOCKER_TLSCERTKEY="$(cat /path/to/domain.key" \
   --name sshwifty \
   niruix/sshwifty:latest
 ```
