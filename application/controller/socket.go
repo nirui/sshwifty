@@ -354,7 +354,6 @@ func (s socket) Get(
 
 	// Start service
 	const cipherReadBufSize = 4096
-	const cipherMaxDataPayloadLen = cipherReadBufSize - 2
 
 	cipherReadBuf := [cipherReadBufSize]byte{}
 	cipherWriteBuf := [cipherReadBufSize]byte{}
@@ -381,7 +380,7 @@ func (s socket) Get(
 			packageSize <<= 8
 			packageSize |= uint16(cipherReadBuf[1])
 
-			if packageSize <= 0 || packageSize > cipherMaxDataPayloadLen {
+			if packageSize <= 0 || packageSize > cipherReadBufSize {
 				return nil, ErrSocketInvalidDataPackage
 			}
 
