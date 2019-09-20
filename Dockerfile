@@ -57,7 +57,7 @@ COPY --from=builder /sshwifty /
 RUN set -ex && \
     adduser -D sshwifty && \
     chmod +x /sshwifty && \
-    echo '#!/bin/sh' > /sshwifty.sh && echo >> /sshwifty.sh && echo '([ -z "$SSHWIFTY_DOCKER_TLSCERT" ] || echo "$SSHWIFTY_DOCKER_TLSCERT" > /cert); ([ -z "$SSHWIFTY_DOCKER_TLSCERTKEY" ] || echo "$SSHWIFTY_DOCKER_TLSCERTKEY" > /certkey); if [ -f "/cert" ] && [ -f "/certkey" ]; then SSHWIFTY_TLSCERTIFICATEFILE=/cert SSHWIFTY_TLSCERTIFICATEKEYFILE=/certkey /sshwifty; else /sshwifty; fi;' >> /sshwifty.sh && chmod +x /sshwifty.sh
+    echo '#!/bin/sh' > /sshwifty.sh && echo >> /sshwifty.sh && echo '([ -z "$SSHWIFTY_DOCKER_TLSCERT" ] || echo "$SSHWIFTY_DOCKER_TLSCERT" > /tmp/cert); ([ -z "$SSHWIFTY_DOCKER_TLSCERTKEY" ] || echo "$SSHWIFTY_DOCKER_TLSCERTKEY" > /tmp/certkey); if [ -f "/tmp/cert" ] && [ -f "/tmp/certkey" ]; then SSHWIFTY_TLSCERTIFICATEFILE=/tmp/cert SSHWIFTY_TLSCERTIFICATEKEYFILE=/tmp/certkey /sshwifty; else /sshwifty; fi;' >> /sshwifty.sh && chmod +x /sshwifty.sh
 USER sshwifty
 EXPOSE 8182
 ENTRYPOINT [ "/sshwifty.sh" ]
