@@ -390,7 +390,13 @@ func (c *stream) reinit(
 	c.f = ccc
 	c.closed = false
 
-	signaller.Signal(bootErr.code, true)
+	sErr := signaller.Signal(bootErr.code, true)
+
+	if sErr != nil {
+		return sErr
+	}
+
+	l.Debug("Started")
 
 	return nil
 }

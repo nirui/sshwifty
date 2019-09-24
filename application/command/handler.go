@@ -194,6 +194,8 @@ func (e *Handler) handleControl(d byte, l log.Logger) error {
 
 	switch buf[0] {
 	case HeaderControlEcho:
+		l.Debug("Echo %d bytes", d)
+
 		hd := HeaderControl
 		hd.Set(d)
 
@@ -217,12 +219,20 @@ func (e *Handler) handleControl(d byte, l log.Logger) error {
 		if !e.senderPaused {
 			e.sender.pause()
 			e.senderPaused = true
+
+			l.Debug("Pause Stream")
+		} else {
+			l.Debug("Repeated Pause Stream command, ignore")
 		}
 
 	case HeaderControlResumeStream:
 		if e.senderPaused {
 			e.sender.resume()
 			e.senderPaused = false
+
+			l.Debug("Resume Stream")
+		} else {
+			l.Debug("Repeated Resume Stream command, ignore")
 		}
 	}
 
