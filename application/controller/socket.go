@@ -32,6 +32,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+
 	"github.com/niruix/sshwifty/application/command"
 	"github.com/niruix/sshwifty/application/configuration"
 	"github.com/niruix/sshwifty/application/log"
