@@ -391,10 +391,10 @@ const initialFieldDef = {
       "cause the login to fail",
     type: "radio",
     value: "",
-    example: "Password,Private Key,None",
+    example: "Passphrase,Private Key,None",
     verify(d) {
       switch (d) {
-        case "Password":
+        case "Passphrase":
         case "Private Key":
         case "None":
           return "";
@@ -434,7 +434,8 @@ function getAuthMethodFromStr(d) {
     case "None":
       return AUTHMETHOD_NONE;
 
-    case "Password":
+    case "Passphrase":
+    case "Password": // TODO: Remove this after depreciation period.
       return AUTHMETHOD_PASSPHRASE;
 
     case "Private Key":
