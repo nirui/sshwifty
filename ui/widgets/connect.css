@@ -93,7 +93,7 @@
 #connect-warning-icon {
   float: left;
   display: block;
-  margin-right: 10px;
+  margin: 5px 10px 5px 0;
 }
 
 #connect-warning-icon::after {
