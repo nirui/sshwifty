@@ -326,7 +326,7 @@ module.exports = {
         prefix: "",
         cache: false,
         favicons: {
-          appName: "Sswifty",
+          appName: "Sswifty SSH Client",
           appDescription: "Web SSH Client",
           developerName: "Rui NI",
           developerURL: "https://vaguly.com",
@@ -334,13 +334,13 @@ module.exports = {
           theme_color: "#333",
           appleStatusBarStyle: "black",
           icons: {
-            android: { offset: 10, overlayGlow: false, overlayShadow: true },
+            android: { offset: 5, overlayGlow: false, overlayShadow: true },
             appleIcon: { offset: 10, overlayGlow: false },
             appleStartup: { offset: 10, overlayGlow: false },
             coast: false,
             favicons: { overlayGlow: false },
-            firefox: { offset: 20, overlayGlow: false },
-            windows: { offset: 10, overlayGlow: false },
+            firefox: { offset: 0, overlayGlow: false },
+            windows: { offset: 5, overlayGlow: false },
             yandex: false
           }
         }
