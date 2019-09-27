@@ -25,7 +25,7 @@
       :class="{
         active: tab === idx,
         error: tabInfo.indicator.error.length > 0,
-        updated: tabInfo.indicator.updated
+        updated: tabInfo.indicator.updated && tab !== idx
       }"
       :style="
         'background: ' +

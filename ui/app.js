@@ -42,6 +42,8 @@ const backendQueryRetryDelay = 2000;
 
 const maxTimeDiff = 30000;
 
+const updateIndicatorMaxDisplayTime = 3000;
+
 const mainTemplate = `
 <home
   v-if="page == 'app'"
@@ -50,7 +52,11 @@ const mainTemplate = `
   :connection="socket"
   :controls="controls"
   :commands="commands"
-  @navigate-to="changeURLHash"></home>
+  @navigate-to="changeURLHash"
+  @tab-opened="tabOpened"
+  @tab-closed="tabClosed"
+  @tab-updated="tabUpdated"
+></home>
 <auth
   v-else-if="page == 'auth'"
   :error="authErr"
@@ -60,6 +66,8 @@ const mainTemplate = `
 `.trim();
 
 function startApp(rootEl) {
+  const pageTitle = document.title;
+
   let uiControlColor = new ControlColor();
 
   new Vue({
@@ -90,7 +98,8 @@ function startApp(rootEl) {
           new telnetctl.Telnet(uiControlColor),
           new sshctl.SSH(uiControlColor)
         ]),
-        commands: new Commands([new telnet.Command(), new ssh.Command()])
+        commands: new Commands([new telnet.Command(), new ssh.Command()]),
+        tabUpdateIndicator: null
       };
     },
     watch: {
@@ -109,6 +118,12 @@ function startApp(rootEl) {
       this.tryInitialAuth();
     },
     methods: {
+      changeTitleInfo(newTitleInfo) {
+        document.title = newTitleInfo + " " + pageTitle;
+      },
+      resetTitleInfo() {
+        document.title = pageTitle;
+      },
       changeURLHash(newHash) {
         window.location.hash = newHash;
       },
@@ -280,6 +295,43 @@ function startApp(rootEl) {
         } catch (e) {
           this.authErr = "Unable to authenticate: " + e;
         }
+      },
+      updateTabTitleInfo(tabs, updated) {
+        if (tabs.length <= 0) {
+          this.resetTitleInfo();
+
+          return;
+        }
+
+        this.changeTitleInfo("(" + tabs.length + (updated ? "*" : "") + ")");
+      },
+      tabOpened(tabs) {
+        if (this.tabUpdateIndicator) {
+          clearTimeout(this.tabUpdateIndicator);
+          this.tabUpdateIndicator = null;
+        }
+
+        this.updateTabTitleInfo(tabs, false);
+      },
+      tabClosed(tabs) {
+        if (this.tabUpdateIndicator) {
+          clearTimeout(this.tabUpdateIndicator);
+          this.tabUpdateIndicator = null;
+        }
+
+        this.updateTabTitleInfo(tabs, false);
+      },
+      tabUpdated(tabs) {
+        if (this.tabUpdateIndicator) {
+          clearTimeout(this.tabUpdateIndicator);
+          this.tabUpdateIndicator = null;
+        }
+
+        this.updateTabTitleInfo(tabs, true);
+
+        this.tabUpdateIndicator = setTimeout(() => {
+          this.updateTabTitleInfo(tabs, false);
+        }, updateIndicatorMaxDisplayTime);
       }
     }
   });

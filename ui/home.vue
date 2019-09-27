@@ -440,6 +440,8 @@ export default {
       this.windows.connect = false;
 
       this.addToTab(data);
+
+      this.$emit("tab-opened", this.tab.tabs);
     },
     async addToTab(data) {
       await this.switchTab(
@@ -498,6 +500,8 @@ export default {
       }
 
       this.removeFromTab(index);
+
+      this.$emit("tab-closed", this.tab.tabs);
     },
     tabStopped(index, reason) {
       if (reason === null) {
@@ -507,7 +511,9 @@ export default {
       }
     },
     tabUpdated(index) {
-      this.tab.tabs[index].indicator.updated = this.tab.current !== index;
+      this.$emit("tab-updated", this.tab.tabs);
+
+      this.tab.tabs[index].indicator.updated = index !== this.tab.current;
     }
   }
 };
