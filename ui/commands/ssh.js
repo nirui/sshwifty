@@ -301,15 +301,15 @@ const initialFieldDef = {
       return "";
     }
   },
-  Passphrase: {
-    name: "Passphrase",
+  Password: {
+    name: "Password",
     description: "",
     type: "password",
     value: "",
     example: "----------",
     verify(d) {
       if (d.length <= 0) {
-        throw new Error("Passphrase must be specified");
+        throw new Error("Password must be specified");
       }
 
       if (d.length > MAX_PASSWORD_LEN) {
@@ -318,7 +318,7 @@ const initialFieldDef = {
         );
       }
 
-      return "We'll login with this passphrase";
+      return "We'll login with this password";
     }
   },
   "Private Key": {
@@ -391,10 +391,10 @@ const initialFieldDef = {
       "cause the login to fail",
     type: "radio",
     value: "",
-    example: "Passphrase,Private Key,None",
+    example: "Password,Private Key,None",
     verify(d) {
       switch (d) {
-        case "Passphrase":
+        case "Password":
         case "Private Key":
         case "None":
           return "";
@@ -434,8 +434,7 @@ function getAuthMethodFromStr(d) {
     case "None":
       return AUTHMETHOD_NONE;
 
-    case "Passphrase":
-    case "Password": // TODO: Remove this after depreciation period.
+    case "Password":
       return AUTHMETHOD_PASSPHRASE;
 
     case "Private Key":
@@ -761,7 +760,7 @@ class Wizard {
 
     switch (config.auth) {
       case AUTHMETHOD_PASSPHRASE:
-        fields = [{ name: "Passphrase" }];
+        fields = [{ name: "Password" }];
         break;
 
       case AUTHMETHOD_PRIVATE_KEY:
