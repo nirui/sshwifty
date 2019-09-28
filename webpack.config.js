@@ -322,11 +322,11 @@ module.exports = {
         }
       },
       new WebappWebpackPlugin({
-        logo: path.join(__dirname, "ui", "sshwifty.png"),
+        logo: path.join(__dirname, "ui", "sshwifty.svg"),
         prefix: "",
         cache: false,
         favicons: {
-          appName: "Sswifty SSH Client",
+          appName: "Sshwifty SSH Client",
           appDescription: "Web SSH Client",
           developerName: "Rui NI",
           developerURL: "https://vaguly.com",
