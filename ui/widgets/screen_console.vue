@@ -75,6 +75,7 @@ class Term {
   constructor(control) {
     const resizeDelayInterval = 500;
 
+    this.closed = false;
     this.term = new Terminal({
       allowTransparency: false,
       cursorBlink: true,
@@ -91,10 +92,18 @@ class Term {
     });
 
     this.term.onData(data => {
+      if (this.closed) {
+        return;
+      }
+
       control.send(data);
     });
 
     this.term.onKey(ev => {
+      if (this.closed) {
+        return;
+      }
+
       if (!control.echo()) {
         return;
       }
@@ -252,6 +261,8 @@ class Term {
   }
 
   destroy() {
+    this.closed = true;
+
     try {
       this.term.dispose();
     } catch (e) {
