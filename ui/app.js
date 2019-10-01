@@ -306,14 +306,15 @@ function startApp(rootEl) {
         this.changeTitleInfo("(" + tabs.length + (updated ? "*" : "") + ")");
       },
       tabOpened(tabs) {
-        if (this.tabUpdateIndicator) {
-          clearTimeout(this.tabUpdateIndicator);
-          this.tabUpdateIndicator = null;
-        }
-
-        this.updateTabTitleInfo(tabs, false);
+        this.tabUpdated(tabs);
       },
       tabClosed(tabs) {
+        if (tabs.length > 0) {
+          this.updateTabTitleInfo(tabs, this.tabUpdateIndicator !== null);
+
+          return;
+        }
+
         if (this.tabUpdateIndicator) {
           clearTimeout(this.tabUpdateIndicator);
           this.tabUpdateIndicator = null;
@@ -330,6 +331,7 @@ function startApp(rootEl) {
         this.updateTabTitleInfo(tabs, true);
 
         this.tabUpdateIndicator = setTimeout(() => {
+          this.tabUpdateIndicator = null;
           this.updateTabTitleInfo(tabs, false);
         }, updateIndicatorMaxDisplayTime);
       }
