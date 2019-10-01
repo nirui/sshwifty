@@ -2,7 +2,7 @@ import { ECHO_FAILED } from "./socket.js";
 import * as history from "./history.js";
 
 export function build(ctx) {
-  const connectionStatusNotConnected = "Sshwifty is not connected";
+  const connectionStatusNotConnected = "Sshwifty is ready to connect";
   const connectionStatusConnecting =
     "Connecting to Sshwifty backend server. It should only take " +
     "less than a second, or two";
@@ -11,7 +11,7 @@ export function build(ctx) {
   const connectionStatusConnected =
     "Sshwifty has connected to it's backend server, user interface " +
     "is operational";
-  const connectionStatusMeasurable =
+  const connectionStatusUnmeasurable =
     "Unable to measure connection delay. The connection maybe very " +
     "busy or already lost";
 
@@ -37,7 +37,8 @@ export function build(ctx) {
     return r;
   };
 
-  let inboundPerSecond = 0,
+  let isClosed = false,
+    inboundPerSecond = 0,
     outboundPerSecond = 0,
     trafficPreSecondNextUpdate = new Date(),
     inboundPre10Seconds = 0,
@@ -45,7 +46,7 @@ export function build(ctx) {
     trafficPre10sNextUpdate = new Date(),
     inboundHistory = new history.Records(buildEmptyHistory()),
     outboundHistory = new history.Records(buildEmptyHistory()),
-    trafficSamples = 1;
+    trafficSamples = 0;
 
   let delayHistory = new history.Records(buildEmptyHistory()),
     delaySamples = 0,
@@ -53,6 +54,10 @@ export function build(ctx) {
 
   return {
     update(time) {
+      if (isClosed) {
+        return;
+      }
+
       if (time >= trafficPreSecondNextUpdate) {
         trafficPreSecondNextUpdate = new Date(time.getTime() + 1000);
         inboundPre10Seconds += inboundPerSecond;
@@ -70,12 +75,14 @@ export function build(ctx) {
       if (time >= trafficPre10sNextUpdate) {
         trafficPre10sNextUpdate = new Date(time.getTime() + 10000);
 
-        inboundHistory.update(inboundPre10Seconds / trafficSamples);
-        outboundHistory.update(outboundPre10Seconds / trafficSamples);
+        if (trafficSamples > 0) {
+          inboundHistory.update(inboundPre10Seconds / trafficSamples);
+          outboundHistory.update(outboundPre10Seconds / trafficSamples);
 
-        inboundPre10Seconds = 0;
-        outboundPre10Seconds = 0;
-        trafficSamples = 1;
+          inboundPre10Seconds = 0;
+          outboundPre10Seconds = 0;
+          trafficSamples = 0;
+        }
 
         if (delaySamples > 0) {
           delayHistory.update(delayPerInterval / delaySamples);
@@ -104,6 +111,8 @@ export function build(ctx) {
       this.status.description = connectionStatusConnecting;
     },
     connected() {
+      isClosed = false;
+
       this.message = "??";
       this.classStyle = "working";
       this.windowClass = "";
@@ -118,10 +127,11 @@ export function build(ctx) {
       delaySamples++;
 
       if (delay == ECHO_FAILED) {
+        this.status.delay = -1;
         this.message = "";
         this.classStyle = "red flash";
         this.windowClass = "red";
-        this.status.description = connectionStatusMeasurable;
+        this.status.description = connectionStatusUnmeasurable;
 
         return;
       }
@@ -154,6 +164,8 @@ export function build(ctx) {
       }
     },
     close(e) {
+      isClosed = true;
+
       ctx.connector.inputting = false;
 
       if (e === null) {
@@ -164,6 +176,7 @@ export function build(ctx) {
         return;
       }
 
+      this.status.delay = -1;
       this.message = "ERR";
       this.classStyle = "red flash";
       this.windowClass = "red";
@@ -178,6 +191,7 @@ export function build(ctx) {
         this.message = "E????";
       }
 
+      this.status.delay = -1;
       this.classStyle = "red flash";
       this.status.description = connectionStatusDisconnected + ". Error: " + e;
     }

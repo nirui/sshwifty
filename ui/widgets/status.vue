@@ -180,6 +180,10 @@ export default {
       );
     },
     mSecondString(n) {
+      if (n < 0) {
+        return "??";
+      }
+
       const bNames = ["ms", "s", "m"];
       let remain = n,
         nUnit = bNames[0];

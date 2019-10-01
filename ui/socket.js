@@ -153,7 +153,9 @@ class Dial {
 
     ws.addEventListener("error", event => {
       event.toString = () => {
-        return "WebSocket Error (" + event.code + ")";
+        return (
+          "WebSocket Error (" + (event.code ? event.code : "Unknown") + ")"
+        );
       };
 
       rd.closeWithReason(event);
