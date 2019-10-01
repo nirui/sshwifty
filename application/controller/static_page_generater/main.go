@@ -88,6 +88,19 @@ import "strings"
 // WARNING: THIS GENERATION IS FOR DEBUG / DEVELOPMENT ONLY, DO NOT
 // USE IT IN PRODUCTION!
 
+func getMimeTypeByExtension(ext string) string {
+	switch ext {
+	case ".ico":
+		return "image/x-icon"
+
+	case ".md":
+		return "text/markdown"
+
+	default:
+		return mime.TypeByExtension(ext)
+	}
+}
+
 func staticFileGen(fileName, filePath string) staticData {
 	content, readErr := ioutil.ReadFile(filePath)
 
@@ -134,7 +147,7 @@ func staticFileGen(fileName, filePath string) staticData {
 		fileExt = fileName[fileExtDotIdx:len(fileName)]
 	}
 
-	mimeType := mime.TypeByExtension(fileExt)
+	mimeType := getMimeTypeByExtension(fileExt)
 
 	if len(mimeType) <= 0 {
 		mimeType = "application/binary"
@@ -272,6 +285,19 @@ func byteToArrayStr(b []byte) string {
 	return hex.EncodeToString(b)
 }
 
+func getMimeTypeByExtension(ext string) string {
+	switch ext {
+	case ".ico":
+		return "image/x-icon"
+
+	case ".md":
+		return "text/markdown"
+
+	default:
+		return mime.TypeByExtension(ext)
+	}
+}
+
 func parseFile(
 	id int, name string, filePath string, packageName string) parsedFile {
 	content, readErr := ioutil.ReadFile(filePath)
@@ -314,7 +340,7 @@ func parseFile(
 		fileExt = name[fileExtDotIdx:len(name)]
 	}
 
-	mimeType := mime.TypeByExtension(fileExt)
+	mimeType := getMimeTypeByExtension(fileExt)
 
 	if len(mimeType) <= 0 {
 		mimeType = "application/binary"
