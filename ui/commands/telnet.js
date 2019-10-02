@@ -486,6 +486,6 @@ export class Command {
   }
 
   launcher(config) {
-    return config.host + (config.charset ? "|" + config.charset : "");
+    return config.host + "|" + (config.charset ? config.charset : "utf-8");
   }
 }
