@@ -289,6 +289,24 @@ const initialFieldDef = {
       return "Look like " + addr.type + " address";
     }
   },
+  Encoding: {
+    name: "Encoding",
+    description: "The character encoding of the server",
+    type: "select",
+    value: "utf-8",
+    example: common.charsetPresets.join(","),
+    verify(d) {
+      for (let i in common.charsetPresets) {
+        if (common.charsetPresets[i] !== d) {
+          continue;
+        }
+
+        return "";
+      }
+
+      throw new Error('The character encoding "' + d + '" is not supported');
+    }
+  },
   Notice: {
     name: "Notice",
     description: "",
@@ -535,6 +553,7 @@ class Wizard {
     let config = {
       user: common.strToUint8Array(configInput.user),
       auth: getAuthMethodFromStr(configInput.authentication),
+      charset: configInput.charset,
       credential: sessionData.credential,
       host: address.parseHostPort(configInput.host, DEFAULT_PORT),
       fingerprint: configInput.fingerprint
@@ -585,6 +604,7 @@ class Wizard {
               configInput.user + "@" + configInput.host,
               self.info,
               self.controls.get("SSH", {
+                charset: configInput.charset,
                 send(data) {
                   return commandHandler.sendData(data);
                 },
@@ -659,7 +679,17 @@ class Wizard {
       self.hasStarted = true;
 
       self.streams.request(COMMAND_ID, sd => {
-        return self.buildCommand(sd, this.config, this.session);
+        return self.buildCommand(
+          sd,
+          {
+            user: this.config.user,
+            authentication: this.config.authentication,
+            host: this.config.host,
+            charset: this.config.charset ? this.config.charset : "utf-8",
+            fingerprint: this.config.fingerprint
+          },
+          this.session
+        );
       });
 
       return self.stepWaitForAcceptWait();
@@ -679,6 +709,7 @@ class Wizard {
               user: r.user,
               authentication: r.authentication,
               host: r.host,
+              charset: r.encoding,
               fingerprint: ""
             },
             this.session
@@ -692,6 +723,7 @@ class Wizard {
         { name: "User" },
         { name: "Host" },
         { name: "Authentication" },
+        { name: "Encoding" },
         { name: "Notice" }
       ])
     );
@@ -828,20 +860,28 @@ export class Command {
   }
 
   launch(info, launcher, streams, subs, controls, history) {
-    let matchResult = launcher.match(new RegExp("^(.*)\\@(.*)\\|(.*)$"));
+    const d = launcher.split("|", 3);
 
-    if (!matchResult || matchResult.length !== 4) {
+    if (d.length < 2) {
+      throw new Exception('Given launcher "' + launcher + '" was invalid');
+    }
+
+    const userHostName = d[0].match(new RegExp("^(.*)\\@(.*)$"));
+
+    if (!userHostName || userHostName.length !== 3) {
       throw new Exception('Given launcher "' + launcher + '" was malformed');
     }
 
-    let user = matchResult[1],
-      host = matchResult[2],
-      auth = matchResult[3];
+    let user = userHostName[1],
+      host = userHostName[2],
+      auth = d[1],
+      charset = d.length >= 3 && d[2] ? d[2] : "utf-8"; // RM after depreciation
 
     try {
       initialFieldDef["User"].verify(user);
       initialFieldDef["Host"].verify(host);
       initialFieldDef["Authentication"].verify(auth);
+      initialFieldDef["Encoding"].verify(charset);
     } catch (e) {
       throw new Exception(
         'Given launcher "' + launcher + '" was malformed ' + e
@@ -853,7 +893,8 @@ export class Command {
       {
         user: user,
         host: host,
-        authentication: auth
+        authentication: auth,
+        charset: charset
       },
       null,
       streams,
@@ -864,6 +905,14 @@ export class Command {
   }
 
   launcher(config) {
-    return config.user + "@" + config.host + "|" + config.authentication;
+    return (
+      config.user +
+      "@" +
+      config.host +
+      "|" +
+      config.authentication +
+      "|" +
+      (config.charset ? config.charset : "utf-8")
+    );
   }
 }

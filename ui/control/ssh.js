@@ -15,6 +15,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import * as iconv from "iconv-lite";
+
 import * as subscribe from "../stream/subscribe.js";
 import * as reader from "../stream/reader.js";
 import * as color from "../commands/color.js";
@@ -23,6 +25,35 @@ class Control {
   constructor(data, color) {
     this.colorM = color;
     this.colors = this.colorM.get();
+
+    this.charset = data.charset;
+
+    if (this.charset === "utf-8") {
+      let enc = new TextEncoder();
+
+      this.charsetDecoder = d => {
+        return d;
+      };
+
+      this.charsetEncoder = dStr => {
+        return enc.encode(dStr);
+      };
+    } else {
+      let dec = new TextDecoder(this.charset),
+        enc = new TextEncoder();
+
+      this.charsetDecoder = d => {
+        return enc.encode(
+          dec.decode(d, {
+            stream: true
+          })
+        );
+      };
+
+      this.charsetEncoder = dStr => {
+        return iconv.encode(dStr, this.charset);
+      };
+    }
 
     this.enable = false;
     this.sender = data.send;
@@ -34,7 +65,7 @@ class Control {
 
     data.events.place("stdout", async rd => {
       try {
-        self.subs.resolve(await reader.readCompletely(rd));
+        self.subs.resolve(self.charsetDecoder(await reader.readCompletely(rd)));
       } catch (e) {
         // Do nothing
       }
@@ -42,7 +73,7 @@ class Control {
 
     data.events.place("stderr", async rd => {
       try {
-        self.subs.resolve(await reader.readCompletely(rd));
+        self.subs.resolve(self.charsetDecoder(await reader.readCompletely(rd)));
       } catch (e) {
         // Do nothing
       }
@@ -91,7 +122,7 @@ class Control {
       return;
     }
 
-    return this.sender(new TextEncoder().encode(data));
+    return this.sender(this.charsetEncoder(data));
   }
 
   color() {
