@@ -32,7 +32,16 @@ export class Records {
    */
   update(newData) {
     this.data.shift();
-    this.data.push(newData);
+    this.data.push({ data: newData, class: "" });
+  }
+
+  /**
+   * Set all existing data as expired
+   */
+  expire() {
+    for (let i = 0; i < this.data.length; i++) {
+      this.data[i].class = "expired";
+    }
   }
 
   /**

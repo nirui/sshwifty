@@ -44,11 +44,11 @@ class Data {
     let max = 0;
 
     for (let i in data) {
-      if (data[i] <= max) {
+      if (data[i].data <= max) {
         continue;
       }
 
-      max = data[i];
+      max = data[i].data;
     }
 
     return max;
@@ -121,7 +121,7 @@ class BarDrawer extends BaseDrawer {
       cellHeight = rootDim.height - this.topBottomPadding;
 
     for (let i in data.data) {
-      let h = this.toCellHeight(cellHeight, data, data.data[i]);
+      let h = this.toCellHeight(cellHeight, data, data.data[i].data);
 
       this.createEl(parent, "path", {
         d:
@@ -133,7 +133,7 @@ class BarDrawer extends BaseDrawer {
           currentWidth +
           "," +
           cellHalfHeight,
-        class: h > 0 ? "" : "zero"
+        class: h === 0 ? "zero" : data.data[i].class
       });
 
       currentWidth += cellWidth;
@@ -149,7 +149,7 @@ class UpsideDownBarDrawer extends BarDrawer {
       cellHeight = rootDim.height - this.topBottomPadding;
 
     for (let i in data.data) {
-      let h = this.toCellHeight(cellHeight, data, data.data[i]);
+      let h = this.toCellHeight(cellHeight, data, data.data[i].data);
 
       this.createEl(parent, "path", {
         d:
@@ -161,7 +161,7 @@ class UpsideDownBarDrawer extends BarDrawer {
           currentWidth +
           "," +
           (Math.round(h) + padHalfHeight),
-        class: h > 0 ? "" : "zero"
+        class: h === 0 ? "zero" : data.data[i].class
       });
 
       currentWidth += cellWidth;

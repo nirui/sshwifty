@@ -31,7 +31,7 @@ export function build(ctx) {
     let r = [];
 
     for (let i = 0; i < 32; i++) {
-      r.push(0);
+      r.push({ data: 0, class: "" });
     }
 
     return r;
@@ -165,6 +165,9 @@ export function build(ctx) {
     },
     close(e) {
       isClosed = true;
+      delayHistory.expire();
+      inboundHistory.expire();
+      outboundHistory.expire();
 
       ctx.connector.inputting = false;
 

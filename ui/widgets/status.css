@@ -167,6 +167,10 @@
   stroke-width: 3px;
 }
 
+.conn-status-chart > .chart .expired {
+  stroke: #3a3a3a;
+}
+
 #conn-status-delay {
   padding: 15px 0;
   background: #292929;
