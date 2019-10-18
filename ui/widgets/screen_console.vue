@@ -230,7 +230,7 @@ class Term {
 
   write(d) {
     try {
-      this.term.writeUtf8(d);
+      this.term.write(d);
     } catch (e) {
       process.env.NODE_ENV === "development" && console.trace(e);
     }
