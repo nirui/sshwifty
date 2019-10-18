@@ -23,7 +23,6 @@ import (
 	"compress/gzip"
 	"crypto/sha256"
 	"encoding/base64"
-	"encoding/hex"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -190,7 +189,6 @@ var (
 
 import (
 	"time"
-	"encoding/hex"
 )
 
 // {{ .GOVariableName }} returns static file
@@ -212,21 +210,10 @@ func {{ .GOVariableName }}() (
 		panic(createErr)
 	}
 
-	data, dataErr := hex.DecodeString(` + "`" + `{{ .Data }}` + "`" + `)
-
-	if dataErr != nil {
-		panic(dataErr)
-	}
-
-	shrinkToFit := make([]byte, len(data))
-
-	copy(shrinkToFit, data)
-	data = nil
-
 	return {{ .FileStart }}, {{ .FileEnd }},
 		{{ .CompressedStart }}, {{ .CompressedEnd }},
 		"{{ .ContentHash }}", "{{ .CompressedHash }}",
-		created, shrinkToFit, "{{ .ContentType }}"
+		created, []byte({{ .Data }}), "{{ .ContentType }}"
 }
 `
 )
@@ -281,8 +268,8 @@ func buildDataFile(w io.Writer, data interface{}) error {
 	return tpl.Execute(w, data)
 }
 
-func byteToArrayStr(b []byte) string {
-	return hex.EncodeToString(b)
+func byteToQuotedString(b []byte) string {
+	return fmt.Sprintf("%q", b)
 }
 
 func getMimeTypeByExtension(ext string) string {
@@ -306,32 +293,7 @@ func parseFile(
 		panic(fmt.Sprintln("Cannot read file:", readErr))
 	}
 
-	compressed := bytes.NewBuffer(make([]byte, 0, 1024))
-
-	compresser, compresserBuildErr := gzip.NewWriterLevel(
-		compressed, gzip.BestCompression)
-
-	if compresserBuildErr != nil {
-		panic(fmt.Sprintln("Cannot build data compresser:", compresserBuildErr))
-	}
-
 	contentLen := len(content)
-
-	_, compressErr := compresser.Write(content)
-
-	if compressErr != nil {
-		panic(fmt.Sprintln("Cannot write compressed data:", compressErr))
-	}
-
-	compressErr = compresser.Flush()
-
-	if compressErr != nil {
-		panic(fmt.Sprintln("Cannot write compressed data:", compressErr))
-	}
-
-	content = append(content, compressed.Bytes()...)
-
-	goFileName := "Static" + strconv.FormatInt(int64(id), 10)
 
 	fileExtDotIdx := strings.LastIndex(name, ".")
 	fileExt := ""
@@ -346,13 +308,43 @@ func parseFile(
 		mimeType = "application/binary"
 	}
 
+	if strings.HasPrefix(mimeType, "image/x-icon") {
+		// Don't compress icons
+	} else {
+		compressed := bytes.NewBuffer(make([]byte, 0, 1024))
+
+		compresser, compresserBuildErr := gzip.NewWriterLevel(
+			compressed, gzip.BestCompression)
+
+		if compresserBuildErr != nil {
+			panic(fmt.Sprintln(
+				"Cannot build data compresser:", compresserBuildErr))
+		}
+
+		_, compressErr := compresser.Write(content)
+
+		if compressErr != nil {
+			panic(fmt.Sprintln("Cannot write compressed data:", compressErr))
+		}
+
+		compressErr = compresser.Flush()
+
+		if compressErr != nil {
+			panic(fmt.Sprintln("Cannot write compressed data:", compressErr))
+		}
+
+		content = append(content, compressed.Bytes()...)
+	}
+
+	goFileName := "Static" + strconv.FormatInt(int64(id), 10)
+
 	return parsedFile{
 		Name:            name,
 		GOVariableName:  strings.Title(goFileName),
 		GOFileName:      strings.ToLower(goFileName) + "_generated.go",
 		GOPackage:       packageName,
 		Path:            filePath,
-		Data:            byteToArrayStr(content),
+		Data:            byteToQuotedString(content),
 		FileStart:       0,
 		FileEnd:         contentLen,
 		CompressedStart: contentLen,
