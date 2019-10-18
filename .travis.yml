@@ -53,19 +53,21 @@ before_deploy:
   - |
     if [[ "$SSHWIFTY_DEPLOY" == "yes" ]]; then
       mkdir -p ./.tmp/deploy
-      curl "$ASC_URL" > ./.tmp/deploy/gpg.keys
-      cat ./.tmp/deploy/gpg.keys | gpg --import
+      curl "$ASC_URL" > ./.tmp/deploy/GPG.asc
+      cat ./.tmp/deploy/GPG.asc | gpg --import
       CGO_ENABLED=0 gox -ldflags "-s -w -X $VERSION_VARIABLE=$SSHWIFTY_VERSION" -osarch "$BUILD_TARGETS" -output "./.tmp/deploy/{{.Dir}}_$(echo $SSHWIFTY_VERSION)_{{.OS}}_{{.Arch}}/{{.Dir}}_{{.OS}}_{{.Arch}}"
-      echo "$SSHWIFTY_VERSION" > ./.tmp/deploy/Note
+      git archive --format tar --output "./.tmp/deploy/src" HEAD
+      echo "# Version $SSHWIFTY_VERSION" > ./.tmp/deploy/Note
       echo >> ./.tmp/deploy/Note
       echo "Following updates is included since the last release $(git describe --abbrev=0 --tags $(git rev-list --tags --skip=1 --max-count=1))" >> ./.tmp/deploy/Note
       git log $(git describe --abbrev=0 --tags $(git rev-list --tags --skip=1 --max-count=1))..HEAD --pretty=format:"- %h %s - (%an) %GK %G?" >> ./.tmp/deploy/Note
       echo 'echo Preparing for $1 ...;' > prepare.sh
       echo '(cd $1/ && find . -maxdepth 1 -type f ! -name "SUM.*" -exec sha512sum {} \; > SUM.sha512);' >> prepare.sh
       echo '(cp *.md $1/);' >> prepare.sh
-      echo '(cp ./.tmp/deploy/gpg.keys $1/);' >> prepare.sh
+      echo '(cp ./.tmp/deploy/GPG.asc $1/);' >> prepare.sh
       echo '(cp ./.tmp/deploy/Note $1/);' >> prepare.sh
       echo '(cp ./sshwifty.conf.example.json $1/);' >> prepare.sh
+      echo '(cp "./.tmp/deploy/src" $1/);' >> prepare.sh
       echo '(cd $1/ && tar zpcvf "../$(basename $(pwd)).tar.gz" * --owner=0 --group=0);' >> prepare.sh
       chmod +x ./prepare.sh
       find ./.tmp/deploy/ -maxdepth 1 -type d ! -name "deploy" -exec ./prepare.sh {} \;
