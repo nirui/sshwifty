@@ -26,7 +26,7 @@
     "iconv-lite": "^0.5.0",
     "imagemin-webpack-plugin": "^2.4.2",
     "mini-css-extract-plugin": "^0.5.0",
-    "mocha": "^6.2.1",
+    "mocha": "^6.2.2",
     "normalize.css": "^8.0.1",
     "optimize-css-assets-webpack-plugin": "^5.0.3",
     "prettier": "^1.18.2",
