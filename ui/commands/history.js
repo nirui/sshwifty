@@ -95,7 +95,7 @@ export class History {
   }
 
   /**
-   * Save record to history
+   * Delete record from history
    *
    * @param {string} uid unique name
    *
