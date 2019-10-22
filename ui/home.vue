@@ -356,6 +356,8 @@ export default {
           return;
         }
 
+        const self = this;
+
         this.connector.connector = {
           id: connector.id(),
           name: connector.name(),
@@ -366,7 +368,9 @@ export default {
             this.connector.historyRec,
             known.data,
             known.session,
-            () => {}
+            () => {
+              self.connector.knowns = self.connector.historyRec.all();
+            }
           )
         };
 
@@ -401,6 +405,8 @@ export default {
           return;
         }
 
+        const self = this;
+
         this.connector.connector = {
           id: connector.id(),
           name: connector.name(),
@@ -411,6 +417,8 @@ export default {
             this.connector.historyRec,
             ll.query,
             n => {
+              self.connector.knowns = self.connector.historyRec.all();
+
               done(n.data().success);
             }
           )
@@ -430,6 +438,8 @@ export default {
     },
     removeKnown(uid) {
       this.connector.historyRec.del(uid);
+
+      this.connector.knowns = this.connector.historyRec.all();
     },
     clearSessionKnown(uid) {
       this.connector.historyRec.clearSession(uid);
