@@ -22,6 +22,6 @@ go 1.13
 require (
 	github.com/gorilla/websocket v1.4.1
 	golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550
-	golang.org/x/net v0.0.0-20191014212845-da9a3fd4c582
-	golang.org/x/sys v0.0.0-20191010194322-b09406accb47 // indirect
+	golang.org/x/net v0.0.0-20191021144547-ec77196f6094
+	golang.org/x/sys v0.0.0-20191020212454-3e7259c5e7c2 // indirect
 )
