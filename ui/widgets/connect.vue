@@ -48,6 +48,7 @@
         :launcher-builder="knownsLauncherBuilder"
         @select="selectKnown"
         @remove="removeKnown"
+        @clear-session="clearSessionKnown"
       ></connect-known>
 
       <div id="connect-warning">
@@ -148,6 +149,13 @@ export default {
       }
 
       this.$emit("known-remove", uid);
+    },
+    clearSessionKnown(uid) {
+      if (this.inputting) {
+        return;
+      }
+
+      this.$emit("known-clear-session", uid);
     }
   }
 };

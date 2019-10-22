@@ -25,6 +25,7 @@
           <span class="type" :style="'background-color: ' + known.data.color">
             {{ known.data.type }}
           </span>
+
           <a
             class="opt link"
             href="javascript:;"
@@ -32,12 +33,23 @@
           >
             {{ known.copyStatus }}
           </a>
+
           <a
+            v-if="!known.data.session"
             class="opt del"
             href="javascript:;"
             @click="remove(known.data.uid)"
           >
             Remove
+          </a>
+          <a
+            v-else
+            class="opt clr"
+            href="javascript:;"
+            title="Clear session data"
+            @click="clearSession(known.data.uid)"
+          >
+            Clear
           </a>
         </div>
         <div class="lst-wrap" @click="select(known.data)">
@@ -140,6 +152,13 @@ export default {
       }
 
       this.$emit("remove", uid);
+    },
+    clearSession(uid) {
+      if (this.busy) {
+        return;
+      }
+
+      this.$emit("clear-session", uid);
     }
   }
 };

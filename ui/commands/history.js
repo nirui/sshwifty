@@ -114,6 +114,23 @@ export class History {
   }
 
   /**
+   * Clear session data
+   *
+   * @param {string} uid unique name
+   *
+   */
+  clearSession(uid) {
+    for (let i in this.records) {
+      if (this.records[i].uname !== uid) {
+        continue;
+      }
+
+      this.records[i].session = null;
+      break;
+    }
+  }
+
+  /**
    * Return all history records
    *
    * @returns {array<object>} Records

@@ -90,6 +90,11 @@
   color: #fff;
 }
 
+#connect-known-list li .labels > .opt.clr {
+  background: #b71;
+  color: #fff;
+}
+
 #connect-known-list li:hover .labels > .opt,
 #connect-known-list li:focus .labels > .opt {
   display: inline-block;

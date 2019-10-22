@@ -115,6 +115,7 @@
       @connector-select="connectNew"
       @known-select="connectKnown"
       @known-remove="removeKnown"
+      @known-clear-session="clearSessionKnown"
     >
       <connector
         :connector="connector.connector"
@@ -429,6 +430,11 @@ export default {
     },
     removeKnown(uid) {
       this.connector.historyRec.del(uid);
+    },
+    clearSessionKnown(uid) {
+      this.connector.historyRec.clearSession(uid);
+
+      this.connector.knowns = this.connector.historyRec.all();
     },
     cancelConnection() {
       this.connector.inputting = false;
