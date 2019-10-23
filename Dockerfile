@@ -8,6 +8,7 @@ RUN set -ex && \
     echo 'apt-get update && apt-get install autoconf automake libtool build-essential git npm golang-go -y' > /install.sh && chmod +x /install.sh && \
     ([ -z "$HTTP_PROXY" ] || (echo "Acquire::http::Proxy \"$HTTP_PROXY\";" >> /etc/apt/apt.conf)) && \
     ([ -z "$HTTPS_PROXY" ] || (echo "Acquire::https::Proxy \"$HTTPS_PROXY\";" >> /etc/apt/apt.conf)) && \
+    (echo "Acquire::Retries \"8\";" >> /etc/apt/apt.conf) && \
     try.sh install.sh && rm /install.sh
 
 # Build the base environment for application libraries
