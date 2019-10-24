@@ -7,10 +7,9 @@ export function build(ctx) {
     "Connecting to Sshwifty backend server. It should only take " +
     "less than a second, or two";
   const connectionStatusDisconnected =
-    "Sshwifty has disconnected from it's backend server";
+    "Sshwifty is disconnected from it's backend server";
   const connectionStatusConnected =
-    "Sshwifty has connected to it's backend server, user interface " +
-    "is operational";
+    "Sshwifty is connected to it's backend server, user interface operational";
   const connectionStatusUnmeasurable =
     "Unable to measure connection delay. The connection maybe very " +
     "busy or already lost";
