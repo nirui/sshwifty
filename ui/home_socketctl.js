@@ -105,6 +105,8 @@ export function build(ctx) {
       outboundHistory: outboundHistory.get()
     },
     connecting() {
+      isClosed = false;
+
       this.message = "--";
       this.classStyle = "working";
       this.windowClass = "";
@@ -186,6 +188,8 @@ export function build(ctx) {
       this.status.description = connectionStatusDisconnected + ": " + e;
     },
     failed(e) {
+      isClosed = true;
+
       ctx.connector.inputting = false;
 
       if (e.code) {
@@ -196,6 +200,7 @@ export function build(ctx) {
 
       this.status.delay = -1;
       this.classStyle = "red flash";
+      this.windowClass = "red";
       this.status.description = connectionStatusDisconnected + ". Error: " + e;
     }
   };
