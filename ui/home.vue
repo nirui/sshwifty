@@ -87,7 +87,7 @@
         <hr />
 
         <p class="secondary">
-          Programmers in China are having a campaign against
+          Programmers in China launched an online campaign against
           <a
             href="https://en.wikipedia.org/wiki/996_working_hour_system"
             target="blank"
