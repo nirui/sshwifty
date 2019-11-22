@@ -522,7 +522,7 @@ class Wizard {
   stepWaitForAcceptWait() {
     return command.wait(
       "Requesting",
-      "Waiting for request to be accepted by the backend"
+      "Waiting for the request to be accepted by the backend"
     );
   }
 
