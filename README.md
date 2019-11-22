@@ -243,7 +243,7 @@ SSHWIFTY_WRITEELAY
 
 ### Why the software says "The time difference is beyond operational limit"?
 
-This software requires both the client and the server is running at the same
+This software requires both the client and the server are running at the same
 date time.
 
 Please reload the page. If the error message won't go away, consider resync the
