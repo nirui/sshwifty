@@ -16,6 +16,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import * as iconv from "iconv-lite";
+import * as buffer from "buffer/";
 
 import Exception from "./exception.js";
 
@@ -328,6 +329,18 @@ export function strToUint8Array(d) {
   }
 
   return r;
+}
+
+/**
+ * Convert string into a binary {Uint8Array}
+ *
+ * @param {string} d Input
+ *
+ * @returns {Uint8Array} Output
+ *
+ */
+export function strToBinary(d) {
+  return new Uint8Array(buffer.Buffer.from(d, "binary").buffer);
 }
 
 /**

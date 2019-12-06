@@ -104,7 +104,7 @@ class Term {
         return;
       }
 
-      control.send(data);
+      control.sendBinary(data);
     });
 
     this.term.onKey(ev => {

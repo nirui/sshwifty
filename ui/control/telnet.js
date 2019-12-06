@@ -20,6 +20,7 @@ import * as iconv from "iconv-lite";
 import * as subscribe from "../stream/subscribe.js";
 import * as reader from "../stream/reader.js";
 import * as color from "../commands/color.js";
+import * as common from "../commands/common.js";
 import Exception from "../commands/exception.js";
 
 // const maxReadBufSize = 1024;
@@ -457,13 +458,8 @@ class Control {
     return -1;
   }
 
-  send(data) {
-    if (this.closed) {
-      return;
-    }
-
+  sendSeg(enc) {
     let currentLen = 0;
-    const enc = this.charsetEncoder(data);
 
     while (currentLen < enc.length) {
       const iacPos = this.searchNextIAC(currentLen, enc);
@@ -479,6 +475,22 @@ class Control {
 
       currentLen = iacPos + 1;
     }
+  }
+
+  send(data) {
+    if (this.closed) {
+      return;
+    }
+
+    this.sendSeg(this.charsetEncoder(data));
+  }
+
+  sendBinary(data) {
+    if (this.closed) {
+      return;
+    }
+
+    return this.sendSeg(common.strToBinary(data));
   }
 
   color() {

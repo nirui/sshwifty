@@ -20,6 +20,7 @@ import * as iconv from "iconv-lite";
 import * as subscribe from "../stream/subscribe.js";
 import * as reader from "../stream/reader.js";
 import * as color from "../commands/color.js";
+import * as common from "../commands/common.js";
 
 class Control {
   constructor(data, color) {
@@ -123,6 +124,14 @@ class Control {
     }
 
     return this.sender(this.charsetEncoder(data));
+  }
+
+  sendBinary(data) {
+    if (this.closed) {
+      return;
+    }
+
+    return this.sender(common.strToBinary(data));
   }
 
   color() {

@@ -16,6 +16,7 @@ Major dependencies includes:
 - [Roboto font](https://en.wikipedia.org/wiki/Roboto), Licensed under Apache license.
   Packaged by [Christian Hoffmeister](https://github.com/choffmeister/roboto-fontface-bower), Licensed under Apache 2.0
 - [iconv-lite](https://github.com/ashtuchkin/iconv-lite), Licensed under MIT license
+- [buffer](https://github.com/feross/buffer), Licensed under MIT license
 
 ## For back-end application
 
