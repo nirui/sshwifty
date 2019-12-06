@@ -65,6 +65,8 @@ const mainTemplate = `
 <loading v-else :error="loadErr"></loading>
 `.trim();
 
+const socksInterface = "/sshwifty/socket";
+
 function startApp(rootEl) {
   const pageTitle = document.title;
 
@@ -149,7 +151,7 @@ function startApp(rootEl) {
             r = "ws://";
         }
 
-        r += location.host + "/socket";
+        r += location.host + socksInterface;
 
         return r;
       },
@@ -249,7 +251,7 @@ function startApp(rootEl) {
             ? null
             : await this.getSocketAuthKey(privateKey, this.key);
 
-        let h = await xhr.head("/socket", {
+        let h = await xhr.head(socksInterface, {
           "X-Key": authKey ? btoa(String.fromCharCode.apply(null, authKey)) : ""
         });
 

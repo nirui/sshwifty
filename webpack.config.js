@@ -185,7 +185,7 @@ module.exports = {
   devtool:
     process.env.NODE_ENV === "development" ? "inline-source-map" : "source-map",
   output: {
-    publicPath: "/",
+    publicPath: "/sshwifty/assets/",
     path: path.join(__dirname, ".tmp", "dist"),
     filename: process.env.NODE_ENV === "development" ? "[id].js" : "[hash].js"
   },

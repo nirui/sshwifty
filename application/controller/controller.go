@@ -34,6 +34,11 @@ var (
 		http.StatusNotFound, "Page not found")
 )
 
+const (
+	assetsURLPrefix    = "/sshwifty/assets/"
+	assetsURLPrefixLen = len(assetsURLPrefix)
+)
+
 // handler is the main service dispatcher
 type handler struct {
 	hostNameChecker string
@@ -73,14 +78,39 @@ func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case "/":
 		err = serveController(h.homeCtl, w, r, clientLogger)
 
-	case "/socket":
+	case "/sshwifty/socket":
 		err = serveController(h.socketCtl, w, r, clientLogger)
 
+	case "/robots.txt":
+		err = serveStaticCacheData(
+			"robots.txt",
+			staticFileExt(".txt"),
+			w,
+			r,
+			clientLogger)
+
+	case "/favicon.ico":
+		err = serveStaticCacheData(
+			"favicon.ico",
+			staticFileExt(".ico"),
+			w,
+			r,
+			clientLogger)
+
+	case "/manifest.json":
+		err = serveStaticCacheData(
+			"manifest.json",
+			staticFileExt(".json"),
+			w,
+			r,
+			clientLogger)
+
 	default:
-		if len(r.URL.Path) > 0 && strings.ToUpper(r.Method) == "GET" {
+		if strings.HasPrefix(r.URL.Path, assetsURLPrefix) &&
+			strings.ToUpper(r.Method) == "GET" {
 			err = serveStaticCacheData(
-				r.URL.Path[1:],
-				staticFileExt(r.URL.Path[1:]),
+				r.URL.Path[assetsURLPrefixLen:],
+				staticFileExt(r.URL.Path[assetsURLPrefixLen:]),
 				w,
 				r,
 				clientLogger)
