@@ -99,6 +99,14 @@ class Term {
       control.send(data);
     });
 
+    this.term.onBinary(data => {
+      if (this.closed) {
+        return;
+      }
+
+      control.send(data);
+    });
+
     this.term.onKey(ev => {
       if (this.closed) {
         return;
