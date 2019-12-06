@@ -19,6 +19,7 @@ Major dependencies includes:
 
 ## For back-end application
 
+- [Go programming language](https://golang.org), [View license](https://github.com/golang/go/blob/master/LICENSE)
 - `github.com/gorilla/websocket`, Licensed under BSD-2-Cause license
 - `golang.org/x/net/proxy` [View license](https://github.com/golang/net/blob/master/LICENSE)
 - `golang.org/x/crypto`, [View license](https://github.com/golang/crypto/blob/master/LICENSE)
