@@ -1,141 +1,132 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 121.708 21.167">
-    <g transform="translate(-.748 -275.833)">
-        <g transform="translate(-75.306 -116.7)">
-            <rect ry="2.064" y="396.011" x="90.919" height="9.647" width="12.406" fill="none" stroke="gray" stroke-width=".882"/>
-            <rect ry="1.621" y="397.954" x="93.361" height="8.7" width="11.319" fill="#262626"/>
-            <rect ry="1.861" y="397.092" x="92.235" height="8.7" width="11.319" fill="#d18b8d"/>
-            <g transform="translate(1.455)" fill="#fff">
-                <circle cx="99.925" cy="404.292" r=".801">
-                    <animate id="r2e11" begin="5s;r2e12.end+5s" attributeName="r" from=".801" to="0" dur="0.1s" calcMode="paced"/>
-                    <animate id="r2e12" begin="r2e11.end" attributeName="r" from="0" to=".801" dur="0.1s" calcMode="paced"/>
-                </circle>
-                <circle cx="93.956" cy="404.292" r=".801">
-                    <animate begin="r2e11.begin" attributeName="r" from=".801" to="0" dur="0.1s" calcMode="paced"/>
-                    <animate begin="r2e12.begin" attributeName="r" from="0" to=".801" dur="0.1s" calcMode="paced"/>
-                </circle>
-                <rect width="2.062" height=".677" x="95.8" y="404.047" ry=".338"/>
-            </g>
-            <g transform="translate(1.455)">
-                <rect width="7.039" height="4.755" x="93.352" y="398.217" ry=".988" fill="#ed9499"/>
-                <rect width="6.262" height="4.021" x="94.073" y="398.948" ry=".835" fill="#cc7f80"/>
-                <g transform="translate(-.023 .21)" fill="#f5d0d0">
-                    <rect ry=".185" y="399.571" x="94.849" height=".369" width="4.864"/>
-                    <rect ry=".185" y="400.538" x="94.849" height=".369" width="4.864"/>
-                    <rect ry=".185" y="401.506" x="94.849" height=".369" width="4.864"/>
-                </g>
-            </g>
-            <animateMotion id="r2ud1" begin="0s;r2ud2.end" from="0,0" to="0,1" dur="1s" calcMode="paced"/>
-            <animateMotion id="r2ud2" begin="r2ud1.end" from="0,1" to="0,0" dur="1s" calcMode="paced"/>
-        </g>
-        <rect width="10" height="1.2" x="17" y="295" ry="1" fill="#262626">
-            <animate id="r2ssw1" begin="0s;r2ssw2.end" attributeName="width" from="10" to="11" dur="1s" calcMode="paced"/>
-            <animate id="r2ssw2" begin="r2ssw1.end" attributeName="width" from="11" to="10" dur="1s" calcMode="paced"/>
-            <animate id="r2ssx1" begin="0s;r2ssx2.end" attributeName="x" from="17" to="16.5" dur="1s" calcMode="paced"/>
-            <animate id="r2ssx2" begin="r2ssx1.end" attributeName="x" from="16.5" to="17" dur="1s" calcMode="paced"/>
-        </rect>
-    </g>
-    <g transform="translate(-.748 -275.833)">
+<svg xmlns="http://www.w3.org/2000/svg" width="450" height="80">
+    <path d="M104.9 44.333s22.069-11.953 49.294-11.953c27.23 0 49.298 11.953 49.298 11.953" fill="none" stroke="#d18b8d" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="100 150" stroke-dashoffset="100">
+        <animate id="j" begin="0s;a.end+1s" attributeName="stroke-dashoffset" from="100" to="-1150" dur="2s" fill="freeze" calcMode="linear"/>
+    </path>
+    <path d="M203.49 32.393s-22.069 11.953-49.294 11.953c-27.226 0-49.294-11.953-49.294-11.953" fill="none" stroke="gray" stroke-width="3.166" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="100 150" stroke-dashoffset="100">
+        <animate id="a" begin="b.end" attributeName="stroke-dashoffset" from="100" to="-1150" dur="2s" fill="freeze" calcMode="linear"/>
+    </path>
+    <path d="M267.6 37.257h64.101a7.51 7.51 0 1 0 0-15.02 7.51 7.51 0 0 0 0 15.02h31.753" fill="none" stroke="#d18b8d" stroke-width="3.166" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="100 150" stroke-dashoffset="100">
+        <animate id="d" begin="c.end" attributeName="stroke-dashoffset" from="100" to="-1150" dur="2s" fill="freeze" calcMode="linear"/>
+    </path>
+    <path d="M366.36 37.288h-95.739" fill="none" stroke="gray" stroke-width="3.166" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="100 150" stroke-dashoffset="100">
+        <animate id="k" begin="d.end+0.5s" attributeName="stroke-dashoffset" from="100" to="-1150" dur="2s" fill="freeze" calcMode="linear"/>
+    </path>
+    <g>
+        <path d="M54.652 10.707c-5.462 0-9.914 4.452-9.914 9.914v21.844c0 5.462 4.452 9.914 9.914 9.914h32.762c5.462 0 9.914-4.452 9.914-9.914V20.62c0-5.462-4.452-9.914-9.914-9.914zm0 3.492h32.762c3.589 0 6.424 2.833 6.424 6.422v21.844c0 3.589-2.835 6.424-6.424 6.424H54.652c-3.588 0-6.423-2.835-6.423-6.424V20.62c0-3.589 2.835-6.422 6.423-6.422z" style="line-height:normal;font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-alternates:normal;font-feature-settings:normal;text-indent:0;text-align:start;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#000;text-transform:none;text-orientation:mixed;white-space:normal;shape-padding:0;isolation:auto;mix-blend-mode:normal;solid-color:#000;solid-opacity:1" color="#000" font-weight="400" font-family="sans-serif" overflow="visible" fill="gray"/>
         <g>
-            <g transform="translate(-76.79 -117.665)">
-                <rect width="12.171" height="15.081" x="134.651" y="394.724" ry="3.796" fill="#262626"/>
-                <rect width="10.909" height="13.555" x="134.566" y="394.751" ry="2.959" fill="none" stroke="gray" stroke-width=".8"/>
-                <path d="M60.99 282.131a2.308 2.308 0 1 1 2.308 2.308v3.236" fill="none" stroke="#d18b8d" stroke-width="1.058" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="25.4000003,25.4000003"/>
-            </g>
-
-            <g transform="translate(-76.79 -117.665)">
-                <g fill="#d18b8d">
-                    <rect width="4.491" height="1.852" x="137.861" y="404.937" ry=".926"/>
-                    <circle cx="136.63" cy="405.863" r=".926"/>
-                </g>
-                <rect width="6.648" height="6.35" x="135.704" y="395.855" ry="2.052" fill="#d18b8d"/>
+            <path d="M62.564 20.131H94.53a6.402 6.402 0 0 1 6.416 6.416v21.601a6.402 6.402 0 0 1-6.416 6.416H62.564a6.402 6.402 0 0 1-6.416-6.416V26.547a6.402 6.402 0 0 1 6.416-6.416z" fill="#262626"/>
+            <g>
+                <path d="M59.058 16.727h30.067a7.35 7.35 0 0 1 7.365 7.365v19.702a7.35 7.35 0 0 1-7.365 7.366H59.058a7.35 7.35 0 0 1-7.366-7.366V24.092a7.35 7.35 0 0 1 7.366-7.365z" fill="#d18b8d"/>
                 <g>
-                    <rect ry=".573" y="397" x="136.697" height="2" width="1.146" fill="#f9f9f9">
-                        <animate id="r1e21" begin="r1lr1.begin" attributeName="height" from="2" to="1.3" dur="0.2s" fill="freeze"/>
-                        <animate begin="r1e21.begin" attributeName="y" from="397" to="397.7" dur="0.2s" fill="freeze"/>
-
-                        <animate id="r1e22" begin="r1lr2.begin" attributeName="height" from="1.3" to="2" dur="0.2s" fill="freeze"/>
-                        <animate begin="r1e22.begin" attributeName="y" from="397.7" to="397" dur="0.2s" fill="freeze"/>
-                    </rect>
-                    <rect ry=".573" y="397.7" x="139.492" height="1.3" width="1.146" fill="#f9f9f9">
-                        <animate id="r1e11" begin="r1lr1.begin" attributeName="height" from="1.3" to="2" dur="0.2s" fill="freeze"/>
-                        <animate begin="r1e11.begin" attributeName="y" from="397.7" to="397" dur="0.2s" fill="freeze"/>
-
-                        <animate id="r1e12" begin="r1lr2.begin" attributeName="height" from="2" to="1.3" dur="0.2s" fill="freeze"/>
-                        <animate begin="r1e12.begin" attributeName="y" from="397" to="397.7" dur="0.2s" fill="freeze"/>
-                    </rect>
-
-                    <animateMotion begin="r1lr1.begin" from="0,0" to="1,0" dur="0.2s" calcMode="paced" fill="freeze"/>
-                    <animateMotion begin="r1lr2.begin" from="1,0" to="0,0" dur="0.2s" calcMode="paced" fill="freeze"/>
+                    <g>
+                        <path d="M91.056 45.224a3.17 3.17 0 0 1-3.17 3.17 3.17 3.17 0 0 1-3.17-3.17 3.17 3.17 0 0 1 3.17-3.17 3.17 3.17 0 0 1 3.17 3.17z" fill="#fff">
+                            <animate id="e" begin="3s;e.end+10s" attributeName="d" from="m 91.056202,45.223999 a 3.1702001,3.1702001 0 0 1 -3.1702,3.1702 3.1702001,3.1702001 0 0 1 -3.170201,-3.1702 3.1702001,3.1702001 0 0 1 3.170201,-3.1702 3.1702001,3.1702001 0 0 1 3.1702,3.1702 z" to="m 88.773133,45.223999 a 0.8871316,0.8871316 0 0 1 -0.887131,0.887132 0.8871316,0.8871316 0 0 1 -0.887132,-0.887132 0.8871316,0.8871316 0 0 1 0.887132,-0.887132 0.8871316,0.8871316 0 0 1 0.887131,0.887132 z" dur="0.1s" calcMode="linear"/>
+                        </path>
+                        <path d="M67.432 45.224a3.17 3.17 0 0 1-3.17 3.17 3.17 3.17 0 0 1-3.17-3.17 3.17 3.17 0 0 1 3.17-3.17 3.17 3.17 0 0 1 3.17 3.17z" fill="#fff">
+                            <animate begin="e.begin" end="r1fe1.end" attributeName="d" from="m 67.432201,45.223999 a 3.1702001,3.1702001 0 0 1 -3.1702,3.1702 3.1702001,3.1702001 0 0 1 -3.1702,-3.1702 3.1702001,3.1702001 0 0 1 3.1702,-3.1702 3.1702001,3.1702001 0 0 1 3.1702,3.1702 z" to="m 65.149133,45.223999 a 0.8871316,0.8871316 0 0 1 -0.887132,0.887132 0.8871316,0.8871316 0 0 1 -0.887132,-0.887132 0.8871316,0.8871316 0 0 1 0.887132,-0.887132 0.8871316,0.8871316 0 0 1 0.887132,0.887132 z" dur="0.1s" calcMode="linear"/>
+                        </path>
+                        <animateMotion id="f" begin="1s;f.end+2s" from="0.3,0.5" to="0,0.3" dur="5s" calcMode="discrete"/>
+                    </g>
+                    <path d="M72.898 44.274h5.485c.741 0 1.338.597 1.338 1.338v.004c0 .74-.597 1.337-1.338 1.337h-5.485a1.335 1.335 0 0 1-1.338-1.337v-.004c0-.741.597-1.338 1.338-1.338z" fill="#fff"/>
+                    <animateMotion begin="f.begin" end="r1ff1b.end" from="1.2,0.5" to="0,1.2" dur="5s" calcMode="discrete"/>
                 </g>
-                <rect width="6.648" height=".865" x="135.704" y="403.138" ry=".433" fill="gray"/>
-
-                <animateMotion id="r1lr1" begin="r2tor1.end" from="0,0" to="2,0" dur="0.2s" calcMode="paced" fill="freeze"/>
-                <animateMotion id="r1lr2" begin="r1tor3.end" from="2,0" to="0,0" dur="0.2s" calcMode="paced" fill="freeze"/>
+                <path d="M65.781 21.2H85.82a3.902 3.902 0 0 1 3.91 3.91V36.11a3.902 3.902 0 0 1-3.91 3.91H65.78a3.902 3.902 0 0 1-3.91-3.91V25.11a3.902 3.902 0 0 1 3.91-3.91z" fill="#ed9499"/>
+                <path d="M68.03 24.089h18.174a3.298 3.298 0 0 1 3.305 3.305v9.304a3.298 3.298 0 0 1-3.305 3.305H68.03a3.298 3.298 0 0 1-3.305-3.305v-9.304a3.298 3.298 0 0 1 3.305-3.305z" fill="#cc7f80"/>
+                <g fill="#f5d0d0">
+                    <path d="M68.437 27.374h17.787a.73.73 0 1 1 0 1.46H68.437a.73.73 0 1 1 0-1.46zM68.437 31.213h17.787a.73.73 0 1 1 0 1.46H68.437a.73.73 0 1 1 0-1.46zM68.437 35.052h17.787a.73.73 0 1 1 0 1.46H68.437a.73.73 0 1 1 0-1.46z"/>
+                </g>
+                <animateMotion begin="f.begin" from="0,0" to="1,0" dur="0.2s" fill="freeze" calcMode="linear"/>
+                <animateMotion begin="f.end" from="1,0" to="0,0" dur="0.2s" fill="freeze" calcMode="linear"/>
             </g>
-
-            <animateMotion id="r1ud2" begin="0s;r1ud1.end" from="0,1" to="0,0" dur="1.2s" calcMode="paced"/>
-            <animateMotion id="r1ud1" begin="r1ud2.end" from="0,0" to="0,1" dur="1.2s" calcMode="paced"/>
+            <animateMotion id="h" begin="g.begin;r1ba2.end" from="0,0" to="0,2" dur="1s" fill="freeze" calcMode="linear"/>
+            <animateMotion begin="h.end" from="0,2" to="0,0" dur="1s" fill="freeze" calcMode="linear"/>
         </g>
-        <rect width="9" height="1.2" x="59" y="295" ry="1" fill="#262626">
-            <animate id="r1ssw1" begin="r1ssw2.end" attributeName="width" from="9" to="10" dur="1.2s" calcMode="paced"/>
-            <animate id="r1ssw2" begin="0s;r1ssw1.end" attributeName="width" from="10" to="9" dur="1.2s" calcMode="paced"/>
-            <animate id="r1ssx1" begin="r1ssx2.end" attributeName="x" from="59" to="58.5" dur="1.2s" calcMode="paced"/>
-            <animate id="r1ssx2" begin="0s;r1ssx1.end" attributeName="x" from="58.5" to="59" dur="1.2s" calcMode="paced"/>
-        </rect>
+        <animateMotion id="g" begin="0s;i.end" from="0,0" to="0,3" dur="1s" fill="freeze" calcMode="linear"/>
+        <animateMotion id="i" begin="g.end" from="0,3" to="0,0" dur="1s" fill="freeze" calcMode="linear"/>
     </g>
-    <g transform="translate(-.748 -275.833)">
+    <path d="M55.93 74.551h31.663c2.193 0 3.958 1.06 3.958 2.375S89.786 79.3 87.593 79.3H55.931c-2.193 0-3.958-1.059-3.958-2.374 0-1.316 1.765-2.375 3.958-2.375z" fill="#262626">
+        <animate begin="g.begin" end="r1bb1.end" attributeName="d" from="m 60.268629,74.551003 h 22.98674 c 1.591832,0 2.873342,1.059116 2.873342,2.3747 0,1.315583 -1.28151,2.3747 -2.873342,2.3747 h -22.98674 c -1.591831,0 -2.873341,-1.059117 -2.873341,-2.3747 0,-1.315584 1.28151,-2.3747 2.873341,-2.3747 z" to="m 55.930799,74.551003 h 31.6624 c 2.192621,0 3.9578,1.059116 3.9578,2.3747 0,1.315583 -1.765179,2.3747 -3.9578,2.3747 h -31.6624 c -2.192621,0 -3.957799,-1.059117 -3.957799,-2.3747 0,-1.315584 1.765178,-2.3747 3.957799,-2.3747 z" dur="1s" fill="freeze" calcMode="linear"/>
+        <animate begin="i.begin" end="r1bb2.end" attributeName="d" from="m 55.930799,74.551003 h 31.6624 c 2.192621,0 3.9578,1.059116 3.9578,2.3747 0,1.315583 -1.765179,2.3747 -3.9578,2.3747 h -31.6624 c -2.192621,0 -3.957799,-1.059117 -3.957799,-2.3747 0,-1.315584 1.765178,-2.3747 3.957799,-2.3747 z" to="m 60.268629,74.551003 h 22.98674 c 1.591832,0 2.873342,1.059116 2.873342,2.3747 0,1.315583 -1.28151,2.3747 -2.873342,2.3747 h -22.98674 c -1.591831,0 -2.873341,-1.059117 -2.873341,-2.3747 0,-1.315584 1.28151,-2.3747 2.873341,-2.3747 z" dur="1s" fill="freeze" calcMode="linear"/>
+    </path>
+    <g>
+        <path d="M228.714 3.548h18.122c8.323 0 15.024 6.7 15.024 15.024v29.64c0 8.323-6.7 15.024-15.024 15.024h-18.122c-8.323 0-15.024-6.7-15.024-15.024v-29.64c0-8.323 6.7-15.024 15.024-15.024z" fill="#262626"/>
         <g>
-            <g transform="translate(-75.306 -119.101)">
-                <rect width="8.852" height="9.42" x="174.008" y="399.075" ry="1.492" fill="#262626"/>
-                <rect width="8.008" height="8.522" x="173.653" y="398.845" ry=".976" fill="gray" stroke="gray" stroke-width=".628"/>
-                <rect width="7.01" height="7.46" x="173.878" y="399.387" ry=".854" fill="#262626"/>
-            </g>
-            <g transform="translate(-75.306 -119.101)">
-                <rect width="6.215" height="6.614" x="174.463" y="400.102" ry=".757" fill="#848484"/>
-                <g fill="#fff">
-                    <rect ry=".278" y="401.302" x="175.442" height=".889" width="1.169">
-                        <animate id="r3e11" begin="4s;r3e12.end+4s" attributeName="width" from="1.169" to="1.769" dur="0.3s" calcMode="paced" fill="freeze"/>
-                        <animate id="r3e12" begin="r3e11.end+4s" attributeName="width" from="1.769" to="1.169" dur="0.3s" calcMode="paced" fill="freeze"/>
-                    </rect>
-                    <rect ry=".278" y="401.302" x="177.29" height=".889" width="2.1">
-                        <animate begin="r3e11.begin" attributeName="width" from="2.1" to="1.5" dur="0.3s" calcMode="paced" fill="freeze"/>
-                        <animate begin="r3e12.begin" attributeName="width" from="1.5" to="2.1" dur="0.3s" calcMode="paced" fill="freeze"/>
-
-                        <animate begin="r3e11.begin" attributeName="x" from="177.29" to="177.89" dur="0.3s" calcMode="paced" fill="freeze"/>
-                        <animate begin="r3e12.begin" attributeName="x" from="177.89" to="177.29" dur="0.3s" calcMode="paced" fill="freeze"/>
-                    </rect>
+            <path style="line-height:normal;font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-alternates:normal;font-feature-settings:normal;text-indent:0;text-align:start;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#000;text-transform:none;text-orientation:mixed;white-space:normal;shape-padding:0;isolation:auto;mix-blend-mode:normal;solid-color:#000;solid-opacity:1" d="M225.08 2.084c-7.337 0-13.293 5.955-13.293 13.293v30.227c0 7.337 5.956 13.294 13.293 13.294h19.756c7.337 0 13.293-5.957 13.293-13.294V15.377c0-7.338-5.956-13.293-13.293-13.293zm0 3.166h19.756a10.07 10.07 0 0 1 10.127 10.127v30.227a10.071 10.071 0 0 1-10.127 10.128H225.08a10.071 10.071 0 0 1-10.127-10.128V15.377A10.07 10.07 0 0 1 225.08 5.25z" color="#000" font-weight="400" font-family="sans-serif" overflow="visible" fill="gray"/>
+            <g>
+                <path d="M230.055 43.997h10.444a3.657 3.657 0 0 1 3.665 3.665 3.657 3.657 0 0 1-3.665 3.665h-10.444a3.657 3.657 0 0 1-3.665-3.665 3.657 3.657 0 0 1 3.665-3.665zM225.185 47.638a3.665 3.665 0 0 1-3.665 3.665 3.665 3.665 0 0 1-3.665-3.665 3.665 3.665 0 0 1 3.665-3.665 3.665 3.665 0 0 1 3.665 3.665zM225.961 8.06h10.069c4.499 0 8.121 3.622 8.121 8.121v8.89c0 4.499-3.622 8.12-8.121 8.12H225.96a8.104 8.104 0 0 1-8.121-8.12v-8.89c0-4.499 3.622-8.121 8.121-8.121z" fill="#d18b8d"/>
+                <g>
+                    <path d="M224.068 12.572a2.263 2.263 0 0 1 2.268 2.268v3.38a2.263 2.263 0 0 1-2.268 2.268 2.263 2.263 0 0 1-2.268-2.268v-3.38a2.263 2.263 0 0 1 2.268-2.268z" fill="#f9f9f9">
+                        <animate begin="c.begin" attributeName="d" from="m 224.0678,12.572 c 1.25636,0 2.2678,1.011438 2.2678,2.2678 v 3.379999 c 0,1.256362 -1.01144,2.2678 -2.2678,2.2678 -1.25636,0 -2.2678,-1.011438 -2.2678,-2.2678 V 14.8398 c 0,-1.256362 1.01144,-2.2678 2.2678,-2.2678 z" to="m 224.0678,15.498051 c 1.25636,0 2.2678,1.011438 2.2678,2.2678 v 0.453948 c 0,1.256362 -1.01144,2.2678 -2.2678,2.2678 -1.25636,0 -2.2678,-1.011438 -2.2678,-2.2678 v -0.453948 c 0,-1.256362 1.01144,-2.2678 2.2678,-2.2678 z" dur="0.1s" fill="freeze" calcMode="linear"/>
+                        <animate begin="b.begin" attributeName="d" from="m 224.0678,15.498051 c 1.25636,0 2.2678,1.011438 2.2678,2.2678 v 0.453948 c 0,1.256362 -1.01144,2.2678 -2.2678,2.2678 -1.25636,0 -2.2678,-1.011438 -2.2678,-2.2678 v -0.453948 c 0,-1.256362 1.01144,-2.2678 2.2678,-2.2678 z" to="m 224.0678,12.572 c 1.25636,0 2.2678,1.011438 2.2678,2.2678 v 3.379999 c 0,1.256362 -1.01144,2.2678 -2.2678,2.2678 -1.25636,0 -2.2678,-1.011438 -2.2678,-2.2678 V 14.8398 c 0,-1.256362 1.01144,-2.2678 2.2678,-2.2678 z" dur="0.1s" fill="freeze" calcMode="linear"/>
+                    </path>
+                    <path d="M235.108 15.342a2.263 2.263 0 0 1 2.268 2.268v.61a2.263 2.263 0 0 1-2.268 2.267 2.263 2.263 0 0 1-2.268-2.268v-.61a2.263 2.263 0 0 1 2.268-2.267z" fill="#f9f9f9">
+                        <animate begin="c.begin" attributeName="d" from="m 235.1078,15.342 c 1.25636,0 2.2678,1.011439 2.2678,2.2678 v 0.6095 c 0,1.256361 -1.01144,2.2678 -2.2678,2.2678 -1.25636,0 -2.2678,-1.011439 -2.2678,-2.2678 v -0.6095 c 0,-1.256361 1.01144,-2.2678 2.2678,-2.2678 z" to="m 235.1078,12.819542 c 1.25636,0 2.2678,1.011439 2.2678,2.2678 V 18.2193 c 0,1.256361 -1.01144,2.2678 -2.2678,2.2678 -1.25636,0 -2.2678,-1.011439 -2.2678,-2.2678 v -3.131958 c 0,-1.256361 1.01144,-2.2678 2.2678,-2.2678 z" dur="0.1s" fill="freeze" calcMode="linear"/>
+                        <animate begin="b.begin" attributeName="d" from="m 235.1078,12.819542 c 1.25636,0 2.2678,1.011439 2.2678,2.2678 V 18.2193 c 0,1.256361 -1.01144,2.2678 -2.2678,2.2678 -1.25636,0 -2.2678,-1.011439 -2.2678,-2.2678 v -3.131958 c 0,-1.256361 1.01144,-2.2678 2.2678,-2.2678 z" to="m 235.1078,15.342 c 1.25636,0 2.2678,1.011439 2.2678,2.2678 v 0.6095 c 0,1.256361 -1.01144,2.2678 -2.2678,2.2678 -1.25636,0 -2.2678,-1.011439 -2.2678,-2.2678 v -0.6095 c 0,-1.256361 1.01144,-2.2678 2.2678,-2.2678 z" dur="0.1s" fill="freeze" calcMode="linear"/>
+                    </path>
+                    <animateMotion begin="c.begin" from="0,0" to="5,0" dur="0.2s" fill="freeze" calcMode="linear"/>
+                    <animateMotion begin="b.begin" from="5,0" to="0,0" dur="0.2s" fill="freeze" calcMode="linear"/>
                 </g>
-                <circle r="1.485" cy="404.653" cx="176.998" fill="#262626"/>
-                <circle r=".887" cy="404.635" cx="176.998" fill="#d18b8d"/>
-                <circle r="1.23" cy="404.509" cx="176.817" fill="none" stroke="#aaa" stroke-width=".429"/>
+                <path d="M219.554 36.873h22.883c.95 0 1.714.763 1.714 1.712 0 .948-.764 1.712-1.714 1.712h-22.883c-.95 0-1.714-.764-1.714-1.712 0-.949.764-1.712 1.714-1.712z" fill="gray"/>
+                <animateMotion id="c" begin="j.end" from="0,0" to="7,0" dur="0.2s" fill="freeze" calcMode="linear"/>
+                <animateMotion id="b" begin="k.end" from="7,0" to="0,0" dur="0.2s" fill="freeze" calcMode="linear"/>
             </g>
-
-            <animateMotion id="r3ud2" begin="r3ud1.end" from="0,1" to="0,0" dur="1.3s" calcMode="paced"/>
-            <animateMotion id="r3ud1" begin="0s;r3ud2.end" from="0,0" to="0,1" dur="1.3s" calcMode="paced"/>
+            <animateMotion begin="l.begin" from="0,0" to="0,2" dur="1.5s" fill="freeze" calcMode="linear"/>
+            <animateMotion begin="m.begin" from="0,2" to="0,0" dur="1.5s" fill="freeze" calcMode="linear"/>
         </g>
-        <rect width="7" height="1.2" x="99" y="295" ry="1" fill="#262626">
-            <animate id="r3ssw1" begin="r3ssw2.end" attributeName="width" from="7" to="8" dur="1.3s" calcMode="paced"/>
-            <animate id="r3ssw2" begin="0s;r3ssw1.end" attributeName="width" from="8" to="7" dur="1.3s" calcMode="paced"/>
-            <animate id="r3ssx1" begin="r3ssx2.end" attributeName="x" from="99" to="98.5" dur="1.3s" calcMode="paced"/>
-            <animate id="r3ssx2" begin="0s;r3ssx1.end" attributeName="x" from="98.5" to="99" dur="1.3s" calcMode="paced"/>
-        </rect>
+        <animateMotion id="l" begin="0;m.end" from="0,0" to="0,2" dur="1.7s" fill="freeze" calcMode="linear"/>
+        <animateMotion id="m" begin="l.end" from="0,2" to="0,0" dur="1.7s" fill="freeze" calcMode="linear"/>
     </g>
-    <g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.8">
-        <g stroke-dasharray="20 20 20 20 20 100" stroke-dashoffset="-100">
-            <path d="M30.13 11.531s5.576-3.02 12.455-3.02c6.88 0 12.456 3.02 12.456 3.02" stroke="#d18b8d">
-                <animate id="r1tor2" begin="r1lr2.end" attributeName="stroke-dashoffset" from="-100" to="100" dur="1.5s"/>
-            </path>
-            <path d="M55.04 8.514s-5.576 3.02-12.455 3.02c-6.879 0-12.455-3.02-12.455-3.02" stroke="gray">
-                <animate id="r2tor1" begin="0s;r1tor2.end" attributeName="stroke-dashoffset" from="-100" to="100" dur="1.5s"/>
-            </path>
+    <path d="M222.158 74.551h27.704c2.193 0 3.958 1.06 3.958 2.375s-1.765 2.374-3.958 2.374h-27.704c-2.193 0-3.958-1.059-3.958-2.374 0-1.316 1.765-2.375 3.958-2.375z" fill="#262626">
+        <animate begin="l.begin" end="r3ba1.end" attributeName="d" from="m 223.41342,74.551003 h 25.19316 c 1.99387,0 3.59905,1.059116 3.59905,2.3747 0,1.315583 -1.60518,2.3747 -3.59905,2.3747 h -25.19316 c -1.99387,0 -3.59905,-1.059117 -3.59905,-2.3747 0,-1.315584 1.60518,-2.3747 3.59905,-2.3747 z" to="m 222.1578,74.551003 h 27.7044 c 2.19262,0 3.9578,1.059116 3.9578,2.3747 0,1.315583 -1.76518,2.3747 -3.9578,2.3747 h -27.7044 c -2.19262,0 -3.9578,-1.059117 -3.9578,-2.3747 0,-1.315584 1.76518,-2.3747 3.9578,-2.3747 z" dur="1s" fill="freeze" calcMode="linear"/>
+        <animate begin="m.begin" end="r3ba2.end" attributeName="d" from="m 222.1578,74.551003 h 27.7044 c 2.19262,0 3.9578,1.059116 3.9578,2.3747 0,1.315583 -1.76518,2.3747 -3.9578,2.3747 h -27.7044 c -2.19262,0 -3.9578,-1.059117 -3.9578,-2.3747 0,-1.315584 1.76518,-2.3747 3.9578,-2.3747 z" to="m 223.41342,74.551003 h 25.19316 c 1.99387,0 3.59905,1.059116 3.59905,2.3747 0,1.315583 -1.60518,2.3747 -3.59905,2.3747 h -25.19316 c -1.99387,0 -3.59905,-1.059117 -3.59905,-2.3747 0,-1.315584 1.60518,-2.3747 3.59905,-2.3747 z" dur="1s" fill="freeze" calcMode="linear"/>
+    </path>
+    <g>
+        <g>
+            <path d="M381.245 15.105h23.224a5.892 5.892 0 0 1 5.905 5.905v25.472a5.892 5.892 0 0 1-5.905 5.905h-23.224a5.892 5.892 0 0 1-5.905-5.905V21.01a5.892 5.892 0 0 1 5.905-5.905z" fill="#262626"/>
+            <g>
+                <path d="M377.783 14.155h23.968a3.854 3.854 0 0 1 3.863 3.863V44.02a3.854 3.854 0 0 1-3.863 3.863h-23.968a3.854 3.854 0 0 1-3.863-3.863V18.018a3.854 3.854 0 0 1 3.863-3.863z" fill="gray" stroke="gray" stroke-width="2.486"/>
+                <g>
+                    <path d="M378.21 16.332h20.984a3.373 3.373 0 0 1 3.38 3.38v22.765a3.373 3.373 0 0 1-3.38 3.38H378.21a3.373 3.373 0 0 1-3.38-3.38V19.712a3.373 3.373 0 0 1 3.38-3.38z" fill="#262626"/>
+                    <g>
+                        <path d="M380.116 19.142h18.606a2.99 2.99 0 0 1 2.996 2.996v20.185a2.99 2.99 0 0 1-2.996 2.996h-18.606a2.99 2.99 0 0 1-2.996-2.996V22.138a2.99 2.99 0 0 1 2.996-2.996z" fill="#848484"/>
+                        <g>
+                            <g>
+                                <path d="M382.1 23.891h2.426c.61 0 1.1.49 1.1 1.1v1.318c0 .61-.49 1.1-1.1 1.1H382.1c-.61 0-1.1-.49-1.1-1.1v-1.318c0-.61.49-1.1 1.1-1.1z" fill="#fff">
+                                    <animate id="o" begin="5s;n.end+3s" attributeName="d" from="m 382.1003,23.891001 h 2.4261 c 0.60957,0 1.1003,0.490734 1.1003,1.1003 v 1.3179 c 0,0.609566 -0.49073,1.1003 -1.1003,1.1003 h -2.4261 c -0.60957,0 -1.1003,-0.490734 -1.1003,-1.1003 v -1.3179 c 0,-0.609566 0.49073,-1.1003 1.1003,-1.1003 z" to="m 382.1003,23.891001 4.04047,0 c 0.60957,0 1.1003,0.490734 1.1003,1.1003 v 1.3179 c 0,0.609566 -0.49073,1.1003 -1.1003,1.1003 l -4.04047,0 c -0.60957,0 -1.1003,-0.490734 -1.1003,-1.1003 v -1.3179 c 0,-0.609566 0.49073,-1.1003 1.1003,-1.1003 z" dur="0.1s" fill="freeze" calcMode="linear"/>
+                                    <animate id="n" begin="o.end+5s" attributeName="d" from="m 382.1003,23.891001 4.04047,0 c 0.60957,0 1.1003,0.490734 1.1003,1.1003 v 1.3179 c 0,0.609566 -0.49073,1.1003 -1.1003,1.1003 l -4.04047,0 c -0.60957,0 -1.1003,-0.490734 -1.1003,-1.1003 v -1.3179 c 0,-0.609566 0.49073,-1.1003 1.1003,-1.1003 z" to="m 382.1003,23.891001 h 2.4261 c 0.60957,0 1.1003,0.490734 1.1003,1.1003 v 1.3179 c 0,0.609566 -0.49073,1.1003 -1.1003,1.1003 h -2.4261 c -0.60957,0 -1.1003,-0.490734 -1.1003,-1.1003 v -1.3179 c 0,-0.609566 0.49073,-1.1003 1.1003,-1.1003 z" dur="0.1s" fill="freeze" calcMode="linear"/>
+                                </path>
+                                <path d="M389.42 23.891h6.111c.61 0 1.1.49 1.1 1.1v1.318c0 .61-.49 1.1-1.1 1.1h-6.11c-.61 0-1.101-.49-1.101-1.1v-1.318c0-.61.49-1.1 1.1-1.1z" fill="#fff">
+                                    <animate begin="o.begin" attributeName="d" from="m 389.42031,23.891001 h 6.1108 c 0.60956,0 1.1003,0.490734 1.1003,1.1003 v 1.3179 c 0,0.609566 -0.49074,1.1003 -1.1003,1.1003 h -6.1108 c -0.60957,0 -1.1003,-0.490734 -1.1003,-1.1003 v -1.3179 c 0,-0.609566 0.49073,-1.1003 1.1003,-1.1003 z" to="m 391.43827,23.891001 h 4.09284 c 0.60956,0 1.1003,0.490734 1.1003,1.1003 v 1.3179 c 0,0.609566 -0.49074,1.1003 -1.1003,1.1003 h -4.09284 c -0.60957,0 -1.1003,-0.490734 -1.1003,-1.1003 v -1.3179 c 0,-0.609566 0.49073,-1.1003 1.1003,-1.1003 z" dur="0.1s" fill="freeze" calcMode="linear"/>
+                                    <animate begin="n.begin" attributeName="d" from="m 391.43827,23.891001 h 4.09284 c 0.60956,0 1.1003,0.490734 1.1003,1.1003 v 1.3179 c 0,0.609566 -0.49074,1.1003 -1.1003,1.1003 h -4.09284 c -0.60957,0 -1.1003,-0.490734 -1.1003,-1.1003 v -1.3179 c 0,-0.609566 0.49073,-1.1003 1.1003,-1.1003 z" to="m 389.42031,23.891001 h 6.1108 c 0.60956,0 1.1003,0.490734 1.1003,1.1003 v 1.3179 c 0,0.609566 -0.49074,1.1003 -1.1003,1.1003 h -6.1108 c -0.60957,0 -1.1003,-0.490734 -1.1003,-1.1003 v -1.3179 c 0,-0.609566 0.49073,-1.1003 1.1003,-1.1003 z" dur="0.1s" fill="freeze" calcMode="linear"/>
+                                </path>
+                                <animateMotion id="p" begin="6s;p.end+5s" from="0,0" to="0,1" dur="0.1s" fill="freeze" calcMode="linear"/>
+                                <animateMotion begin="p.end+2s" from="0,1" to="0,0" dur="0.1s" fill="freeze" calcMode="linear"/>
+                            </g>
+                            <g>
+                                <path d="M393.047 37.15a5.877 5.877 0 0 1-5.877 5.877 5.877 5.877 0 0 1-5.877-5.877 5.877 5.877 0 0 1 5.877-5.877 5.877 5.877 0 0 1 5.877 5.877z" fill="#262626"/>
+                                <path d="M390.68 37.11a3.51 3.51 0 0 1-3.51 3.51 3.51 3.51 0 0 1-3.51-3.51 3.51 3.51 0 0 1 3.51-3.51 3.51 3.51 0 0 1 3.51 3.51z" fill="#d18b8d"/>
+                                <path style="line-height:normal;font-variant-ligatures:normal;font-variant-position:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-alternates:normal;font-feature-settings:normal;text-indent:0;text-align:start;text-decoration-line:none;text-decoration-style:solid;text-decoration-color:#000;text-transform:none;text-orientation:mixed;white-space:normal;shape-padding:0;isolation:auto;mix-blend-mode:normal;solid-color:#000;solid-opacity:1" d="M386.46 30.879c-3.146 0-5.718 2.57-5.718 5.717s2.572 5.717 5.719 5.717c3.147 0 5.717-2.57 5.717-5.717 0-3.148-2.57-5.717-5.717-5.717zm0 1.697c2.23 0 4.019 1.79 4.019 4.02 0 2.23-1.788 4.02-4.018 4.02-2.23 0-4.02-1.79-4.02-4.02 0-2.23 1.79-4.02 4.02-4.02z" color="#000" font-weight="400" font-family="sans-serif" overflow="visible" fill="#aaa"/>
+                                <animateMotion begin="o.begin" from="0,0" to="1,0" dur="0.1s" fill="freeze" calcMode="linear"/>
+                                <animateMotion begin="n.begin" from="1,0" to="0,0" dur="0.1s" fill="freeze" calcMode="linear"/>
+                            </g>
+                            <animateMotion begin="o.begin" from="0,0" to="1,0" dur="0.1s" fill="freeze" calcMode="linear"/>
+                            <animateMotion begin="n.begin" from="1,0" to="0,0" dur="0.1s" fill="freeze" calcMode="linear"/>
+                        </g>
+                        <animateMotion begin="o.begin" from="0,0" to="-1,0" dur="0.1s" fill="freeze" calcMode="linear"/>
+                        <animateMotion begin="n.begin" from="-1,0" to="0,0" dur="0.1s" fill="freeze" calcMode="linear"/>
+                    </g>
+                    <animateMotion begin="o.begin" from="0,0" to="1.3,0" dur="0.1s" fill="freeze" calcMode="linear"/>
+                    <animateMotion begin="n.begin" from="1.3,0" to="0,0" dur="0.1s" fill="freeze" calcMode="linear"/>
+                </g>
+                <animateMotion id="r" begin="0s;q.end" from="0,0" to="0,1" dur="1.1s" fill="freeze" calcMode="linear"/>
+                <animateMotion id="q" begin="r.end" from="0,1" to="0,0" dur="1.1s" fill="freeze" calcMode="linear"/>
+            </g>
+            <animateMotion begin="r.begin" from="0,0" to="0,2" dur="1.1s" fill="freeze" calcMode="linear"/>
+            <animateMotion begin="q.begin" from="0,2" to="0,0" dur="1.1s" fill="freeze" calcMode="linear"/>
         </g>
-        <g stroke-dasharray="10 20 10 20 10 20 10 100" stroke-dashoffset="-100">
-            <path d="M71.24 9.743h16.196a1.897 1.897 0 1 0 0-3.795 1.897 1.897 0 0 0 0 3.795h8.023" stroke="#d18b8d">
-                <animate id="r1tor3" begin="r3tor1.end" attributeName="stroke-dashoffset" from="-100" to="100" dur="1.5s"/>
-            </path>
-            <path d="M 96.192792,9.7509803 H 72.003172" stroke="gray">
-                <animate id="r3tor1" begin="r1lr1.end" attributeName="stroke-dashoffset" from="-100" to="100" dur="1.5s"/>
-            </path>
-        </g>
+        <path d="M380.468 74.551h19.79c2.192 0 3.957 1.06 3.957 2.375s-1.765 2.374-3.958 2.374h-19.79c-2.192 0-3.957-1.059-3.957-2.374 0-1.316 1.765-2.375 3.958-2.375z" fill="#262626">
+            <animate begin="r.begin" end="r2ba1.end" attributeName="d" from="m 382.77407,74.551003 h 15.17688 c 1.68156,0 3.03531,1.059116 3.03531,2.3747 0,1.315583 -1.35375,2.3747 -3.03531,2.3747 h -15.17688 c -1.68156,0 -3.03531,-1.059117 -3.03531,-2.3747 0,-1.315584 1.35375,-2.3747 3.03531,-2.3747 z" to="m 380.46781,74.551003 h 19.7894 c 2.19262,0 3.9578,1.059116 3.9578,2.3747 0,1.315583 -1.76518,2.3747 -3.9578,2.3747 h -19.7894 c -2.19262,0 -3.9578,-1.059117 -3.9578,-2.3747 0,-1.315584 1.76518,-2.3747 3.9578,-2.3747 z" dur="1s" fill="freeze" calcMode="linear"/>
+            <animate begin="q.begin" end="r2ba2.end" attributeName="d" from="m 380.46781,74.551003 h 19.7894 c 2.19262,0 3.9578,1.059116 3.9578,2.3747 0,1.315583 -1.76518,2.3747 -3.9578,2.3747 h -19.7894 c -2.19262,0 -3.9578,-1.059117 -3.9578,-2.3747 0,-1.315584 1.76518,-2.3747 3.9578,-2.3747 z" to="m 382.77407,74.551003 h 15.17688 c 1.68156,0 3.03531,1.059116 3.03531,2.3747 0,1.315583 -1.35375,2.3747 -3.03531,2.3747 h -15.17688 c -1.68156,0 -3.03531,-1.059117 -3.03531,-2.3747 0,-1.315584 1.35375,-2.3747 3.03531,-2.3747 z" dur="1s" fill="freeze" calcMode="linear"/>
+        </path>
     </g>
 </svg>
