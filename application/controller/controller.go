@@ -105,6 +105,14 @@ func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			r,
 			clientLogger)
 
+	case "/browserconfig.xml":
+		err = serveStaticCacheData(
+			"browserconfig.xml",
+			staticFileExt(".xml"),
+			w,
+			r,
+			clientLogger)
+
 	default:
 		if strings.HasPrefix(r.URL.Path, assetsURLPrefix) &&
 			strings.ToUpper(r.Method) == "GET" {
