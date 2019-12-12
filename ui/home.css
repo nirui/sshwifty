@@ -369,32 +369,22 @@
   flex-direction: column;
   color: #fff;
   font-size: 1.2em;
+  position: relative;
+}
+
+#home-content-preload-drop {
+  height: 0px;
+  width: 0px;
+  overflow: hidden;
+  position: absolute;
+  bottom: 0;
+  right: 0;
 }
 
 @media (max-width: 768px) {
   #home-content {
     font-size: 1em;
   }
-}
-
-#home-content > .screen {
-  display: flex;
-  justify-content: top;
-  flex-direction: column;
-  font-size: 1em;
-}
-
-#home-content > .screen > .screen-error {
-  display: block;
-  padding: 10px;
-  background: #b44;
-  color: #fff;
-  font-size: 0.75em;
-  flex: 0 0;
-}
-
-#home-content > .screen > .screen-screen {
-  flex: auto;
 }
 
 #home-content-wrap {

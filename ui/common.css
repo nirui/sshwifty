@@ -285,6 +285,14 @@ body {
   box-shadow: 1px 1px 0 2px #0003;
 }
 
+.icon.icon-keyboardkey2 {
+  background: #fff;
+  color: #999;
+  padding: 4px 6px;
+  display: inline-block;
+  border-radius: 3px;
+}
+
 /* Windows */
 .window {
   position: absolute;

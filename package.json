@@ -22,6 +22,8 @@
     "eslint-plugin-prettier": "^3.1.1",
     "eslint-plugin-vue": "^5.2.3",
     "file-loader": "^4.3.0",
+    "fontfaceobserver": "^2.1.0",
+    "hack-font": "^3.3.0",
     "html-loader": "^0.5.5",
     "html-webpack-plugin": "^3.2.0",
     "iconv-lite": "^0.5.0",

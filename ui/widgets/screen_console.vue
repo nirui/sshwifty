@@ -39,6 +39,23 @@
     >
       <h2 style="display:none;">Tool bar</h2>
 
+      <div class="console-toolbar-item">
+        <h3 class="tb-title">Text size</h3>
+
+        <ul class="hlst lst-nostyle">
+          <li>
+            <a class="tb-item" href="javascript:;" @click="fontSizeUp">
+              <span class="tb-key-icon icon icon-keyboardkey2">Increase +</span>
+            </a>
+          </li>
+          <li>
+            <a class="tb-item" href="javascript:;" @click="fontSizeDown">
+              <span class="tb-key-icon icon icon-keyboardkey2">Decrease -</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+
       <div
         v-for="(keyType, keyTypeIdx) in screenKeys"
         :key="keyTypeIdx"
@@ -62,6 +79,7 @@
 </template>
 
 <script>
+import FontFaceObserver from "fontfaceobserver";
 import { Terminal } from "xterm";
 import { WebLinksAddon } from "xterm-addon-web-links";
 import { FitAddon } from "xterm-addon-fit";
@@ -71,15 +89,25 @@ import { consoleScreenKeys } from "./screen_console_keys.js";
 import "./screen_console.css";
 import "xterm/css/xterm.css";
 
+const termTypeFace = "Hack";
+const termFallbackTypeFace = "monospace";
+const termTypeFaceLoadTimeout = 10000;
+const termDefaultFontSize = 16;
+const termMinFontSize = 14;
+const termMaxFontSize = 36;
+
 class Term {
   constructor(control) {
     const resizeDelayInterval = 500;
 
     this.closed = false;
+    this.fontSize = termDefaultFontSize;
     this.term = new Terminal({
       allowTransparency: false,
       cursorBlink: true,
       cursorStyle: "block",
+      fontFamily: termTypeFace + ", " + termFallbackTypeFace,
+      fontSize: this.fontSize,
       logLevel: process.env.NODE_ENV === "development" ? "info" : "off"
     });
     this.fit = new FitAddon();
@@ -177,7 +205,7 @@ class Term {
     });
   }
 
-  init(root, callbacks) {
+  open(root, callbacks) {
     this.term.open(root);
 
     this.term.textarea.addEventListener("focus", callbacks.focus);
@@ -220,6 +248,32 @@ class Term {
     this.refit();
   }
 
+  init(root, callbacks) {
+    const self = this;
+
+    return Promise.all([
+      new FontFaceObserver(termTypeFace).load(null, termTypeFaceLoadTimeout),
+      new FontFaceObserver(termTypeFace, { weight: "bold" }).load(
+        null,
+        termTypeFaceLoadTimeout
+      )
+    ])
+      .then(() => {
+        self.open(root, callbacks);
+      })
+      .catch(() => {
+        callbacks.warn(
+          "Unable to load remote font, using " +
+            termFallbackTypeFace +
+            " instead"
+        );
+
+        self.term.setOption("fontFamily", termFallbackTypeFace);
+
+        self.open(root, callbacks);
+      });
+  }
+
   dispatch(event) {
     try {
       this.term.textarea.dispatchEvent(event);
@@ -242,6 +296,26 @@ class Term {
     } catch (e) {
       process.env.NODE_ENV === "development" && console.trace(e);
     }
+  }
+
+  fontSizeUp() {
+    if (this.fontSize >= termMaxFontSize) {
+      return;
+    }
+
+    this.fontSize += 2;
+    this.term.setOption("fontSize", this.fontSize);
+    this.refit();
+  }
+
+  fontSizeDown() {
+    if (this.fontSize <= termMinFontSize) {
+      return;
+    }
+
+    this.fontSize -= 2;
+    this.term.setOption("fontSize", this.fontSize);
+    this.refit();
   }
 
   focus() {
@@ -332,8 +406,8 @@ export default {
       deep: true
     }
   },
-  mounted() {
-    this.init();
+  async mounted() {
+    await this.init();
   },
   beforeDestroy() {
     this.deinit();
@@ -342,19 +416,28 @@ export default {
     triggerActive() {
       this.active ? this.activate() : this.deactivate();
     },
-    init() {
+    async init() {
       let self = this;
 
-      this.term.init(this.$el.getElementsByClassName("console-console")[0], {
-        focus(e) {
-          document.addEventListener("keyup", self.localKeypress);
-          document.addEventListener("keydown", self.localKeypress);
-        },
-        blur(e) {
-          document.removeEventListener("keyup", self.localKeypress);
-          document.removeEventListener("keydown", self.localKeypress);
+      await this.term.init(
+        this.$el.getElementsByClassName("console-console")[0],
+        {
+          focus(e) {
+            document.addEventListener("keyup", self.localKeypress);
+            document.addEventListener("keydown", self.localKeypress);
+          },
+          blur(e) {
+            document.removeEventListener("keyup", self.localKeypress);
+            document.removeEventListener("keydown", self.localKeypress);
+          },
+          warn(msg) {
+            self.$emit("warning", msg);
+          },
+          info(msg) {
+            self.$emit("info", msg);
+          }
         }
-      });
+      );
 
       this.triggerActive();
       this.runRunner();
@@ -421,6 +504,12 @@ export default {
 
       this.term.dispatch(new KeyboardEvent("keydown", key));
       this.term.dispatch(new KeyboardEvent("keyup", key));
+    },
+    fontSizeUp() {
+      this.term.fontSizeUp();
+    },
+    fontSizeDown() {
+      this.term.fontSizeDown();
     }
   }
 };

@@ -24,7 +24,9 @@
       :key="tabInfo.id"
       :class="{
         active: tab === idx,
-        error: tabInfo.indicator.error.length > 0,
+        error:
+          tabInfo.indicator.message.length > 0 &&
+          tabInfo.indicator.level === 'error',
         updated: tabInfo.indicator.updated && tab !== idx
       }"
       :style="

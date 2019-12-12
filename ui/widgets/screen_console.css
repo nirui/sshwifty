@@ -19,6 +19,18 @@
 
 @charset "utf-8";
 
+@import "~hack-font/build/web/hack.css";
+
+#home-content > #home-content-preload-drop::before {
+  content: " ";
+  font-family: Hack, monospace;
+  font-weight: bold;
+}
+#home-content > #home-content-preload-drop::after {
+  content: " ";
+  font-family: Hack, monospace;
+}
+
 #home-content > .screen > .screen-screen > .screen-console {
   position: relative;
 }
@@ -132,4 +144,5 @@
 }
 
 #home-content > .screen > .screen-screen > .screen-console > .console-console {
+  font-family: Hack, monospace;
 }

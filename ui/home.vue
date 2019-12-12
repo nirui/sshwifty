@@ -62,6 +62,8 @@
       :screen="tab.current"
       :screens="tab.tabs"
       @stopped="tabStopped"
+      @warning="tabWarning"
+      @info="tabInfo"
       @updated="tabUpdated"
     >
       <div id="home-content-wrap">
@@ -102,6 +104,8 @@
           >.
         </p>
       </div>
+
+      <div id="home-content-preload-drop"></div>
     </screens>
 
     <connect-widget
@@ -468,7 +472,8 @@ export default {
           control: data.control,
           toolbar: false,
           indicator: {
-            error: "",
+            level: "",
+            message: "",
             updated: false
           },
           status: {
@@ -520,10 +525,30 @@ export default {
       this.$emit("tab-closed", this.tab.tabs);
     },
     tabStopped(index, reason) {
-      if (reason === null) {
-        this.tab.tabs[index].indicator.error = "";
+      if (reason !== null) {
+        this.tab.tabs[index].indicator.message = "" + reason;
+        this.tab.tabs[index].indicator.level = "error";
       } else {
-        this.tab.tabs[index].indicator.error = "" + reason;
+        this.tab.tabs[index].indicator.message = "";
+        this.tab.tabs[index].indicator.level = "";
+      }
+    },
+    tabWarning(index, msg) {
+      if (msg.length > 0) {
+        this.tab.tabs[index].indicator.message = msg;
+        this.tab.tabs[index].indicator.level = "warning";
+      } else {
+        this.tab.tabs[index].indicator.message = "";
+        this.tab.tabs[index].indicator.level = "";
+      }
+    },
+    tabInfo(index, msg) {
+      if (msg.length > 0) {
+        this.tab.tabs[index].indicator.message = msg;
+        this.tab.tabs[index].indicator.level = "info";
+      } else {
+        this.tab.tabs[index].indicator.message = "";
+        this.tab.tabs[index].indicator.level = "";
       }
     },
     tabUpdated(index) {

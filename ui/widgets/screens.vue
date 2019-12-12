@@ -30,8 +30,12 @@
     >
       <h1 style="display:none;">Main Interface</h1>
 
-      <div v-if="screenInfo.indicator.error.length > 0" class="screen-error">
-        {{ screenInfo.indicator.error }}
+      <div
+        v-if="screenInfo.indicator.message.length > 0"
+        class="screen-error"
+        :class="'screen-error-level-' + screenInfo.indicator.level"
+      >
+        {{ screenInfo.indicator.message }}
       </div>
 
       <div class="screen-screen" style="position: relative">
@@ -44,6 +48,8 @@
           :style="'background-color: ' + screenInfo.control.activeColor()"
           style="top: 0; right: 0; left: 0; bottom: 0; padding： 0; margin: 0; position: absolute; overflow: hidden"
           @stopped="stopped(idx, $event)"
+          @warning="warning(idx, $event)"
+          @info="info(idx, $event)"
           @updated="updated(idx)"
         ></component>
       </div>
@@ -53,6 +59,8 @@
 
 <script>
 import ConsoleScreen from "./screen_console.vue";
+
+import "./screens.css";
 
 export default {
   components: {
@@ -80,6 +88,12 @@ export default {
     },
     stopped(index, stopErr) {
       this.$emit("stopped", index, stopErr);
+    },
+    warning(index, msg) {
+      this.$emit("warning", index, msg);
+    },
+    info(index, msg) {
+      this.$emit("info", index, msg);
     },
     updated(index) {
       this.$emit("updated", index);

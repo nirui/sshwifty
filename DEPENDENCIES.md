@@ -13,10 +13,12 @@ Major dependencies includes:
 - [Babel](https://babeljs.io/), Licensed under MIT license
 - [XTerm.js](https://xtermjs.org/), Licensed under MIT license
 - [normalize.css](https://github.com/necolas/normalize.css), Licensed under MIT license
-- [Roboto font](https://en.wikipedia.org/wiki/Roboto), Licensed under Apache license.
+- [Roboto font](https://en.wikipedia.org/wiki/Roboto), Licensed under Apache license
   Packaged by [Christian Hoffmeister](https://github.com/choffmeister/roboto-fontface-bower), Licensed under Apache 2.0
 - [iconv-lite](https://github.com/ashtuchkin/iconv-lite), Licensed under MIT license
 - [buffer](https://github.com/feross/buffer), Licensed under MIT license
+- [Hack font](https://github.com/source-foundry/Hack), [View license](https://github.com/source-foundry/Hack/blob/master/LICENSE.md)
+- [fontfaceobserver](https://github.com/bramstein/fontfaceobserver), [View license](https://github.com/bramstein/fontfaceobserver/blob/master/LICENSE)
 
 ## For back-end application
 
