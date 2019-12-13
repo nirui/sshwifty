@@ -280,6 +280,12 @@ func getMimeTypeByExtension(ext string) string {
 	case ".md":
 		return "text/markdown"
 
+	case ".woff":
+		return "application/font-woff"
+
+	case ".woff2":
+		return "application/font-woff2"
+
 	default:
 		return mime.TypeByExtension(ext)
 	}
@@ -310,6 +316,8 @@ func parseFile(
 
 	if strings.HasPrefix(mimeType, "image/x-icon") {
 		// Don't compress icons
+	} else if strings.HasPrefix(mimeType, "application/font-woff") {
+		// Don't compress web fonts
 	} else {
 		compressed := bytes.NewBuffer(make([]byte, 0, 1024))
 
