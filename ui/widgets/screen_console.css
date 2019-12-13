@@ -21,14 +21,18 @@
 
 @import "~hack-font/build/web/hack.css";
 
-#home-content > #home-content-preload-drop::before {
+#connector-resource-preload-control-console {
+  font-family: Hack;
+}
+#connector-resource-preload-control-console::after {
   content: " ";
-  font-family: Hack, monospace;
+  font-family: Hack;
   font-weight: bold;
 }
-#home-content > #home-content-preload-drop::after {
+#connector-resource-preload-control-console::before {
   content: " ";
-  font-family: Hack, monospace;
+  font-family: Hack;
+  font-style: italic;
 }
 
 #home-content > .screen > .screen-screen > .screen-console {
@@ -144,5 +148,32 @@
 }
 
 #home-content > .screen > .screen-screen > .screen-console > .console-console {
-  font-family: Hack, monospace;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  justify-items: center;
+  color: #fff;
+}
+
+#home-content
+  > .screen
+  > .screen-screen
+  > .screen-console
+  > .console-console
+  > .console-loading {
+  text-align: center;
+  font-size: 1em;
+  font-weight: lighter;
+}
+
+#home-content
+  > .screen
+  > .screen-screen
+  > .screen-console
+  > .console-console
+  > .console-loading
+  > .console-loading-icon {
+  background: url(./busy.svg) 50% no-repeat;
+  width: 100%;
+  height: 100px;
 }

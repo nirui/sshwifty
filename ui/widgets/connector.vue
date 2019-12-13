@@ -212,12 +212,23 @@
         </button>
       </div>
     </fieldset>
+
+    <div
+      v-if="preloaderIDName.length > 0"
+      style="width: 1px; height: 1px; margin: 10px; position: absolute; top: 0; bottom: 0; overflow: hidden;"
+    >
+      <div :id="preloaderIDName">
+        {{ current.title || connector.name }} wizard
+      </div>
+    </div>
   </form>
 </template>
 
 <script>
 import "./connector.css";
 import * as command from "../commands/commands.js";
+
+const preloaderIDPrefix = "connector-resource-preload-control-";
 
 function buildField(i, field) {
   return {
@@ -267,6 +278,7 @@ export default {
       currentConnector: null,
       currentConnectorCloseWait: null,
       current: buildEmptyCurrent(),
+      preloaderIDName: "",
       working: false,
       disabled: false,
       cancelled: false
@@ -398,6 +410,13 @@ export default {
       if (this.currentConnectorCloseWait !== null) {
         throw new Error("Cannot run wizard multiple times");
       }
+
+      this.preloaderIDName =
+        preloaderIDPrefix +
+        this.getConnector()
+          .wizard.control()
+          .ui()
+          .toLowerCase();
 
       this.currentConnectorCloseWait = (async () => {
         while (!this.disabled) {

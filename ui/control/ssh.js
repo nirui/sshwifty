@@ -100,10 +100,6 @@ class Control {
     this.resizer(dim.rows, dim.cols);
   }
 
-  ui() {
-    return "Console";
-  }
-
   enabled() {
     this.enable = true;
   }
@@ -166,6 +162,10 @@ export class SSH {
 
   type() {
     return "SSH";
+  }
+
+  ui() {
+    return "Console";
   }
 
   build(data) {

@@ -104,8 +104,6 @@
           >.
         </p>
       </div>
-
-      <div id="home-content-preload-drop"></div>
     </screens>
 
     <connect-widget
@@ -470,6 +468,7 @@ export default {
           name: data.name,
           info: data.info,
           control: data.control,
+          ui: data.ui,
           toolbar: false,
           indicator: {
             level: "",
@@ -534,22 +533,40 @@ export default {
       }
     },
     tabWarning(index, msg) {
-      if (msg.length > 0) {
-        this.tab.tabs[index].indicator.message = msg;
-        this.tab.tabs[index].indicator.level = "warning";
-      } else {
+      if (msg.toDismiss) {
+        if (
+          this.tab.tabs[index].indicator.message !== msg.text ||
+          this.tab.tabs[index].indicator.level !== "warning"
+        ) {
+          return;
+        }
+
         this.tab.tabs[index].indicator.message = "";
         this.tab.tabs[index].indicator.level = "";
+
+        return;
       }
+
+      this.tab.tabs[index].indicator.message = msg.text;
+      this.tab.tabs[index].indicator.level = "warning";
     },
     tabInfo(index, msg) {
-      if (msg.length > 0) {
-        this.tab.tabs[index].indicator.message = msg;
-        this.tab.tabs[index].indicator.level = "info";
-      } else {
+      if (msg.toDismiss) {
+        if (
+          this.tab.tabs[index].indicator.message !== msg.text ||
+          this.tab.tabs[index].indicator.level !== "info"
+        ) {
+          return;
+        }
+
         this.tab.tabs[index].indicator.message = "";
         this.tab.tabs[index].indicator.level = "";
+
+        return;
       }
+
+      this.tab.tabs[index].indicator.message = msg.text;
+      this.tab.tabs[index].indicator.level = "info";
     },
     tabUpdated(index) {
       this.$emit("tab-updated", this.tab.tabs);

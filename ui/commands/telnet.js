@@ -249,7 +249,7 @@ class Wizard {
     this.config = config;
     this.session = session;
     this.step = subs;
-    this.controls = controls;
+    this.controls = controls.get("Telnet");
     this.history = history;
 
     this.step.resolve(this.stepInitialPrompt());
@@ -257,6 +257,10 @@ class Wizard {
 
   started() {
     return this.hasStarted;
+  }
+
+  control() {
+    return this.controls;
   }
 
   close() {
@@ -337,7 +341,7 @@ class Wizard {
             new command.Result(
               configInput.host,
               self.info,
-              self.controls.get("Telnet", {
+              self.controls.build({
                 charset: parsedConfig.charset,
                 send(data) {
                   return commandHandler.sendData(data);
@@ -346,7 +350,8 @@ class Wizard {
                   return commandHandler.sendClose();
                 },
                 events: commandHandler.events
-              })
+              }),
+              self.controls.ui()
             )
           )
         );

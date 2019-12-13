@@ -29,11 +29,13 @@ export class Result {
    * @param {string} name Result type
    * @param {Info} info Result info
    * @param {object} control Result controller
+   * @param {string} ui User interfact this command will use
    */
-  constructor(name, info, control) {
+  constructor(name, info, control, ui) {
     this.name = name;
     this.info = info;
     this.control = control;
+    this.ui = ui;
   }
 }
 
@@ -499,6 +501,16 @@ class Wizard {
    */
   started() {
     return this.built.started();
+  }
+
+  /**
+   * Return the name of the control info of current wizard
+   *
+   * @returns {object}
+   *
+   */
+  control() {
+    return this.built.control();
   }
 
   /**

@@ -487,7 +487,7 @@ class Wizard {
           credential: ""
         };
     this.step = subs;
-    this.controls = controls;
+    this.controls = controls.get("SSH");
     this.history = history;
 
     this.step.resolve(this.stepInitialPrompt());
@@ -495,6 +495,10 @@ class Wizard {
 
   started() {
     return this.hasStarted;
+  }
+
+  control() {
+    return this.controls;
   }
 
   close() {
@@ -603,7 +607,7 @@ class Wizard {
             new command.Result(
               configInput.user + "@" + configInput.host,
               self.info,
-              self.controls.get("SSH", {
+              self.controls.build({
                 charset: configInput.charset,
                 send(data) {
                   return commandHandler.sendData(data);
@@ -615,7 +619,8 @@ class Wizard {
                   return commandHandler.sendResize(rows, cols);
                 },
                 events: commandHandler.events
-              })
+              }),
+              self.controls.ui()
             )
           )
         );

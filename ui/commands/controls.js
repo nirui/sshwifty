@@ -44,18 +44,17 @@ export class Controls {
    * Get a control
    *
    * @param {string} type Type of the control
-   * @param {...any} data Data needed to build the control
    *
    * @returns {object} Control object
    *
    * @throws {Exception} When given control type is undefined
    *
    */
-  get(type, ...data) {
+  get(type) {
     if (typeof this.controls[type] !== "object") {
       throw new Exception('Control "' + type + '" was undefined');
     }
 
-    return this.controls[type].build(...data);
+    return this.controls[type];
   }
 }

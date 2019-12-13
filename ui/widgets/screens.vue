@@ -40,7 +40,7 @@
 
       <div class="screen-screen" style="position: relative">
         <component
-          :is="getComponent(screenInfo.control.ui())"
+          :is="getComponent(screenInfo.ui)"
           :active="screen === idx"
           :control="screenInfo.control"
           :change="screenInfo.indicator"

@@ -369,16 +369,6 @@
   flex-direction: column;
   color: #fff;
   font-size: 1.2em;
-  position: relative;
-}
-
-#home-content-preload-drop {
-  height: 0px;
-  width: 0px;
-  overflow: hidden;
-  position: absolute;
-  bottom: 0;
-  right: 0;
 }
 
 @media (max-width: 768px) {

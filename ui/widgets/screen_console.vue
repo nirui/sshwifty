@@ -22,8 +22,16 @@
     <div
       class="console-console"
       style="top: 0; right: 0; left: 0; bottom: 0; padding： 0; margin: 0; z-index: 0; position: absolute; overflow: hidden"
+      :style="'font-family: ' + typeface"
     >
       <h2 style="display:none;">Console</h2>
+
+      <div class="console-loading">
+        <div class="console-loading-icon"></div>
+        <div class="console-loading-message">
+          Initializing console ...
+        </div>
+      </div>
     </div>
 
     <!--
@@ -91,7 +99,13 @@ import "xterm/css/xterm.css";
 
 const termTypeFace = "Hack";
 const termFallbackTypeFace = "monospace";
-const termTypeFaceLoadTimeout = 10000;
+const termTypeFaceLoadTimeout = 3000;
+const termTypeFaceLoadError =
+  'Remote font "' +
+  termTypeFace +
+  '" is unavailable, using "' +
+  termFallbackTypeFace +
+  '" instead until the remote font is loaded';
 const termDefaultFontSize = 16;
 const termMinFontSize = 14;
 const termMaxFontSize = 36;
@@ -205,7 +219,11 @@ class Term {
     });
   }
 
-  open(root, callbacks) {
+  setFont(value) {
+    this.term.setOption("fontFamily", value);
+  }
+
+  init(root, callbacks) {
     this.term.open(root);
 
     this.term.textarea.addEventListener("focus", callbacks.focus);
@@ -246,32 +264,6 @@ class Term {
     });
 
     this.refit();
-  }
-
-  init(root, callbacks) {
-    const self = this;
-
-    return Promise.all([
-      new FontFaceObserver(termTypeFace).load(null, termTypeFaceLoadTimeout),
-      new FontFaceObserver(termTypeFace, { weight: "bold" }).load(
-        null,
-        termTypeFaceLoadTimeout
-      )
-    ])
-      .then(() => {
-        self.open(root, callbacks);
-      })
-      .catch(() => {
-        callbacks.warn(
-          "Unable to load remote font, using " +
-            termFallbackTypeFace +
-            " instead"
-        );
-
-        self.term.setOption("fontFamily", termFallbackTypeFace);
-
-        self.open(root, callbacks);
-      });
   }
 
   dispatch(event) {
@@ -388,6 +380,8 @@ export default {
     return {
       screenKeys: consoleScreenKeys,
       term: new Term(this.control),
+      typeface: termTypeFace,
+      running: true,
       runner: null
     };
   },
@@ -407,19 +401,87 @@ export default {
     }
   },
   async mounted() {
+    this.running = true;
+
     await this.init();
   },
   beforeDestroy() {
     this.deinit();
+    this.running = false;
   },
   methods: {
+    loadRemoteFont(typeface, timeout) {
+      return Promise.all([
+        new FontFaceObserver(typeface).load(null, timeout),
+        new FontFaceObserver(typeface, {
+          weight: "bold"
+        }).load(null, timeout)
+      ]);
+    },
+    retryLoadRemoteFont(typeface, timeout, onSuccess) {
+      const self = this;
+
+      self
+        .loadRemoteFont(typeface, timeout)
+        .then(() => {
+          onSuccess();
+        })
+        .catch(() => {
+          if (!self.running) {
+            return;
+          }
+
+          self.retryLoadRemoteFont(typeface, timeout, onSuccess);
+        });
+    },
+    async openTerm(root, callbacks) {
+      const self = this;
+
+      return self
+        .loadRemoteFont(termTypeFace, termTypeFaceLoadTimeout)
+        .then(() => {
+          if (!self.running) {
+            return;
+          }
+
+          root.innerHTML = "";
+
+          self.term.init(root, callbacks);
+        })
+        .catch(() => {
+          if (!self.running) {
+            return;
+          }
+
+          root.innerHTML = "";
+
+          callbacks.warn(termTypeFaceLoadError, false);
+
+          self.term.setFont(termFallbackTypeFace);
+          self.term.init(root, callbacks);
+
+          self.retryLoadRemoteFont(
+            termTypeFace,
+            termTypeFaceLoadTimeout,
+            () => {
+              if (!self.running) {
+                return;
+              }
+
+              self.term.setFont(termTypeFace);
+
+              callbacks.warn(termTypeFaceLoadError, true);
+            }
+          );
+        });
+    },
     triggerActive() {
       this.active ? this.activate() : this.deactivate();
     },
     async init() {
       let self = this;
 
-      await this.term.init(
+      await this.openTerm(
         this.$el.getElementsByClassName("console-console")[0],
         {
           focus(e) {
@@ -430,15 +492,20 @@ export default {
             document.removeEventListener("keyup", self.localKeypress);
             document.removeEventListener("keydown", self.localKeypress);
           },
-          warn(msg) {
-            self.$emit("warning", msg);
+          warn(msg, toDismiss) {
+            self.$emit("warning", {
+              text: msg,
+              toDismiss: toDismiss
+            });
           },
-          info(msg) {
-            self.$emit("info", msg);
+          info(msg, toDismiss) {
+            self.$emit("info", {
+              text: msg,
+              toDismiss: toDismiss
+            });
           }
         }
       );
-
       this.triggerActive();
       this.runRunner();
     },

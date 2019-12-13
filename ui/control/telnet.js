@@ -428,10 +428,6 @@ class Control {
     this.parser.requestWindowResize();
   }
 
-  ui() {
-    return "Console";
-  }
-
   enabled() {
     this.enable = true;
   }
@@ -525,6 +521,10 @@ export class Telnet {
 
   type() {
     return "Telnet";
+  }
+
+  ui() {
+    return "Console";
   }
 
   build(data) {
