@@ -22,7 +22,7 @@
     <div
       class="console-console"
       style="top: 0; right: 0; left: 0; bottom: 0; padding： 0; margin: 0; z-index: 0; position: absolute; overflow: hidden"
-      :style="'font-family: ' + typeface"
+      :style="'font-family: ' + typeface + ', inherit'"
     >
       <h2 style="display:none;">Console</h2>
 
