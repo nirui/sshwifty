@@ -47,40 +47,54 @@
     >
       <h2 style="display:none;">Tool bar</h2>
 
-      <div class="console-toolbar-item">
-        <h3 class="tb-title">Text size</h3>
+      <div class="console-toolbar-group console-toolbar-group-left">
+        <div class="console-toolbar-item">
+          <h3 class="tb-title">Text size</h3>
 
-        <ul class="hlst lst-nostyle">
-          <li>
-            <a class="tb-item" href="javascript:;" @click="fontSizeUp">
-              <span class="tb-key-icon icon icon-keyboardkey2">Increase +</span>
-            </a>
-          </li>
-          <li>
-            <a class="tb-item" href="javascript:;" @click="fontSizeDown">
-              <span class="tb-key-icon icon icon-keyboardkey2">Decrease -</span>
-            </a>
-          </li>
-        </ul>
+          <ul class="lst-nostyle">
+            <li>
+              <a class="tb-item" href="javascript:;" @click="fontSizeUp">
+                <span
+                  class="tb-key-icon tb-key-resize-icon icon icon-keyboardkey1 icon-iconed-bottom1"
+                >
+                  <i>+</i>
+                  Increase
+                </span>
+              </a>
+            </li>
+            <li>
+              <a class="tb-item" href="javascript:;" @click="fontSizeDown">
+                <span
+                  class="tb-key-icon tb-key-resize-icon icon icon-keyboardkey1 icon-iconed-bottom1"
+                >
+                  <i>-</i>
+                  Decrease
+                </span>
+              </a>
+            </li>
+          </ul>
+        </div>
       </div>
 
-      <div
-        v-for="(keyType, keyTypeIdx) in screenKeys"
-        :key="keyTypeIdx"
-        class="console-toolbar-item"
-      >
-        <h3 class="tb-title">{{ keyType.title }}</h3>
+      <div class="console-toolbar-group console-toolbar-group-main">
+        <div
+          v-for="(keyType, keyTypeIdx) in screenKeys"
+          :key="keyTypeIdx"
+          class="console-toolbar-item"
+        >
+          <h3 class="tb-title">{{ keyType.title }}</h3>
 
-        <ul class="hlst lst-nostyle">
-          <li v-for="(key, keyIdx) in keyType.keys" :key="keyIdx">
-            <a
-              class="tb-item"
-              href="javascript:;"
-              @click="sendSpecialKey(key[1])"
-              v-html="$options.filters.specialKeyHTML(key[0])"
-            ></a>
-          </li>
-        </ul>
+          <ul class="hlst lst-nostyle">
+            <li v-for="(key, keyIdx) in keyType.keys" :key="keyIdx">
+              <a
+                class="tb-item"
+                href="javascript:;"
+                @click="sendSpecialKey(key[1])"
+                v-html="$options.filters.specialKeyHTML(key[0])"
+              ></a>
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
   </div>
@@ -107,7 +121,7 @@ const termTypeFaceLoadError =
   termFallbackTypeFace +
   '" instead until the remote font is loaded';
 const termDefaultFontSize = 16;
-const termMinFontSize = 14;
+const termMinFontSize = 8;
 const termMaxFontSize = 36;
 
 class Term {
@@ -223,14 +237,6 @@ class Term {
     });
   }
 
-  setFont(value) {
-    if (this.closed) {
-      return;
-    }
-
-    this.term.setOption("fontFamily", value);
-  }
-
   init(root, callbacks) {
     if (this.closed) {
       return;
@@ -320,6 +326,15 @@ class Term {
     } catch (e) {
       process.env.NODE_ENV === "development" && console.trace(e);
     }
+  }
+
+  setFont(value) {
+    if (this.closed) {
+      return;
+    }
+
+    this.term.setOption("fontFamily", value);
+    this.refit();
   }
 
   fontSizeUp() {

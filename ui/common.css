@@ -285,12 +285,18 @@ body {
   box-shadow: 1px 1px 0 2px #0003;
 }
 
-.icon.icon-keyboardkey2 {
-  background: #fff;
-  color: #999;
+.icon.icon-iconed-bottom1 {
   padding: 4px 6px;
   display: inline-block;
   border-radius: 3px;
+  text-align: center;
+}
+.icon.icon-iconed-bottom1 > i {
+  font-style: normal;
+  display: block;
+  margin: 3px;
+  font-size: 2em;
+  font-weight: normal;
 }
 
 /* Windows */
