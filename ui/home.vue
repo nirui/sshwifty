@@ -532,11 +532,11 @@ export default {
         this.tab.tabs[index].indicator.level = "";
       }
     },
-    tabWarning(index, msg) {
+    tabMessage(index, msg, type) {
       if (msg.toDismiss) {
         if (
           this.tab.tabs[index].indicator.message !== msg.text ||
-          this.tab.tabs[index].indicator.level !== "warning"
+          this.tab.tabs[index].indicator.level !== type
         ) {
           return;
         }
@@ -548,25 +548,13 @@ export default {
       }
 
       this.tab.tabs[index].indicator.message = msg.text;
-      this.tab.tabs[index].indicator.level = "warning";
+      this.tab.tabs[index].indicator.level = type;
+    },
+    tabWarning(index, msg) {
+      this.tabMessage(index, msg, "warning");
     },
     tabInfo(index, msg) {
-      if (msg.toDismiss) {
-        if (
-          this.tab.tabs[index].indicator.message !== msg.text ||
-          this.tab.tabs[index].indicator.level !== "info"
-        ) {
-          return;
-        }
-
-        this.tab.tabs[index].indicator.message = "";
-        this.tab.tabs[index].indicator.level = "";
-
-        return;
-      }
-
-      this.tab.tabs[index].indicator.message = msg.text;
-      this.tab.tabs[index].indicator.level = "info";
+      this.tabMessage(index, msg, "info");
     },
     tabUpdated(index) {
       this.$emit("tab-updated", this.tab.tabs);
