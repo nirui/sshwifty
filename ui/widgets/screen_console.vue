@@ -188,6 +188,10 @@ class Term {
       oldCols = 0;
 
     this.term.onResize(dim => {
+      if (this.closed) {
+        return;
+      }
+
       if (dim.cols === oldCols && dim.rows === oldRows) {
         return;
       }
@@ -220,16 +224,28 @@ class Term {
   }
 
   setFont(value) {
+    if (this.closed) {
+      return;
+    }
+
     this.term.setOption("fontFamily", value);
   }
 
   init(root, callbacks) {
+    if (this.closed) {
+      return;
+    }
+
     this.term.open(root);
 
     this.term.textarea.addEventListener("focus", callbacks.focus);
     this.term.textarea.addEventListener("blur", callbacks.blur);
 
     this.term.textarea.addEventListener("keyup", async ev => {
+      if (this.closed) {
+        return;
+      }
+
       if (ev.ctrlKey && ev.shiftKey) {
         switch (ev.keyCode) {
           case 86:
@@ -258,6 +274,10 @@ class Term {
     });
 
     this.term.element.addEventListener("click", () => {
+      if (this.closed) {
+        return;
+      }
+
       this.term.textarea.blur();
       this.term.textarea.click();
       this.term.textarea.focus();
@@ -267,6 +287,10 @@ class Term {
   }
 
   dispatch(event) {
+    if (this.closed) {
+      return;
+    }
+
     try {
       this.term.textarea.dispatchEvent(event);
     } catch (e) {
@@ -275,6 +299,10 @@ class Term {
   }
 
   writeStr(d) {
+    if (this.closed) {
+      return;
+    }
+
     try {
       this.term.write(d);
     } catch (e) {
@@ -283,6 +311,10 @@ class Term {
   }
 
   write(d) {
+    if (this.closed) {
+      return;
+    }
+
     try {
       this.term.write(d);
     } catch (e) {
@@ -291,6 +323,10 @@ class Term {
   }
 
   fontSizeUp() {
+    if (this.closed) {
+      return;
+    }
+
     if (this.fontSize >= termMaxFontSize) {
       return;
     }
@@ -301,6 +337,10 @@ class Term {
   }
 
   fontSizeDown() {
+    if (this.closed) {
+      return;
+    }
+
     if (this.fontSize <= termMinFontSize) {
       return;
     }
@@ -311,6 +351,10 @@ class Term {
   }
 
   focus() {
+    if (this.closed) {
+      return;
+    }
+
     try {
       this.term.focus();
     } catch (e) {
@@ -319,6 +363,10 @@ class Term {
   }
 
   blur() {
+    if (this.closed) {
+      return;
+    }
+
     try {
       this.term.blur();
     } catch (e) {
@@ -327,6 +375,10 @@ class Term {
   }
 
   refit() {
+    if (this.closed) {
+      return;
+    }
+
     try {
       this.fit.fit();
     } catch (e) {
@@ -334,7 +386,15 @@ class Term {
     }
   }
 
+  destroyed() {
+    return this.closed;
+  }
+
   destroy() {
+    if (this.closed) {
+      return;
+    }
+
     this.closed = true;
 
     try {
@@ -381,7 +441,6 @@ export default {
       screenKeys: consoleScreenKeys,
       term: new Term(this.control),
       typeface: termTypeFace,
-      running: true,
       runner: null
     };
   },
@@ -401,13 +460,10 @@ export default {
     }
   },
   async mounted() {
-    this.running = true;
-
     await this.init();
   },
   beforeDestroy() {
     this.deinit();
-    this.running = false;
   },
   methods: {
     loadRemoteFont(typeface, timeout) {
@@ -418,62 +474,62 @@ export default {
         }).load(null, timeout)
       ]);
     },
-    retryLoadRemoteFont(typeface, timeout, onSuccess) {
+    async retryLoadRemoteFont(typeface, timeout, onSuccess) {
       const self = this;
 
-      self
-        .loadRemoteFont(typeface, timeout)
-        .then(() => {
-          onSuccess();
-        })
-        .catch(() => {
-          if (!self.running) {
-            return;
-          }
+      for (;;) {
+        if (self.term.destroyed()) {
+          return;
+        }
 
-          self.retryLoadRemoteFont(typeface, timeout, onSuccess);
-        });
+        try {
+          onSuccess(await self.loadRemoteFont(typeface, timeout));
+
+          return;
+        } catch (e) {
+          // Retry
+        }
+      }
     },
     async openTerm(root, callbacks) {
       const self = this;
 
-      return self
-        .loadRemoteFont(termTypeFace, termTypeFaceLoadTimeout)
-        .then(() => {
-          if (!self.running) {
-            return;
-          }
+      try {
+        await self.loadRemoteFont(termTypeFace, termTypeFaceLoadTimeout);
 
-          root.innerHTML = "";
+        if (self.term.destroyed()) {
+          return;
+        }
 
-          self.term.init(root, callbacks);
-        })
-        .catch(() => {
-          if (!self.running) {
-            return;
-          }
+        root.innerHTML = "";
 
-          root.innerHTML = "";
+        self.term.init(root, callbacks);
 
-          callbacks.warn(termTypeFaceLoadError, false);
+        return;
+      } catch (e) {
+        // Ignore
+      }
 
-          self.term.setFont(termFallbackTypeFace);
-          self.term.init(root, callbacks);
+      if (self.term.destroyed()) {
+        return;
+      }
 
-          self.retryLoadRemoteFont(
-            termTypeFace,
-            termTypeFaceLoadTimeout,
-            () => {
-              if (!self.running) {
-                return;
-              }
+      root.innerHTML = "";
 
-              self.term.setFont(termTypeFace);
+      callbacks.warn(termTypeFaceLoadError, false);
 
-              callbacks.warn(termTypeFaceLoadError, true);
-            }
-          );
-        });
+      self.term.setFont(termFallbackTypeFace);
+      self.term.init(root, callbacks);
+
+      self.retryLoadRemoteFont(termTypeFace, termTypeFaceLoadTimeout, () => {
+        if (self.term.destroyed()) {
+          return;
+        }
+
+        self.term.setFont(termTypeFace);
+
+        callbacks.warn(termTypeFaceLoadError, true);
+      });
     },
     triggerActive() {
       this.active ? this.activate() : this.deactivate();
@@ -506,6 +562,11 @@ export default {
           }
         }
       );
+
+      if (this.term.destroyed()) {
+        return;
+      }
+
       this.triggerActive();
       this.runRunner();
     },
@@ -545,6 +606,10 @@ export default {
       this.runner = (async () => {
         try {
           for (;;) {
+            if (this.term.destroyed()) {
+              break;
+            }
+
             this.term.write(await this.control.receive());
 
             self.$emit("updated");
