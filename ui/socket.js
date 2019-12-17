@@ -278,12 +278,18 @@ export class Socket {
 
     callbacks.connecting();
 
+    const receiveToPauseFactor = 6,
+      minReceivedToPause = 1024 * 16;
+
     let streamPaused = false,
       currentReceived = 0,
       currentUnpacked = 0;
 
     const shouldPause = () => {
-      return currentReceived > currentUnpacked;
+      return (
+        currentReceived > minReceivedToPause &&
+        currentReceived > currentUnpacked * receiveToPauseFactor
+      );
     };
 
     try {
