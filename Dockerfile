@@ -5,24 +5,25 @@ RUN set -ex && \
     echo 'res=0; for i in $(seq 0 36); do $@; res=$?; [ $res -eq 0 ] && exit $res || sleep 10; done; exit $res' > /try.sh && chmod +x /try.sh && \
     echo 'cpid=""; ret=0; i=0; for c in "$@"; do ( (((((eval $c; echo $? >&3) | sed "s/^/|-($i) /" >&4) 2>&1 | sed "s/^/|-($i)!/" >&2) 3>&1) | (read xs; exit $xs)) 4>&1) & ppid=$!; cpid="$cpid $ppid"; echo "+ Child $i (PID $ppid): $c ..."; i=$((i+1)); done; for c in $cpid; do wait $c; cret=$?; [ $cret -eq 0 ] && continue; echo "* Child PID $c has failed." >&2; ret=$cret; done; exit $ret' > /child.sh && chmod +x /child.sh && \
     export PATH=$PATH:/ && \
-    echo 'apt-get update && apt-get install autoconf automake libtool build-essential git npm golang-go -y' > /install.sh && chmod +x /install.sh && \
+    echo 'apt-get update && apt-get install autoconf automake libtool build-essential curl git npm golang-go -y' > ./install.sh && chmod +x ./install.sh && \
     ([ -z "$HTTP_PROXY" ] || (echo "Acquire::http::Proxy \"$HTTP_PROXY\";" >> /etc/apt/apt.conf)) && \
     ([ -z "$HTTPS_PROXY" ] || (echo "Acquire::https::Proxy \"$HTTPS_PROXY\";" >> /etc/apt/apt.conf)) && \
     (echo "Acquire::Retries \"8\";" >> /etc/apt/apt.conf) && \
-    try.sh install.sh && rm /install.sh
+    try.sh ./install.sh && rm ./install.sh && \
+    ([ -z "$HTTP_PROXY" ] || (git config --global http.proxy "$HTTP_PROXY" && npm config set proxy "$HTTP_PROXY")) && \
+    ([ -z "$HTTPS_PROXY" ] || (git config --global https.proxy "$HTTPS_PROXY" && npm config set https-proxy "$HTTPS_PROXY")) && \
+    echo "npm install -g npm || (npm cache clean -f && false) " > ./install.sh && chmod +x ./install.sh && try.sh ./install.sh && rm ./install.sh
 
 # Build the base environment for application libraries
 FROM base AS libbase
 COPY . /tmp/.build/sshwifty
 RUN set -ex && \
-    apt-get install libpng-dev -y && \
-    ls -l /tmp/.build/sshwifty && \
     cd / && \
     export PATH=$PATH:/ && \
-    ([ -z "$HTTP_PROXY" ] || (git config --global http.proxy "$HTTP_PROXY" && npm config set proxy "$HTTP_PROXY")) && \
-    ([ -z "$HTTPS_PROXY" ] || (git config --global https.proxy "$HTTPS_PROXY" && npm config set https-proxy "$HTTPS_PROXY")) && \
+    try.sh apt-get install libpng-dev -y && \
+    ls -l /tmp/.build/sshwifty && \
     child.sh \
-        'cd /tmp/.build/sshwifty && try.sh npm install' \
+        'cd /tmp/.build/sshwifty && echo "npm install || (npm cache clean -f && rm ~/.npm/_* -rf && false)" > ./npm_install.sh && chmod +x ./npm_install.sh && try.sh ./npm_install.sh && rm ./npm_install.sh' \
         'cd /tmp/.build/sshwifty && try.sh go mod download'
 
 # Main building environment
