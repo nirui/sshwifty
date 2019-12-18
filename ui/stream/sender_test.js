@@ -32,17 +32,22 @@ describe("Sender", () => {
   it("Send", async () => {
     const maxSegSize = 64;
     let result = [];
-    let sd = new sender.Sender(rawData => {
-      return new Promise(resolve => {
-        setTimeout(() => {
-          for (let i in rawData) {
-            result.push(rawData[i]);
-          }
+    let sd = new sender.Sender(
+      rawData => {
+        return new Promise(resolve => {
+          setTimeout(() => {
+            for (let i in rawData) {
+              result.push(rawData[i]);
+            }
 
-          resolve();
-        }, 5);
-      });
-    }, maxSegSize);
+            resolve();
+          }, 5);
+        });
+      },
+      maxSegSize,
+      300,
+      3
+    );
     let expected = generateTestData(maxSegSize * 16);
 
     sd.send(expected);
@@ -67,17 +72,22 @@ describe("Sender", () => {
   it("Send (Multiple calls)", async () => {
     const maxSegSize = 64;
     let result = [];
-    let sd = new sender.Sender(rawData => {
-      return new Promise(resolve => {
-        setTimeout(() => {
-          for (let i in rawData) {
-            result.push(rawData[i]);
-          }
+    let sd = new sender.Sender(
+      rawData => {
+        return new Promise(resolve => {
+          setTimeout(() => {
+            for (let i in rawData) {
+              result.push(rawData[i]);
+            }
 
-          resolve();
-        }, 10);
-      });
-    }, maxSegSize);
+            resolve();
+          }, 10);
+        });
+      },
+      maxSegSize,
+      300,
+      100
+    );
     let expectedSingle = generateTestData(maxSegSize * 2),
       expectedLen = expectedSingle.length * 16,
       expected = new Uint8Array(expectedLen);

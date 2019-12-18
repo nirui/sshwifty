@@ -189,7 +189,9 @@ class Dial {
             throw e;
           }
         },
-        4096 - 64 // Server has a 4096 bytes receive buffer, can be no greater
+        4096 - 64, // Server has a 4096 bytes receive buffer, can be no greater,
+        30, // 30ms input delay
+        10 // max 10 buffered requests
       );
 
     let senderNonce = crypt.generateNonce();
