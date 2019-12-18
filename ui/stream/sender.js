@@ -60,11 +60,6 @@ export class Sender {
    *
    */
   close() {
-    if (this.timeout !== null) {
-      clearTimeout(this.timeout);
-      this.timeout = null;
-    }
-
     this.buffered = null;
     this.bufferedSize = 0;
 
