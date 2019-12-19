@@ -205,6 +205,9 @@ export class Sender {
       }
 
       self.sendDelay = setTimeout(() => {
+        self.sendDelay = null;
+        self.bufferedRequests = 0;
+
         self.subscribe.resolve(true);
       }, self.bufferFlushDelay);
     });
