@@ -23,5 +23,5 @@ require (
 	github.com/gorilla/websocket v1.4.1
 	golang.org/x/crypto v0.0.0-20191206172530-e9b2fee46413
 	golang.org/x/net v0.0.0-20191209160850-c0dbc17a3553
-	golang.org/x/sys v0.0.0-20191210023423-ac6580df4449 // indirect
+	golang.org/x/sys v0.0.0-20191218084908-4a24b4065292 // indirect
 )
