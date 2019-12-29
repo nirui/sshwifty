@@ -22,6 +22,9 @@ import * as crypt from "./crypto.js";
 
 export const ECHO_FAILED = streams.ECHO_FAILED;
 
+const maxSenderDelay = 200;
+const minSenderDelay = 30;
+
 class Dial {
   /**
    * constructor
@@ -190,7 +193,7 @@ class Dial {
           }
         },
         4096 - 64, // Server has a 4096 bytes receive buffer, can be no greater,
-        30, // 30ms input delay
+        minSenderDelay, // 30ms input delay
         10 // max 10 buffered requests
       );
 
@@ -331,6 +334,16 @@ export class Socket {
       let streamHandler = new streams.Streams(conn.reader, conn.sender, {
         echoInterval: self.echoInterval,
         echoUpdater(delay) {
+          const sendDelay = delay / 2;
+
+          if (sendDelay > maxSenderDelay) {
+            conn.sender.setDelay(maxSenderDelay);
+          } else if (sendDelay < minSenderDelay) {
+            conn.sender.setDelay(minSenderDelay);
+          } else {
+            conn.sender.setDelay(sendDelay);
+          }
+
           return callbacks.echo(delay);
         },
         cleared(e) {

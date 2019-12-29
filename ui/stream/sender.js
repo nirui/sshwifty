@@ -42,6 +42,16 @@ export class Sender {
   }
 
   /**
+   * Set the send delay of current sender
+   *
+   * @param {integer} newDelay the new delay
+   *
+   */
+  setDelay(newDelay) {
+    this.bufferFlushDelay = newDelay;
+  }
+
+  /**
    * Sends data to the this.sender
    *
    * @param {Uint8Array} data to send
