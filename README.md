@@ -1,7 +1,7 @@
 # Sshwifty Web SSH & Telnet Client
 
 **Sshwifty is a SSH and Telnet connector made for the Web.** It can be deployed
-on your computer or server to provide SSH and Telnet access interface to any
+on your computer or server to provide SSH and Telnet access interface for any
 compatible (standard) web browser.
 
 ![Web Interface](Screenshot.png)
@@ -254,15 +254,15 @@ time on both the client and the server with a trusted time server.
 It's usually because your web browser does not support WebCrypt API, or the
 support has been disabled.
 
-If you're using Google Chrome, please use HTTPS when connect to Sshwifty. Chrome
-will disable WebCrypt and many other APIs when the connection is not safe.
+If you're using Google Chrome, please connect Sshwifty with HTTPS. Chrome will
+disable WebCrypt and many other APIs when the connection is not safe.
 
 ## License
 
 Code of this project is licensed under AGPL, see [LICENSE.md] for detail.
 
 Third-party components used by this project are licensed under their respective
-license. See [DEPENDENCIES.md] for dependencies used by this project.
+licenses. See [DEPENDENCIES.md] for dependencies used by this project.
 
 [LICENSE.md]: LICENSE.md
 [DEPENDENCIES.md]: DEPENDENCIES.md
