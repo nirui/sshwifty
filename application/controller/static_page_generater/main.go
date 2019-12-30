@@ -314,8 +314,8 @@ func parseFile(
 		mimeType = "application/binary"
 	}
 
-	if strings.HasPrefix(mimeType, "image/x-icon") {
-		// Don't compress icons
+	if strings.HasPrefix(mimeType, "image/") {
+		// Don't compress images
 	} else if strings.HasPrefix(mimeType, "application/font-woff") {
 		// Don't compress web fonts
 	} else {
