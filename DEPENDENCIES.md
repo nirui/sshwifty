@@ -1,6 +1,6 @@
 # Dependencies used by Sshwifty
 
-Sshwifty uses many third-party components. Those components is required inorder
+Sshwifty uses many third-party components. Those components is required in order
 for Sshwifty to function.
 
 A list of used components can be found inside `package.json` and `go.mod` file.
