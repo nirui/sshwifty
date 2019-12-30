@@ -23,12 +23,8 @@
       New remote
     </li>
 
-    <li
-      :class="{ active: tab === 'known', disabled: knownsLength <= 0 }"
-      @click="knownsLength > 0 && switchTab('known')"
-    >
-      Known remotes
-      <span v-if="knownsLength > 0" class="label">{{ knownsLength }}</span>
+    <li :class="{ active: tab === 'known' }" @click="switchTab('known')">
+      Known remotes <span class="label">{{ knownsLength }}</span>
     </li>
   </ul>
 </template>
@@ -45,15 +41,6 @@ export default {
     knownsLength: {
       type: Number,
       default: 0
-    }
-  },
-  watch: {
-    knownsLength(newVal) {
-      if (newVal > 0) {
-        return;
-      }
-
-      this.switchTab("new");
     }
   },
   methods: {

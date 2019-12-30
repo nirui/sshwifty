@@ -19,7 +19,10 @@
 
 <template>
   <div id="connect-known-list">
-    <ul class="hlst lstcl1">
+    <div v-if="knownList.length <= 0" id="connect-known-list-empty">
+      No known remote available
+    </div>
+    <ul v-else id="connect-known-list-list" class="hlst lstcl1">
       <li v-for="(known, kk) in knownList" :key="kk">
         <div class="labels">
           <span class="type" :style="'background-color: ' + known.data.color">
@@ -63,6 +66,13 @@
         </div>
       </li>
     </ul>
+
+    <div id="connect-known-list-import">
+      Tip: You can
+      <a href="javascript:;" @click="importHosts">import</a> and
+      <a href="javascript:;" @click="exportHosts">export</a>
+      known remotes from and to a file.
+    </div>
   </div>
 </template>
 
@@ -76,6 +86,14 @@ export default {
       default: () => []
     },
     launcherBuilder: {
+      type: Function,
+      default: () => []
+    },
+    knownsExport: {
+      type: Function,
+      default: () => []
+    },
+    knownsImport: {
       type: Function,
       default: () => []
     }
@@ -159,6 +177,86 @@ export default {
       }
 
       this.$emit("clear-session", uid);
+    },
+    exportHosts() {
+      let el = null;
+
+      try {
+        const dataStr = JSON.stringify(this.knownsExport());
+
+        el = document.createElement("a");
+        el.setAttribute(
+          "href",
+          "data:text/plain;charset=utf-8," + btoa(dataStr)
+        );
+        el.setAttribute("target", "_blank");
+        el.setAttribute("download", "sshwifty.known-remotes.txt");
+        el.setAttribute(
+          "style",
+          "overflow: hidden; opacity: 0; width: 1px; height: 1px; top: -1px;" +
+            "left: -1px; position: absolute;"
+        );
+
+        document.body.appendChild(el);
+
+        el.click();
+      } catch (e) {
+        alert("Unable to export known remotes: " + e);
+      }
+
+      if (el === null) {
+        return;
+      }
+
+      document.body.removeChild(el);
+    },
+    importHosts() {
+      const self = this;
+
+      let el = null;
+
+      try {
+        el = document.createElement("input");
+        el.setAttribute("type", "file");
+        el.setAttribute(
+          "style",
+          "overflow: hidden; opacity: 0; width: 1px; height: 1px; top: -1px;" +
+            "left: -1px; position: absolute;"
+        );
+        el.addEventListener("change", ev => {
+          const t = ev.target;
+
+          if (t.files.length <= 0) {
+            return;
+          }
+
+          t.disabled = "disabled";
+
+          let r = new FileReader();
+
+          r.onload = () => {
+            try {
+              self.knownsImport(JSON.parse(atob(r.result)));
+            } catch (e) {
+              alert("Unable to import known remotes due to error: " + e);
+            }
+          };
+
+          r.readAsText(t.files[0], "utf-8");
+        });
+
+        document.body.appendChild(el);
+
+        el.click();
+      } catch (e) {
+        alert("Unable to load known remotes data due to error: " + e);
+      }
+
+      if (el === null) {
+        return;
+      }
+
+      document.body.removeChild(el);
     }
   }
 };

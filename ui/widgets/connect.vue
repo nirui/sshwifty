@@ -46,6 +46,8 @@
         v-if="tab === 'known' && !inputting"
         :knowns="knowns"
         :launcher-builder="knownsLauncherBuilder"
+        :knowns-export="knownsExport"
+        :knowns-import="knownsImport"
         @select="selectKnown"
         @remove="removeKnown"
         @clear-session="clearSessionKnown"
@@ -103,6 +105,14 @@ export default {
       default: () => []
     },
     knownsLauncherBuilder: {
+      type: Function,
+      default: () => []
+    },
+    knownsExport: {
+      type: Function,
+      default: () => []
+    },
+    knownsImport: {
       type: Function,
       default: () => []
     },

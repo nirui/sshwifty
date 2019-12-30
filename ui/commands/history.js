@@ -33,6 +33,26 @@ export class History {
   }
 
   /**
+   * Return the index of given uname, or -1 when not found
+   *
+   * @param {string} uname the unique name
+   *
+   * @returns {integer} The index of given uname
+   *
+   */
+  indexOf(uname) {
+    for (let i in this.records) {
+      if (this.records[i].uname !== uname) {
+        continue;
+      }
+
+      return i;
+    }
+
+    return -1;
+  }
+
+  /**
    * Save record to history
    *
    * @param {string} uname unique name
@@ -44,13 +64,10 @@ export class History {
    *
    */
   save(uname, title, lastUsed, info, data, sessionData) {
-    for (let i in this.records) {
-      if (this.records[i].uname !== uname) {
-        continue;
-      }
+    const unameIdx = this.indexOf(uname);
 
-      this.records.splice(i, 1);
-      break;
+    if (unameIdx >= 0) {
+      this.records.splice(unameIdx, 1);
     }
 
     this.records.push({
@@ -78,20 +95,7 @@ export class History {
    *
    */
   store() {
-    let r = [];
-
-    for (let i in this.records) {
-      r.push({
-        uname: this.records[i].uname,
-        title: this.records[i].title,
-        type: this.records[i].type,
-        color: this.records[i].color,
-        last: this.records[i].last,
-        data: this.records[i].data
-      });
-    }
-
-    this.saver(this, r);
+    this.saver(this, this.export());
   }
 
   /**
@@ -131,7 +135,8 @@ export class History {
   }
 
   /**
-   * Return all history records
+   * Return all history records. The exported data is differ than the
+   * internal ones, it cannot be directly import back
    *
    * @returns {array<object>} Records
    *
@@ -152,5 +157,53 @@ export class History {
     }
 
     return r;
+  }
+
+  /**
+   * Export current history records
+   *
+   * @returns {array<object>} Records
+   *
+   */
+  export() {
+    let r = [];
+
+    for (let i in this.records) {
+      r.push({
+        uname: this.records[i].uname,
+        title: this.records[i].title,
+        type: this.records[i].type,
+        color: this.records[i].color,
+        last: this.records[i].last,
+        data: this.records[i].data
+      });
+    }
+
+    return r;
+  }
+
+  /**
+   * Import data into current history records
+   *
+   * @param {array<object>} records Records
+   *
+   */
+  import(records) {
+    for (let i in records) {
+      if (this.indexOf(records[i].uname) >= 0) {
+        continue;
+      }
+
+      this.records.push({
+        uname: records[i].uname,
+        title: records[i].title,
+        type: records[i].type,
+        color: records[i].color,
+        last: records[i].last,
+        data: records[i].data
+      });
+    }
+
+    this.store();
   }
 }

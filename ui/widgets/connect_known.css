@@ -24,6 +24,34 @@
   font-size: 0.75em;
   padding: 15px;
   background: #3a3a3a;
+  display: flex;
+  flex-direction: column;
+}
+
+#connect-known-list-list,
+#connect-known-list-empty {
+  flex: auto;
+}
+
+#connect-known-list-empty {
+  text-align: center;
+  color: #999;
+  font-size: 1.2em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#connect-known-list-import {
+  margin: 15px 0 10px 0;
+  color: #aaa;
+  font-size: 1.1em;
+  text-align: center;
+}
+
+#connect-known-list-import a {
+  color: #e9a;
+  text-decoration: none;
 }
 
 #connect-known-list li {

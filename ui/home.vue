@@ -112,6 +112,8 @@
       :connectors="connector.connectors"
       :knowns="connector.knowns"
       :knowns-launcher-builder="buildknownLauncher"
+      :knowns-export="exportKnowns"
+      :knowns-import="importKnowns"
       :busy="connector.busy"
       @display="windows.connect = $event"
       @connector-select="connectNew"
@@ -437,6 +439,12 @@ export default {
       }
 
       return this.hostPath + "#+" + connector.launcher(known.data);
+    },
+    exportKnowns() {
+      return this.connector.historyRec.export();
+    },
+    importKnowns(d) {
+      return this.connector.historyRec.import(d);
     },
     removeKnown(uid) {
       this.connector.historyRec.del(uid);
