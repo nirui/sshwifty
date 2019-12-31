@@ -1,5 +1,5 @@
 # Build the build base environment
-FROM debian:sid AS base
+FROM debian:testing AS base
 RUN set -ex && \
     cd / && \
     echo 'res=0; for i in $(seq 0 36); do $@; res=$?; [ $res -eq 0 ] && exit $res || sleep 10; done; exit $res' > /try.sh && chmod +x /try.sh && \
@@ -56,6 +56,7 @@ ENV SSHWIFTY_HOSTNAME= \
     SSHWIFTY_DOCKER_TLSCERT= \
     SSHWIFTY_DOCKER_TLSCERTKEY=
 COPY --from=builder /sshwifty /
+COPY . /sshwifty-src
 RUN set -ex && \
     adduser -D sshwifty && \
     chmod +x /sshwifty && \
