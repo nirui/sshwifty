@@ -444,7 +444,9 @@ export default {
       return this.connector.historyRec.export();
     },
     importKnowns(d) {
-      return this.connector.historyRec.import(d);
+      this.connector.historyRec.import(d);
+
+      this.connector.knowns = this.connector.historyRec.all();
     },
     removeKnown(uid) {
       this.connector.historyRec.del(uid);

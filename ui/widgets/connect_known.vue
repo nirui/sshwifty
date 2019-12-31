@@ -18,7 +18,7 @@
 -->
 
 <template>
-  <div id="connect-known-list">
+  <div id="connect-known-list" :class="{ reloaded: reloaded }">
     <div v-if="knownList.length <= 0" id="connect-known-list-empty">
       No known remote available
     </div>
@@ -101,12 +101,28 @@ export default {
   data() {
     return {
       knownList: [],
+      reloaded: false,
       busy: false
     };
   },
   watch: {
     knowns(newVal) {
+      // Only play reload animation when we're adding data into the records,
+      // not reducing
+      const playReloaded = newVal.length > this.knownList.length;
+
       this.reload(newVal);
+
+      if (!playReloaded) {
+        return;
+      }
+
+      const self = this;
+
+      self.reloaded = true;
+      setTimeout(() => {
+        self.reloaded = false;
+      }, 500);
     }
   },
   mounted() {
