@@ -489,6 +489,20 @@ body {
   color: #e9a;
 }
 
+.form1 > fieldset .field.highlight > input[type="text"],
+.form1 > fieldset .field.highlight > input[type="file"],
+.form1 > fieldset .field.highlight > input[type="email"],
+.form1 > fieldset .field.highlight > input[type="number"],
+.form1 > fieldset .field.highlight > input[type="search"],
+.form1 > fieldset .field.highlight > input[type="tel"],
+.form1 > fieldset .field.highlight > input[type="url"],
+.form1 > fieldset .field.highlight > input[type="password"],
+.form1 > fieldset .field.highlight > select,
+.form1 > fieldset .field.highlight > textarea {
+  background: #666;
+  border-bottom: 2px solid #ccc;
+}
+
 .form1 > fieldset .field.error > input[type="text"],
 .form1 > fieldset .field.error > input[type="file"],
 .form1 > fieldset .field.error > input[type="email"],
@@ -552,6 +566,7 @@ body {
   border-style: solid;
 }
 
+.form1 > fieldset .field > button:focus,
 .form1 > fieldset .field > button:hover {
   border-color: #a56;
   background: #c78;
@@ -562,10 +577,6 @@ body {
   border-color: #a56;
 }
 
-.form1 > fieldset .field > button:focus {
-  outline: 1px dotted #eee;
-}
-
 .form1 > fieldset .field > button.secondary {
   float: right;
   background: transparent;
@@ -573,6 +584,7 @@ body {
   border-color: #eee;
 }
 
+.form1 > fieldset .field > button.secondary:focus,
 .form1 > fieldset .field > button.secondary:hover {
   border-color: #ddd;
   color: #ddd;
@@ -581,4 +593,80 @@ body {
 .form1 > fieldset .field > button.secondary:active {
   border-color: #666;
   color: #666;
+}
+
+.form1 > fieldset .field > ul.input-suggestions {
+  background: #262626;
+  box-shadow: 0 0 3px #0006;
+  border: 1px solid #666;
+  position: relative;
+  margin: 3px;
+}
+
+.form1 > fieldset .field > ul.input-suggestions::before,
+.form1 > fieldset .field > ul.input-suggestions::after {
+  top: -5px;
+  left: 5px;
+  position: absolute;
+  z-index: 1;
+  display: block;
+  content: " ";
+  width: 10px;
+  height: 10px;
+  background: #262626;
+  transform: rotate(45deg);
+}
+
+.form1 > fieldset .field > ul.input-suggestions::after {
+  top: -6px;
+  z-index: 0;
+  background: #666;
+}
+
+.form1 > fieldset .field > ul.input-suggestions > li {
+  position: relative;
+  z-index: 2;
+  padding: 10px;
+  cursor: pointer;
+  border-bottom: 1px solid #222;
+}
+
+.form1 > fieldset .field > ul.input-suggestions > li:hover,
+.form1 > fieldset .field > ul.input-suggestions > li.current {
+  background: #555;
+  border-bottom: 1px solid #555;
+}
+
+.form1 > fieldset .field > ul.input-suggestions > li:first-child:hover::before,
+.form1
+  > fieldset
+  .field
+  > ul.input-suggestions
+  > li.current:first-child::before {
+  top: -6px;
+  position: absolute;
+  z-index: 0;
+  left: 5px;
+  display: block;
+  content: " ";
+  width: 10px;
+  height: 10px;
+  background: #555;
+  transform: rotate(45deg);
+}
+
+.form1 > fieldset .field > ul.input-suggestions > li:last-child {
+  border-bottom: none;
+}
+
+.form1 > fieldset .field > ul.input-suggestions > li > .sugt-title {
+  color: #fff;
+  font-weight: bold;
+  margin: 0 5px;
+}
+
+.form1 > fieldset .field > ul.input-suggestions > li > .sugt-value {
+  color: #fdd;
+  font-size: 0.9em;
+  margin: 0 5px;
 }

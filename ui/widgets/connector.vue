@@ -61,7 +61,7 @@
         v-for="(field, key) in current.fields"
         :key="key"
         class="field"
-        :class="{ error: field.error.length > 0 }"
+        :class="{ error: field.error.length > 0, highlight: field.highlighted }"
       >
         {{ field.field.name }}
 
@@ -74,8 +74,13 @@
           :name="field.field.name"
           :placeholder="field.field.example"
           :autofocus="field.autofocus"
-          @input="verify(key, field, false)"
-          @change="verify(key, field, true)"
+          :tabindex="field.tabIndex"
+          :disabled="field.field.readonly"
+          @keydown="keydown($event, key, field)"
+          @focus="focus(key, field, true)"
+          @blur="focus(key, field, false)"
+          @input="changed(key, field, false)"
+          @change="changed(key, field, true)"
         />
 
         <input
@@ -87,18 +92,28 @@
           :name="field.field.name"
           :placeholder="field.field.example"
           :autofocus="field.autofocus"
-          @input="verify(key, field, false)"
-          @change="verify(key, field, true)"
+          :tabindex="field.tabIndex"
+          :disabled="field.field.readonly"
+          @focus="focus(key, field, true)"
+          @blur="focus(key, field, false)"
+          @input="changed(key, field, false)"
+          @change="changed(key, field, true)"
         />
 
         <input
           v-if="field.field.type === 'checkbox'"
           v-model="field.field.value"
+          v-focus="field.autofocus"
           type="checkbox"
           autocomplete="off"
           :name="field.field.name"
-          @input="verify(key, field, false)"
-          @change="verify(key, field, true)"
+          :autofocus="field.autofocus"
+          :tabindex="field.tabIndex"
+          :disabled="field.field.readonly"
+          @focus="focus(key, field, true)"
+          @blur="focus(key, field, false)"
+          @input="changed(key, field, false)"
+          @change="changed(key, field, true)"
         />
 
         <textarea
@@ -109,42 +124,56 @@
           :placeholder="field.field.example"
           :name="field.field.name"
           :autofocus="field.autofocus"
-          @input="verify(key, field, false)"
+          :tabindex="field.tabIndex"
+          :disabled="field.field.readonly"
+          @keydown="keydown(key, field)"
+          @focus="focus(key, field, true)"
+          @blur="focus(key, field, false)"
+          @input="changed(key, field, false)"
           @keyup="expandTextarea"
-          @change="verify(key, field, true)"
+          @change="changed(key, field, true)"
         ></textarea>
 
         <input
           v-if="field.field.type === 'textfile'"
+          v-focus="field.autofocus"
           type="file"
           autocomplete="off"
           :placeholder="field.field.example"
           :name="field.field.name + '-file'"
           :autofocus="field.autofocus"
+          :tabindex="field.tabIndex"
+          :disabled="field.field.readonly"
+          @focus="focus(key, field, true)"
+          @blur="focus(key, field, false)"
           @change="importFile($event.target, field)"
         />
         <input
           v-if="field.field.type === 'textfile'"
           v-model="field.field.value"
-          v-focus="field.autofocus"
           type="text"
           autocomplete="off"
           :name="field.field.name"
           :placeholder="field.field.example"
-          :autofocus="field.autofocus"
           style="display: none"
-          @input="verify(key, field, false)"
-          @change="verify(key, field, true)"
+          @input="changed(key, field, false)"
+          @change="changed(key, field, true)"
         />
 
         <select
           v-if="field.field.type === 'select'"
           v-model="field.field.value"
+          v-focus="field.autofocus"
           autocomplete="off"
           :name="field.field.name"
+          :autofocus="field.autofocus"
           :value="field.field.value"
-          @input="verify(key, field, false)"
-          @change="verify(key, field, true)"
+          :tabindex="field.tabIndex"
+          :disabled="field.field.readonly"
+          @focus="focus(key, field, true)"
+          @blur="focus(key, field, false)"
+          @input="changed(key, field, false)"
+          @change="changed(key, field, true)"
         >
           <option
             v-for="(option, oKey) in field.field.example.split(',')"
@@ -169,18 +198,45 @@
           >
             <input
               v-model="field.field.value"
+              v-focus="field.autofocus && oKey === 0"
               type="radio"
               autocomplete="off"
               :name="field.field.name"
+              :autofocus="field.autofocus && oKey === 0"
               :value="option"
               :checked="field.field.value === option"
               :aria-checked="field.field.value === option"
-              @input="verify(key, field, false)"
-              @change="verify(key, field, true)"
+              :tabindex="field.nextSubTabIndex(oKey)"
+              :disabled="field.field.readonly"
+              @focus="focus(key, field, true)"
+              @blur="focus(key, field, false)"
+              @input="changed(key, field, false)"
+              @change="changed(key, field, true)"
             />
             {{ option }}
           </label>
         </div>
+
+        <ul
+          v-if="field.suggestion.suggestions.length > 0"
+          class="input-suggestions lst-nostyle"
+          @mouseenter="field.holdSuggestions(true)"
+          @mouseleave="field.holdSuggestions(false)"
+        >
+          <li
+            v-for="(suggestion, sKey) in field.suggestion.suggestions"
+            :key="sKey"
+            :class="{ current: sKey === field.suggestion.selected }"
+            @click="clickInputSuggestion(key, field, sKey)"
+          >
+            <div class="sugt-title">
+              {{ suggestion.title }}
+            </div>
+            <div class="sugt-value">
+              {{ suggestion.value }}
+            </div>
+          </li>
+        </ul>
 
         <div v-if="field.error.length > 0" class="error">{{ field.error }}</div>
         <div v-else-if="field.message.length > 0" class="message">
@@ -196,8 +252,11 @@
       <div class="field">
         <button
           v-if="current.submittable"
+          v-focus="submitterTabIndex === 1"
           type="submit"
           :disabled="current.submitting || disabled"
+          :tabindex="submitterTabIndex"
+          :autofocus="submitterTabIndex === 1"
           @click="submitAndGetNext"
         >
           {{ current.actionText }}
@@ -205,6 +264,7 @@
         <button
           v-if="current.cancellable"
           :disabled="current.submitting || disabled"
+          :tabindex="submitterTabIndex + 1"
           class="secondary"
           @click="cancelAndGetNext"
         >
@@ -227,24 +287,16 @@
 <script>
 import "./connector.css";
 import * as command from "../commands/commands.js";
+import * as fieldBuilder from "./connector_field_builder.js";
 
 const preloaderIDPrefix = "connector-resource-preload-control-";
-
-function buildField(i, field) {
-  return {
-    verified: false,
-    inputted: false,
-    error: "",
-    message: "",
-    field: field,
-    autofocus: i == 0
-  };
-}
+const hightlightClearTimeout = 1000;
 
 function buildEmptyCurrent() {
   return {
     data: null,
     alert: false,
+    clearHightlightTimeout: null,
     title: "",
     message: "",
     fields: [],
@@ -279,6 +331,8 @@ export default {
       currentConnectorCloseWait: null,
       current: buildEmptyCurrent(),
       preloaderIDName: "",
+      fieldValueBackup: [],
+      submitterTabIndex: 1,
       working: false,
       disabled: false,
       cancelled: false
@@ -335,14 +389,21 @@ export default {
         this.current.type = next.type();
         this.current.data = next.data();
 
+        let fields = null,
+          tabIndex = 1;
+
         switch (this.current.type) {
           case command.NEXT_PROMPT:
-            let fields = this.current.data.inputs();
+            fields = this.current.data.inputs();
 
-            for (let i in fields) {
-              this.current.fields.push(buildField(i, fields[i]));
+            for (let i = 0; i < fields.length; i++) {
+              const f = fieldBuilder.build(tabIndex, i, fields[i]);
+
+              this.current.fields.push(f);
+              tabIndex = f.nextTabIndex();
             }
 
+            this.submitterTabIndex = tabIndex > 0 ? tabIndex : 1;
             this.current.actionText = this.current.data.actionText();
             this.current.submittable = true;
             this.current.alert = true;
@@ -404,7 +465,11 @@ export default {
 
       this.getConnector().wizard.close();
 
-      await waiter;
+      try {
+        await waiter;
+      } catch (e) {
+        // Do nothing
+      }
     },
     runWizard() {
       if (this.currentConnectorCloseWait !== null) {
@@ -438,13 +503,52 @@ export default {
     getFieldValues() {
       let mod = {};
 
-      for (let i in this.current.fields) {
+      for (let i = 0; i < this.current.fields.length; i++) {
         mod[this.current.fields[i].field.name] = this.current.fields[
           i
         ].field.value;
       }
 
       return mod;
+    },
+    createFieldValueBackup() {
+      let backup = [];
+
+      for (let i = 0; i < this.current.fields.length; i++) {
+        backup.push(this.current.fields[i].field.value);
+      }
+
+      this.fieldValueBackup = backup;
+    },
+    clearFieldValueBackup() {
+      this.fieldValueBackup = [];
+    },
+    clearFieldHighlights() {
+      for (let i = 0; i < this.current.fields.length; i++) {
+        this.current.fields[i].highlighted = false;
+      }
+    },
+    delayedClearFieldHighlights(timeout) {
+      const self = this;
+
+      if (self.clearHightlightTimeout === null) {
+        clearTimeout(self.clearHightlightTimeout);
+        self.clearHightlightTimeout = null;
+      }
+
+      self.clearHightlightTimeout = setTimeout(() => {
+        self.clearHightlightTimeout = null;
+        self.clearFieldHighlights();
+      }, timeout);
+    },
+    restoreFieldValuesFromBackup(except) {
+      for (let i = 0; i < this.fieldValueBackup.length; i++) {
+        if (except === i) {
+          continue;
+        }
+
+        this.current.fields[i].field.value = this.fieldValueBackup[i];
+      }
     },
     expandTextarea(event) {
       event.target.style.overflowY = "hidden";
@@ -484,7 +588,7 @@ export default {
     verify(key, field, force) {
       try {
         field.message = "" + field.field.verify(field.field.value);
-        field.inputted = true;
+        field.modified = true;
         field.verified = true;
         field.error = "";
       } catch (e) {
@@ -492,27 +596,27 @@ export default {
         field.message = "";
         field.verified = false;
 
-        if (field.inputted || force) {
+        if (field.modified || force) {
           field.error = "" + e;
         }
       }
 
+      field.highlighted = false;
+
       if (
         !field.verified &&
-        (field.inputted || force) &&
+        (field.modified || force) &&
         field.error.length <= 0
       ) {
         field.error = "Invalid";
       }
-
-      this.current.fields[key] = field;
 
       return field.verified;
     },
     verifyAll() {
       let verified = true;
 
-      for (let i in this.current.fields) {
+      for (let i = 0; i < this.current.fields.length; i++) {
         if (this.verify(i, this.current.fields[i], true)) {
           continue;
         }
@@ -521,6 +625,157 @@ export default {
       }
 
       return verified;
+    },
+    focus(key, field, focused) {
+      field.highlighted = false;
+
+      if (!focused) {
+        // Don't reset a holding field
+        if (!field.inputted) {
+          field.resetSuggestions(false);
+        } else if (field.resetSuggestions(false)) {
+          this.clickInputSuggestion(
+            key,
+            field,
+            field.selectedSuggestionIndex()
+          );
+        }
+
+        return;
+      }
+
+      this.createFieldValueBackup();
+      field.reloadSuggestions();
+    },
+    applySuggestion(key, field, suggestion) {
+      this.restoreFieldValuesFromBackup(-1);
+
+      field.field.value = suggestion.value;
+
+      for (let i = 0; i < this.current.fields.length; i++) {
+        this.current.fields[i].highlighted = false;
+
+        if (
+          i === key ||
+          this.current.fields[i].inputted ||
+          this.current.fields[i].field.readonly
+        ) {
+          continue;
+        }
+
+        if (
+          typeof suggestion.fields[this.current.fields[i].field.name] ===
+          "undefined"
+        ) {
+          continue;
+        }
+
+        this.current.fields[i].field.value =
+          suggestion.fields[this.current.fields[i].field.name];
+
+        if (!this.verify(i, this.current.fields[i], true)) {
+          continue;
+        }
+
+        this.current.fields[i].highlighted = true;
+      }
+    },
+    applySuggestionAndVerify(key, field, force, suggestion) {
+      field.inputted = true;
+
+      this.applySuggestion(key, field, suggestion);
+
+      return this.verify(key, field, force);
+    },
+    changed(key, field, force) {
+      this.createFieldValueBackup();
+
+      field.highlighted = false;
+      field.inputted = true;
+      field.enableInputSuggestionsOnAllInput();
+      field.reloadSuggestions();
+
+      this.verify(key, field, force);
+    },
+    keydown(event, key, field) {
+      switch (event.key) {
+        case "ArrowUp":
+          event.preventDefault();
+          field.moveSuggestionsCursor(true);
+
+          this.applySuggestionAndVerify(
+            key,
+            field,
+            true,
+            field.curentSuggestion()
+          );
+          break;
+
+        case "ArrowDown":
+          event.preventDefault();
+          field.moveSuggestionsCursor(false);
+
+          this.applySuggestionAndVerify(
+            key,
+            field,
+            true,
+            field.curentSuggestion()
+          );
+          break;
+
+        case "Escape":
+          if (!field.suggestionsPending()) {
+            return;
+          }
+
+          event.preventDefault();
+
+          this.restoreFieldValuesFromBackup(key);
+          this.clearFieldValueBackup();
+          this.clearFieldHighlights();
+          this.verify(key, field, true);
+
+          field.disableSuggestionsForInput(field.field.value);
+          field.resetSuggestions(true);
+          break;
+
+        case "Enter":
+          if (!field.suggestionsPending()) {
+            return;
+          }
+
+          event.preventDefault();
+
+          this.clickInputSuggestion(
+            key,
+            field,
+            field.selectedSuggestionIndex()
+          );
+          break;
+      }
+    },
+    clickInputSuggestion(key, field, index) {
+      const self = this;
+
+      field.selectSuggestion(index);
+
+      if (
+        self.applySuggestionAndVerify(
+          key,
+          field,
+          true,
+          field.curentSuggestion()
+        )
+      ) {
+        field.disableSuggestionsForInput(field.field.value);
+      } else {
+        field.enableInputSuggestionsOnAllInput();
+      }
+
+      field.resetSuggestions(true);
+
+      self.clearFieldValueBackup();
+      self.delayedClearFieldHighlights(hightlightClearTimeout);
     },
     async submitAndGetNext() {
       if (this.current.submitting || this.disabled) {
