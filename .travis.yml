@@ -8,7 +8,7 @@ env:
     - ASC_URL=https://keybase.io/nirui/pgp_keys.asc
     - PACKAGE=github.com/niruix/sshwifty
     - VERSION_VARIABLE=github.com/niruix/sshwifty/application.version
-    - BUILD_TARGETS="darwin/386 darwin/amd64 windows/386 windows/amd64 openbsd/386 openbsd/amd64 openbsd/arm openbsd/arm64 freebsd/386 freebsd/amd64 freebsd/arm freebsd/arm64 linux/386 linux/amd64 linux/arm linux/arm64 linux/ppc64 linux/ppc64le linux/mips linux/mipsle linux/mips64 linux/mips64le"
+    - BUILD_TARGETS="darwin/amd64 windows/386 windows/amd64 openbsd/386 openbsd/amd64 openbsd/arm openbsd/arm64 freebsd/386 freebsd/amd64 freebsd/arm freebsd/arm64 linux/386 linux/amd64 linux/arm linux/arm64 linux/ppc64 linux/ppc64le linux/mips linux/mipsle linux/mips64 linux/mips64le"
     - SSHWIFTY_VERSION=$(git describe --always --dirty='*' --tag)
     - SSHWIFTY_COMMIT=$(git describe --always)
     - SSHWIFTY_RELEASE=$([[ "$SSHWIFTY_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+\-[a-zA-Z0-9]+\-release$ ]] && echo "yes")
