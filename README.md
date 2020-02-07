@@ -191,10 +191,10 @@ Here is all the options of a configuration file:
     }
   ],
 
-  // Remote Presets, the operate can define few presets for user so the user
-  // won't have to manually fill in all the form fields
+  // Remote Presets, the operater can define few presets for user so the user
+  // won't have to manually fill-in all the form fields
   //
-  // Presets will be displayed in the "Known remotes" table on the Connector
+  // Presets will be displayed in the "Known remotes" tab on the Connector
   // window
   "Presets": [
     {
