@@ -120,21 +120,33 @@ func (s Server) Verify() error {
 	return nil
 }
 
+// Preset contains data of a static remote host
+type Preset struct {
+	Title string
+	Type  string
+	Host  string
+	Meta  map[string]string
+}
+
 // Configuration contains configuration of the application
 type Configuration struct {
-	HostName    string
-	SharedKey   string
-	Dialer      network.Dial
-	DialTimeout time.Duration
-	Servers     []Server
+	HostName               string
+	SharedKey              string
+	Dialer                 network.Dial
+	DialTimeout            time.Duration
+	Servers                []Server
+	Presets                []Preset
+	OnlyAllowPresetRemotes bool
 }
 
 // Common settings shared by mulitple servers
 type Common struct {
-	HostName    string
-	SharedKey   string
-	Dialer      network.Dial
-	DialTimeout time.Duration
+	HostName               string
+	SharedKey              string
+	Dialer                 network.Dial
+	DialTimeout            time.Duration
+	Presets                []Preset
+	OnlyAllowPresetRemotes bool
 }
 
 // Verify verifies current setting
@@ -164,6 +176,16 @@ func (c Configuration) Common() Common {
 		dialer = network.TCPDial()
 	}
 
+	if c.OnlyAllowPresetRemotes {
+		accessList := make(network.AllowedHosts, len(c.Presets))
+
+		for _, k := range c.Presets {
+			accessList[k.Host] = struct{}{}
+		}
+
+		dialer = network.AccessControlDial(accessList, dialer)
+	}
+
 	dialTimeout := c.DialTimeout
 
 	if dialTimeout <= 1*time.Second {
@@ -171,10 +193,12 @@ func (c Configuration) Common() Common {
 	}
 
 	return Common{
-		HostName:    c.HostName,
-		SharedKey:   c.SharedKey,
-		Dialer:      c.Dialer,
-		DialTimeout: c.DialTimeout,
+		HostName:               c.HostName,
+		SharedKey:              c.SharedKey,
+		Dialer:                 dialer,
+		DialTimeout:            c.DialTimeout,
+		Presets:                c.Presets,
+		OnlyAllowPresetRemotes: c.OnlyAllowPresetRemotes,
 	}
 }
 

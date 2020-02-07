@@ -15,17 +15,18 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import * as header from "../stream/header.js";
+import * as reader from "../stream/reader.js";
+import * as stream from "../stream/stream.js";
 import * as address from "./address.js";
 import * as command from "./commands.js";
 import * as common from "./common.js";
-import * as event from "./events.js";
-import * as reader from "../stream/reader.js";
-import * as stream from "../stream/stream.js";
 import * as controls from "./controls.js";
-import * as header from "../stream/header.js";
-import * as history from "./history.js";
-import * as strings from "./string.js";
+import * as event from "./events.js";
 import Exception from "./exception.js";
+import * as history from "./history.js";
+import * as presets from "./presets.js";
+import * as strings from "./string.js";
 
 const AUTHMETHOD_NONE = 0x00;
 const AUTHMETHOD_PASSPHRASE = 0x01;
@@ -56,6 +57,8 @@ const SERVER_REQUEST_ERROR_BAD_AUTHMETHOD = 0x03;
 const FingerprintPromptVerifyPassed = 0x00;
 const FingerprintPromptVerifyNoRecord = 0x01;
 const FingerprintPromptVerifyMismatch = 0x02;
+
+const HostMaxSearchResults = 3;
 
 class SSH {
   /**
@@ -245,6 +248,10 @@ const initialFieldDef = {
     type: "text",
     value: "",
     example: "guest",
+    readonly: false,
+    suggestions(input) {
+      return [];
+    },
     verify(d) {
       if (d.length <= 0) {
         throw new Error("Username must be specified");
@@ -265,6 +272,10 @@ const initialFieldDef = {
     type: "text",
     value: "",
     example: "ssh.vaguly.com:22",
+    readonly: false,
+    suggestions(input) {
+      return [];
+    },
     verify(d) {
       if (d.length <= 0) {
         throw new Error("Hostname must be specified");
@@ -295,6 +306,10 @@ const initialFieldDef = {
     type: "select",
     value: "utf-8",
     example: common.charsetPresets.join(","),
+    readonly: false,
+    suggestions(input) {
+      return [];
+    },
     verify(d) {
       for (let i in common.charsetPresets) {
         if (common.charsetPresets[i] !== d) {
@@ -315,6 +330,10 @@ const initialFieldDef = {
       "SSH session is handled by the backend. Traffic will be decrypted " +
       "on the backend server and then transmit back to your client.",
     example: "",
+    readonly: false,
+    suggestions(input) {
+      return [];
+    },
     verify(d) {
       return "";
     }
@@ -325,6 +344,10 @@ const initialFieldDef = {
     type: "password",
     value: "",
     example: "----------",
+    readonly: false,
+    suggestions(input) {
+      return [];
+    },
     verify(d) {
       if (d.length <= 0) {
         throw new Error("Password must be specified");
@@ -356,6 +379,10 @@ const initialFieldDef = {
     type: "textfile",
     value: "",
     example: "",
+    readonly: false,
+    suggestions(input) {
+      return [];
+    },
     verify(d) {
       if (d.length <= 0) {
         throw new Error("Private Key must be specified");
@@ -410,6 +437,10 @@ const initialFieldDef = {
     type: "radio",
     value: "",
     example: "Password,Private Key,None",
+    readonly: false,
+    suggestions(input) {
+      return [];
+    },
     verify(d) {
       switch (d) {
         case "Password":
@@ -431,6 +462,10 @@ const initialFieldDef = {
     type: "textdata",
     value: "",
     example: "",
+    readonly: false,
+    suggestions(input) {
+      return [];
+    },
     verify(d) {
       return "";
     }
@@ -468,7 +503,7 @@ class Wizard {
    * constructor
    *
    * @param {command.Info} info
-   * @param {object} config
+   * @param {presets.Preset} preset
    * @param {object} session
    * @param {streams.Streams} streams
    * @param {subscribe.Subscribe} subs
@@ -476,11 +511,11 @@ class Wizard {
    * @param {history.History} history
    *
    */
-  constructor(info, config, session, streams, subs, controls, history) {
+  constructor(info, preset, session, streams, subs, controls, history) {
     this.info = info;
+    this.preset = preset;
     this.hasStarted = false;
     this.streams = streams;
-    this.config = config;
     this.session = session
       ? session
       : {
@@ -489,7 +524,9 @@ class Wizard {
     this.step = subs;
     this.controls = controls.get("SSH");
     this.history = history;
+  }
 
+  run() {
     this.step.resolve(this.stepInitialPrompt());
   }
 
@@ -680,26 +717,6 @@ class Wizard {
   stepInitialPrompt() {
     let self = this;
 
-    if (this.config) {
-      self.hasStarted = true;
-
-      self.streams.request(COMMAND_ID, sd => {
-        return self.buildCommand(
-          sd,
-          {
-            user: this.config.user,
-            authentication: this.config.authentication,
-            host: this.config.host,
-            charset: this.config.charset ? this.config.charset : "utf-8",
-            fingerprint: this.config.fingerprint
-          },
-          this.session
-        );
-      });
-
-      return self.stepWaitForAcceptWait();
-    }
-
     return command.prompt(
       "SSH",
       "Secure Shell Host",
@@ -717,26 +734,57 @@ class Wizard {
               charset: r.encoding,
               fingerprint: ""
             },
-            this.session
+            self.session
           );
         });
 
         self.step.resolve(self.stepWaitForAcceptWait());
       },
       () => {},
-      command.fields(initialFieldDef, [
-        { name: "User" },
-        { name: "Host" },
-        { name: "Authentication" },
-        { name: "Encoding" },
-        { name: "Notice" }
-      ])
+      command.fieldsWithPreset(
+        initialFieldDef,
+        [
+          { name: "User" },
+          {
+            name: "Host",
+            suggestions(input) {
+              const hosts = self.history.search(
+                "SSH",
+                "host",
+                input,
+                HostMaxSearchResults
+              );
+
+              let sugg = [];
+
+              for (let i = 0; i < hosts.length; i++) {
+                sugg.push({
+                  title: hosts[i].title,
+                  value: hosts[i].data.host,
+                  meta: {
+                    User: hosts[i].data.user,
+                    Authentication: hosts[i].data.authentication,
+                    Encoding: hosts[i].data.charset
+                  }
+                });
+              }
+
+              return sugg;
+            }
+          },
+          { name: "Authentication" },
+          { name: "Encoding" },
+          { name: "Notice" }
+        ],
+        self.preset
+      )
     );
   }
 
   async stepFingerprintPrompt(rd, sd, verify, newFingerprint) {
-    let self = this,
-      fingerprintData = new TextDecoder("utf-8").decode(
+    const self = this;
+
+    let fingerprintData = new TextDecoder("utf-8").decode(
         await reader.readCompletely(rd)
       ),
       fingerprintChanged = false;
@@ -745,7 +793,7 @@ class Wizard {
       case FingerprintPromptVerifyPassed:
         sd.send(CLIENT_CONNECT_RESPOND_FINGERPRINT, new Uint8Array([0]));
 
-        return this.stepContinueWaitForEstablishWait();
+        return self.stepContinueWaitForEstablishWait();
 
       case FingerprintPromptVerifyMismatch:
         fingerprintChanged = true;
@@ -783,8 +831,9 @@ class Wizard {
   }
 
   async stepCredentialPrompt(rd, sd, config, newCredential) {
-    let self = this,
-      fields = [];
+    const self = this;
+
+    let fields = [];
 
     if (config.credential.length > 0) {
       sd.send(
@@ -792,7 +841,7 @@ class Wizard {
         new TextEncoder().encode(config.credential)
       );
 
-      return this.stepContinueWaitForEstablishWait();
+      return self.stepContinueWaitForEstablishWait();
     }
 
     switch (config.auth) {
@@ -836,8 +885,58 @@ class Wizard {
           )
         );
       },
-      command.fields(initialFieldDef, fields)
+      command.fieldsWithPreset(initialFieldDef, fields, self.preset)
     );
+  }
+}
+
+class Executer extends Wizard {
+  /**
+   * constructor
+   *
+   * @param {command.Info} info
+   * @param {config} config
+   * @param {object} session
+   * @param {streams.Streams} streams
+   * @param {subscribe.Subscribe} subs
+   * @param {controls.Controls} controls
+   * @param {history.History} history
+   *
+   */
+  constructor(info, config, session, streams, subs, controls, history) {
+    super(
+      info,
+      presets.emptyPreset(),
+      session,
+      streams,
+      subs,
+      controls,
+      history
+    );
+
+    this.config = config;
+  }
+
+  stepInitialPrompt() {
+    const self = this;
+
+    self.hasStarted = true;
+
+    self.streams.request(COMMAND_ID, sd => {
+      return self.buildCommand(
+        sd,
+        {
+          user: self.config.user,
+          authentication: self.config.authentication,
+          host: self.config.host,
+          charset: self.config.charset ? self.config.charset : "utf-8",
+          fingerprint: self.config.fingerprint
+        },
+        self.session
+      );
+    });
+
+    return self.stepWaitForAcceptWait();
   }
 }
 
@@ -860,8 +959,20 @@ export class Command {
     return "#3c8";
   }
 
-  builder(info, config, session, streams, subs, controls, history) {
-    return new Wizard(info, config, session, streams, subs, controls, history);
+  wizard(info, preset, session, streams, subs, controls, history) {
+    return new Wizard(info, preset, session, streams, subs, controls, history);
+  }
+
+  execute(info, config, session, streams, subs, controls, history) {
+    return new Executer(
+      info,
+      config,
+      session,
+      streams,
+      subs,
+      controls,
+      history
+    );
   }
 
   launch(info, launcher, streams, subs, controls, history) {
@@ -893,7 +1004,7 @@ export class Command {
       );
     }
 
-    return this.builder(
+    return this.execute(
       info,
       {
         user: user,
@@ -919,5 +1030,15 @@ export class Command {
       "|" +
       (config.charset ? config.charset : "utf-8")
     );
+  }
+
+  represet(preset) {
+    const host = preset.host();
+
+    if (host.length > 0) {
+      preset.insertMeta("Host", host);
+    }
+
+    return preset;
   }
 }

@@ -27,9 +27,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/niruix/sshwifty/application/network"
-
 	"github.com/niruix/sshwifty/application/log"
+	"github.com/niruix/sshwifty/application/network"
 )
 
 const (
@@ -78,14 +77,49 @@ func (f *fileCfgServer) build() Server {
 	}
 }
 
+type fileCfgPreset struct {
+	Title string
+	Type  string
+	Host  string
+	Meta  map[string]string
+}
+
+func (f fileCfgPreset) build() Preset {
+	return Preset{
+		Title: f.Title,
+		Type:  strings.TrimSpace(f.Type),
+		Host:  f.Host,
+		Meta:  f.Meta,
+	}
+}
+
 type fileCfgCommon struct {
-	HostName       string           // Host name
-	SharedKey      string           // Shared key, empty to enable public access
-	DialTimeout    int              // DialTimeout, min 5s
-	Socks5         string           // Socks5 server address, optional
-	Socks5User     string           // Login user for socks5 server, optional
-	Socks5Password string           // Login pass for socks5 server, optional
-	Servers        []*fileCfgServer // Servers
+	// Host name
+	HostName string
+
+	// Shared key, empty to enable public access
+	SharedKey string
+
+	// DialTimeout, min 5s
+	DialTimeout int
+
+	// Socks5 server address, optional
+	Socks5 string
+
+	// Login user for socks5 server, optional
+	Socks5User string
+
+	// Login pass for socks5 server, optional
+	Socks5Password string
+
+	// Servers
+	Servers []*fileCfgServer
+
+	// Remotes
+	Presets []*fileCfgPreset
+
+	// Allow predefined remotes only
+	OnlyAllowPresetRemotes bool
 }
 
 func (f fileCfgCommon) build() (fileCfgCommon, network.Dial, error) {
@@ -111,13 +145,15 @@ func (f fileCfgCommon) build() (fileCfgCommon, network.Dial, error) {
 	}
 
 	return fileCfgCommon{
-		HostName:       f.HostName,
-		SharedKey:      f.SharedKey,
-		DialTimeout:    dialTimeout,
-		Socks5:         f.Socks5,
-		Socks5User:     f.Socks5User,
-		Socks5Password: f.Socks5Password,
-		Servers:        f.Servers,
+		HostName:               f.HostName,
+		SharedKey:              f.SharedKey,
+		DialTimeout:            dialTimeout,
+		Socks5:                 f.Socks5,
+		Socks5User:             f.Socks5User,
+		Socks5Password:         f.Socks5Password,
+		Servers:                f.Servers,
+		Presets:                f.Presets,
+		OnlyAllowPresetRemotes: f.OnlyAllowPresetRemotes,
 	}, dialer, nil
 }
 
@@ -151,12 +187,21 @@ func loadFile(filePath string) (string, Configuration, error) {
 		servers[i] = finalCfg.Servers[i].build()
 	}
 
+	presets := make([]Preset, len(finalCfg.Presets))
+
+	for i := range presets {
+		presets[i] = finalCfg.Presets[i].build()
+	}
+
 	return fileTypeName, Configuration{
-		HostName:    finalCfg.HostName,
-		SharedKey:   finalCfg.SharedKey,
-		Dialer:      dialer,
-		DialTimeout: time.Duration(finalCfg.DialTimeout) * time.Second,
-		Servers:     servers,
+		HostName:  finalCfg.HostName,
+		SharedKey: finalCfg.SharedKey,
+		Dialer:    dialer,
+		DialTimeout: time.Duration(finalCfg.DialTimeout) *
+			time.Second,
+		Servers:                servers,
+		Presets:                presets,
+		OnlyAllowPresetRemotes: cfg.OnlyAllowPresetRemotes,
 	}, nil
 }
 

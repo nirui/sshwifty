@@ -17,6 +17,16 @@
 
 import * as command from "./commands.js";
 
+function metaContains(data, metaName, valContains) {
+  switch (typeof data[metaName]) {
+    case "string":
+      return data[metaName].indexOf(valContains) >= 0;
+
+    default:
+      return false;
+  }
+}
+
 export class History {
   /**
    * constructor
@@ -205,5 +215,40 @@ export class History {
     }
 
     this.store();
+  }
+
+  /**
+   * Search for partly matched results
+   *
+   * @param {string} type of the history record
+   * @param {string} metaName name of the meta data
+   * @param {string} keyword keyword to search
+   * @param {number} max max results
+   */
+  search(type, metaName, keyword, max) {
+    let maxResults = max > this.records.length ? this.records.length : max;
+    let s = [];
+
+    if (maxResults < 0) {
+      maxResults = this.records.length;
+    }
+
+    for (let i = 0; i < this.records.length && s.length < maxResults; i++) {
+      if (this.records[i].type !== type) {
+        continue;
+      }
+
+      if (!this.records[i].data) {
+        continue;
+      }
+
+      if (!metaContains(this.records[i].data, metaName, keyword)) {
+        continue;
+      }
+
+      s.push(this.records[i]);
+    }
+
+    return s;
   }
 }

@@ -18,6 +18,7 @@
 package configuration
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"strconv"
@@ -102,12 +103,27 @@ func Enviro() Loader {
 			TLSCertificateKeyFile: parseEviro("SSHWIFTY_TLSCERTIFICATEKEYFILE"),
 		}
 
+		presets := make([]Preset, 0, 16)
+		presetStr := strings.TrimSpace(parseEviro("SSHWIFTY_PRESETS"))
+
+		if len(presetStr) > 0 {
+			jErr := json.Unmarshal([]byte(presetStr), &presets)
+
+			if jErr != nil {
+				return enviroTypeName, Configuration{}, fmt.Errorf(
+					"Invalid \"SSHWIFTY_PRESETS\": %s", jErr)
+			}
+		}
+
 		return enviroTypeName, Configuration{
 			HostName:    cfg.HostName,
 			SharedKey:   cfg.SharedKey,
 			Dialer:      dialer,
 			DialTimeout: time.Duration(cfg.DialTimeout) * time.Second,
 			Servers:     []Server{cfgSer.build()},
+			Presets:     presets,
+			OnlyAllowPresetRemotes: len(
+				parseEviro("SSHWIFTY_ONLYALLOWPRESETREMOTES")) > 0,
 		}, nil
 	}
 }

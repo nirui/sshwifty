@@ -15,16 +15,17 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import * as header from "../stream/header.js";
+import * as reader from "../stream/reader.js";
+import * as stream from "../stream/stream.js";
 import * as address from "./address.js";
 import * as command from "./commands.js";
 import * as common from "./common.js";
-import * as event from "./events.js";
-import * as reader from "../stream/reader.js";
-import * as stream from "../stream/stream.js";
 import * as controls from "./controls.js";
-import * as history from "./history.js";
-import * as header from "../stream/header.js";
+import * as event from "./events.js";
 import Exception from "./exception.js";
+import * as history from "./history.js";
+import * as presets from "./presets.js";
 
 const COMMAND_ID = 0x00;
 
@@ -35,6 +36,8 @@ const SERVER_DIAL_FAILED = 0x01;
 const SERVER_DIAL_CONNECTED = 0x02;
 
 const DEFAULT_PORT = 23;
+
+const HostMaxSearchResults = 3;
 
 class Telnet {
   /**
@@ -185,6 +188,10 @@ const initialFieldDef = {
     type: "text",
     value: "",
     example: "telnet.vaguly.com:23",
+    readonly: false,
+    suggestions(input) {
+      return [];
+    },
     verify(d) {
       if (d.length <= 0) {
         throw new Error("Hostname must be specified");
@@ -215,6 +222,10 @@ const initialFieldDef = {
     type: "select",
     value: "utf-8",
     example: common.charsetPresets.join(","),
+    readonly: false,
+    suggestions(input) {
+      return [];
+    },
     verify(d) {
       for (let i in common.charsetPresets) {
         if (common.charsetPresets[i] !== d) {
@@ -234,7 +245,7 @@ class Wizard {
    * constructor
    *
    * @param {command.Info} info
-   * @param {object} config
+   * @param {presets.Preset} preset
    * @param {object} session
    * @param {streams.Streams} streams
    * @param {subscribe.Subscribe} subs
@@ -242,16 +253,18 @@ class Wizard {
    * @param {history.History} history
    *
    */
-  constructor(info, config, session, streams, subs, controls, history) {
+  constructor(info, preset, session, streams, subs, controls, history) {
     this.info = info;
+    this.preset = preset;
     this.hasStarted = false;
     this.streams = streams;
-    this.config = config;
     this.session = session;
     this.step = subs;
     this.controls = controls.get("Telnet");
     this.history = history;
+  }
 
+  run() {
     this.step.resolve(this.stepInitialPrompt());
   }
 
@@ -378,24 +391,7 @@ class Wizard {
   }
 
   stepInitialPrompt() {
-    let self = this;
-
-    if (this.config) {
-      self.hasStarted = true;
-
-      self.streams.request(COMMAND_ID, sd => {
-        return self.buildCommand(
-          sd,
-          {
-            host: this.config.host,
-            charset: this.config.charset ? this.config.charset : "utf-8"
-          },
-          this.session
-        );
-      });
-
-      return self.stepWaitForAcceptWait();
-    }
+    const self = this;
 
     return command.prompt(
       "Telnet",
@@ -411,15 +407,93 @@ class Wizard {
               host: r.host,
               charset: r.encoding
             },
-            this.session
+            self.session
           );
         });
 
         self.step.resolve(self.stepWaitForAcceptWait());
       },
       () => {},
-      command.fields(initialFieldDef, [{ name: "Host" }, { name: "Encoding" }])
+      command.fieldsWithPreset(
+        initialFieldDef,
+        [
+          {
+            name: "Host",
+            suggestions(input) {
+              const hosts = self.history.search(
+                "Telnet",
+                "host",
+                input,
+                HostMaxSearchResults
+              );
+
+              let sugg = [];
+
+              for (let i = 0; i < hosts.length; i++) {
+                sugg.push({
+                  title: hosts[i].title,
+                  value: hosts[i].data.host,
+                  meta: {
+                    Encoding: hosts[i].data.charset
+                  }
+                });
+              }
+
+              return sugg;
+            }
+          },
+          { name: "Encoding" }
+        ],
+        self.preset
+      )
     );
+  }
+}
+
+class Executor extends Wizard {
+  /**
+   * constructor
+   *
+   * @param {command.Info} info
+   * @param {object} config
+   * @param {object} session
+   * @param {streams.Streams} streams
+   * @param {subscribe.Subscribe} subs
+   * @param {controls.Controls} controls
+   * @param {history.History} history
+   *
+   */
+  constructor(info, config, session, streams, subs, controls, history) {
+    super(
+      info,
+      presets.emptyPreset(),
+      session,
+      streams,
+      subs,
+      controls,
+      history
+    );
+
+    this.config = config;
+  }
+
+  stepInitialPrompt() {
+    const self = this;
+
+    self.hasStarted = true;
+
+    self.streams.request(COMMAND_ID, sd => {
+      return self.buildCommand(
+        sd,
+        {
+          host: self.config.host,
+          charset: self.config.charset ? self.config.charset : "utf-8"
+        },
+        self.session
+      );
+    });
+
+    return self.stepWaitForAcceptWait();
   }
 }
 
@@ -442,8 +516,20 @@ export class Command {
     return "#6ac";
   }
 
-  builder(info, config, session, streams, subs, controls, history) {
-    return new Wizard(info, config, session, streams, subs, controls, history);
+  wizard(info, preset, session, streams, subs, controls, history) {
+    return new Wizard(info, preset, session, streams, subs, controls, history);
+  }
+
+  execute(info, config, session, streams, subs, controls, history) {
+    return new Executor(
+      info,
+      config,
+      session,
+      streams,
+      subs,
+      controls,
+      history
+    );
   }
 
   launch(info, launcher, streams, subs, controls, history) {
@@ -476,7 +562,7 @@ export class Command {
       }
     }
 
-    return this.builder(
+    return this.execute(
       info,
       {
         host: d[0],
@@ -492,5 +578,15 @@ export class Command {
 
   launcher(config) {
     return config.host + "|" + (config.charset ? config.charset : "utf-8");
+  }
+
+  represet(preset) {
+    const host = preset.host();
+
+    if (host.length > 0) {
+      preset.insertMeta("Host", host);
+    }
+
+    return preset;
   }
 }

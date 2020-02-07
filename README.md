@@ -50,9 +50,10 @@ $ docker run --detach \
 ```
 
 The `domain.crt` and `domain.key` must be valid TLS certificate and key file
-located on the machine which the `docker run` command will be executed.
+located on the same machine which the `docker run` command will be executed
+upon.
 
-[Docker]: https://www.docker.com
+[docker]: https://www.docker.com
 
 ### Compile from source code (Recommanded if you're a developer)
 
@@ -75,7 +76,7 @@ When done, you can found the newly generated `sshwifty` binary inside current
 working directory.
 
 Notice: `Dockerfile` contains the entire build procedure of this software.
-Please refer to it when you encountered any compile/build related problem.
+Please refer to it when you encountered any compile/build related issue.
 
 ### Deploy on the cloud
 
@@ -99,8 +100,8 @@ Sshwifty can be configured through either file or environment variables. By
 default, the configuration loader will try to load file from default paths
 first, when failed, environment variables will be used.
 
-You can also specify your own configuration file by setting `SSHWIFTY_CONFIG`
-environment variable. For example:
+You can also specify your own configuration file by setting up `SSHWIFTY_CONFIG`
+environment variable before start the software. For example:
 
 ```
 $ SSHWIFTY_CONFIG=./sshwifty.conf.json ./sshwifty
@@ -188,7 +189,66 @@ Here is all the options of a configuration file:
       "InitialTimeout": 3,
       .....
     }
-  ]
+  ],
+
+  // Remote Presets, the operate can define few presets for user so the user
+  // won't have to manually fill in all the form fields
+  //
+  // Presets will be displayed in the "Known remotes" table on the Connector
+  // window
+  "Presets": [
+    {
+      // Title of the preset
+      "Title": "SDF.org Unix Shell",
+
+      // Preset Types, i.e. Telnet, and SSH
+      "Type": "SSH",
+
+      // Target address and port
+      "Host": "sdf.org:22",
+
+      // Form fields and values, you have to manually validate the correctness
+      // of the field value
+      "Meta": {
+        // Data for predefined User field
+        "User": "pre-defined-username",
+
+        // Data for predefined Encoding field. Valid data is those displayed on
+        // the page
+        "Encoding": "pre-defined-encoding",
+
+        // Data for predefined Password field
+        "Password": "pre-defined-password",
+
+        // Data for predefined Private Key field
+        "Private Key": "pre-defined-private-key",
+
+        // Data for predefined Authentication field. Valid values is what
+        // displayed on the page (Password, Private Key, None)
+        "Authentication": "Password",
+      }
+    },
+    {
+      "Title": "Endpoint Telnet",
+      "Type": "Telnet",
+      "Host": "endpoint.vaguly.com",
+      "Meta": {
+        // Data for predefined Encoding field. Valid data is those displayed on
+        // the page
+        "Encoding": "utf-8"
+        ....
+      }
+    },
+    ....
+  ],
+
+  // Allow the Preset Remotes only, and refuse to connect to any other remote
+  // host
+  //
+  // NOTICE: You can only configure OnlyAllowPresetRemotes through a config
+  //         file. This option is not supported when you are configuring with
+  //         environment variables
+  OnlyAllowPresetRemotes: false
 }
 ```
 
@@ -215,6 +275,8 @@ SSHWIFTY_WRITEELAY
 SSHWIFTY_LISTENINTERFACE
 SSHWIFTY_TLSCERTIFICATEFILE
 SSHWIFTY_TLSCERTIFICATEKEYFILE
+SSHWIFTY_PRESETS
+SSHWIFTY_ONLYALLOWPRESETREMOTES
 ```
 
 The option they represented is corresponded to their counterparts in the
@@ -264,8 +326,8 @@ Code of this project is licensed under AGPL, see [LICENSE.md] for detail.
 Third-party components used by this project are licensed under their respective
 licenses. See [DEPENDENCIES.md] for dependencies used by this project.
 
-[LICENSE.md]: LICENSE.md
-[DEPENDENCIES.md]: DEPENDENCIES.md
+[license.md]: LICENSE.md
+[dependencies.md]: DEPENDENCIES.md
 
 ## Contribute
 
@@ -274,10 +336,10 @@ Sorry.
 
 Upon release (Which is then you're able to read this file), this project will
 enter _maintaining_ state, which includes doing bug fix and security updates.
-Adding new features however, is not a part of the state.
+_Adding new features however, is not a part of the state_.
 
-Please do not send pull request. If you need new feature, fork it, and maintain
-it like one of your own project.
+Please do not send pull request. If you need new feature, fork it, add it by
+yourself, and maintain it like one of your own project.
 
 (Notice: Typo, grammar error or invalid use of language in the source code and
 document is categorized as bug, please report them if you found any. Thank you!)

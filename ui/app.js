@@ -15,28 +15,24 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import "./common.css";
-import "./app.css";
-import "./landing.css";
-
-import { Socket } from "./socket.js";
-
 import Vue from "vue";
-import Home from "./home.vue";
+import "./app.css";
 import Auth from "./auth.vue";
-import Loading from "./loading.vue";
-
+import { Color as ControlColor } from "./commands/color.js";
 import { Commands } from "./commands/commands.js";
+import { Controls } from "./commands/controls.js";
+import { Presets } from "./commands/presets.js";
 import * as ssh from "./commands/ssh.js";
 import * as telnet from "./commands/telnet.js";
-
-import { Controls } from "./commands/controls.js";
-import { Color as ControlColor } from "./commands/color.js";
-import * as telnetctl from "./control/telnet.js";
+import "./common.css";
 import * as sshctl from "./control/ssh.js";
-
-import * as xhr from "./xhr.js";
+import * as telnetctl from "./control/telnet.js";
 import * as cipher from "./crypto.js";
+import Home from "./home.vue";
+import "./landing.css";
+import Loading from "./loading.vue";
+import { Socket } from "./socket.js";
+import * as xhr from "./xhr.js";
 
 const backendQueryRetryDelay = 2000;
 
@@ -52,6 +48,8 @@ const mainTemplate = `
   :connection="socket"
   :controls="controls"
   :commands="commands"
+  :preset-data="presetData.presets"
+  :restricted-to-presets="presetData.restricted"
   @navigate-to="changeURLHash"
   @tab-opened="tabOpened"
   @tab-closed="tabClosed"
@@ -66,6 +64,7 @@ const mainTemplate = `
 `.trim();
 
 const socksInterface = "/sshwifty/socket";
+const socksVerificationInterface = socksInterface + "/verify";
 
 function startApp(rootEl) {
   const pageTitle = document.title;
@@ -93,6 +92,10 @@ function startApp(rootEl) {
             : "",
         page: "loading",
         key: "",
+        presetData: {
+          presets: new Presets([]),
+          restricted: false
+        },
         authErr: "",
         loadErr: "",
         socket: null,
@@ -163,6 +166,18 @@ function startApp(rootEl) {
           heartbeatInterval * 1000
         );
       },
+      executeHomeApp(authResult, key) {
+        this.presetData = {
+          presets: new Presets(JSON.parse(authResult.data)),
+          restricted: authResult.onlyAllowPresetRemotes
+        };
+        this.socket = this.buildSocket(
+          key,
+          authResult.timeout,
+          authResult.heartbeat
+        );
+        this.page = "app";
+      },
       async tryInitialAuth() {
         try {
           let result = await this.doAuth("");
@@ -188,35 +203,30 @@ function startApp(rootEl) {
 
           switch (result.result) {
             case 200:
-              this.socket = this.buildSocket(
-                {
-                  data: result.key,
-                  async fetch() {
-                    if (this.data) {
-                      let dKey = this.data;
+              this.executeHomeApp(result, {
+                data: result.key,
+                async fetch() {
+                  if (this.data) {
+                    let dKey = this.data;
 
-                      this.data = null;
+                    this.data = null;
 
-                      return dKey;
-                    }
-
-                    let result = await self.doAuth("");
-
-                    if (result.result !== 200) {
-                      throw new Error(
-                        "Unable to fetch key from remote, unexpected " +
-                          "error code: " +
-                          result.result
-                      );
-                    }
-
-                    return result.key;
+                    return dKey;
                   }
-                },
-                result.timeout,
-                result.heartbeat
-              );
-              this.page = "app";
+
+                  let result = await self.doAuth("");
+
+                  if (result.result !== 200) {
+                    throw new Error(
+                      "Unable to fetch key from remote, unexpected " +
+                        "error code: " +
+                        result.result
+                    );
+                  }
+
+                  return result.key;
+                }
+              });
               break;
 
             case 403:
@@ -251,7 +261,7 @@ function startApp(rootEl) {
             ? null
             : await this.getSocketAuthKey(privateKey, this.key);
 
-        let h = await xhr.head(socksInterface, {
+        let h = await xhr.get(socksVerificationInterface, {
           "X-Key": authKey ? btoa(String.fromCharCode.apply(null, authKey)) : ""
         });
 
@@ -262,7 +272,10 @@ function startApp(rootEl) {
           key: h.getResponseHeader("X-Key"),
           timeout: h.getResponseHeader("X-Timeout"),
           heartbeat: h.getResponseHeader("X-Heartbeat"),
-          date: serverDate ? new Date(serverDate) : null
+          date: serverDate ? new Date(serverDate) : null,
+          data: h.responseText,
+          onlyAllowPresetRemotes:
+            h.getResponseHeader("X-OnlyAllowPresetRemotes") === "yes"
         };
       },
       async submitAuth(passphrase) {
@@ -273,17 +286,12 @@ function startApp(rootEl) {
 
           switch (result.result) {
             case 200:
-              this.socket = this.buildSocket(
-                {
-                  data: passphrase,
-                  fetch() {
-                    return this.data;
-                  }
-                },
-                result.timeout,
-                result.heartbeat
-              );
-              this.page = "app";
+              this.executeHomeApp(result, {
+                data: passphrase,
+                fetch() {
+                  return this.data;
+                }
+              });
               break;
 
             case 403:

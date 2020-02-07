@@ -22,11 +22,18 @@
 #connect-known-list {
   min-height: 200px;
   font-size: 0.75em;
-  padding: 15px;
   background: #3a3a3a;
   display: flex;
   flex-direction: column;
   position: relative;
+}
+
+#connect-known-list h3 {
+  font-size: 1.1em;
+  color: #999;
+  margin: 5px 0 15px 0;
+  text-transform: uppercase;
+  font-weight: bold;
 }
 
 #connect-known-list.reloaded {
@@ -62,10 +69,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 20px;
 }
 
 #connect-known-list-import {
-  margin: 15px 0 10px 0;
+  margin: 15px 0;
   color: #aaa;
   font-size: 1.1em;
   text-align: center;
@@ -76,26 +84,30 @@
   text-decoration: none;
 }
 
-#connect-known-list li {
+#connect-known-list-list {
+  padding: 15px 20px 20px 20px;
+}
+
+#connect-known-list-list li {
   width: 50%;
   position: relative;
 }
 
 @media (max-width: 480px) {
-  #connect-known-list li {
+  #connect-known-list-list li {
     width: 100%;
   }
 }
 
-#connect-known-list li .lst-wrap {
+#connect-known-list-list li > .lst-wrap {
   cursor: pointer;
 }
 
-#connect-known-list li .lst-wrap:hover {
+#connect-known-list-list li > .lst-wrap:hover {
   background: #444;
 }
 
-#connect-known-list li .labels {
+#connect-known-list-list li > .labels {
   position: absolute;
   top: 0;
   left: 0;
@@ -104,14 +116,14 @@
   letter-spacing: 1px;
 }
 
-#connect-known-list li .labels > .type {
+#connect-known-list-list li > .labels > .type {
   display: inline-block;
   padding: 3px;
   background: #a56;
   color: #fff;
 }
 
-#connect-known-list li .labels > .opt {
+#connect-known-list-list li > .labels > .opt {
   display: none;
   padding: 3px;
   background: #a56;
@@ -121,43 +133,44 @@
 }
 
 @media (max-width: 480px) {
-  #connect-known-list li .labels > .opt {
+  #connect-known-list-list li > .labels > .opt {
     display: inline-block;
   }
 }
 
-#connect-known-list li .labels > .opt.link {
+#connect-known-list-list li > .labels > .opt.link {
   background: #287;
   color: #fff;
 }
 
-#connect-known-list li .labels > .opt.link:after {
+#connect-known-list-list li > .labels > .opt.link:after {
   content: "\02936";
 }
 
-#connect-known-list li .labels > .opt.del {
+#connect-known-list-list li > .labels > .opt.del {
   background: #a56;
   color: #fff;
 }
 
-#connect-known-list li .labels > .opt.clr {
+#connect-known-list-list li > .labels > .opt.clr {
   background: #b71;
   color: #fff;
 }
 
-#connect-known-list li:hover .labels > .opt,
-#connect-known-list li:focus .labels > .opt {
+#connect-known-list-list li:hover > .labels > .opt,
+#connect-known-list-list li:focus > .labels > .opt {
   display: inline-block;
 }
 
-#connect-known-list li h2 {
+#connect-known-list-list li > .lst-wrap > h4 {
+  font-size: 1.5em;
   margin-top: 5px;
   margin-bottom: 5px;
   text-overflow: ellipsis;
   overflow: hidden;
 }
 
-#connect-known-list li h2::before {
+#connect-known-list-list li > .lst-wrap > h4::before {
   content: ">_";
   color: #555;
   font-size: 0.8em;
@@ -167,7 +180,70 @@
   border-radius: 2px;
 }
 
-#connect-known-list li h2.highlight::before {
+#connect-known-list-list li > .lst-wrap > h4.highlight::before {
   color: #eee;
   background: #555;
+}
+
+#connect-known-list-presets {
+  margin-top: 10px;
+  padding: 15px 20px 20px 20px;
+}
+
+#connect-known-list-presets.last-planel {
+  background: #3f3f3f;
+}
+
+#connect-known-list-presets li {
+  width: 50%;
+  position: relative;
+}
+
+#connect-known-list-presets li.disabled {
+  opacity: 0.5;
+}
+
+@media (max-width: 480px) {
+  #connect-known-list-presets li {
+    width: 100%;
+  }
+}
+
+#connect-known-list-presets li > .lst-wrap {
+  cursor: pointer;
+  border-radius: 0 3px 3px 3px;
+  margin: 12px 10px 10px 0;
+  padding: 10px;
+}
+
+#connect-known-list-presets li > .lst-wrap > .labels {
+  position: absolute;
+  top: 0;
+  left: 0;
+  text-transform: uppercase;
+  font-size: 0.85em;
+  letter-spacing: 1px;
+}
+
+#connect-known-list-presets li > .lst-wrap > .labels > .type {
+  display: inline-block;
+  padding: 3px;
+  background: #a56;
+  color: #fff;
+  border-radius: 3px 3px 3px 0;
+}
+
+#connect-known-list-presets li > .lst-wrap > h4 {
+  font-size: 1.3em;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+#connect-known-list-presets-alert {
+  font-size: 1.15em;
+  color: #fff;
+  background: #c73;
+  padding: 10px;
+  margin-top: 10px;
+  line-height: 1.5;
 }

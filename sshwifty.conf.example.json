@@ -18,5 +18,36 @@
       "TLSCertificateFile": "",
       "TLSCertificateKeyFile": ""
     }
-  ]
+  ],
+  "Presets": [
+    {
+      "Title": "SDF.org Unix Shell",
+      "Type": "SSH",
+      "Host": "sdf.org:22",
+      "Meta": {
+        "Encoding": "utf-8",
+        "Authentication": "Password"
+      }
+    },
+    {
+      "Title": "My own super secure server",
+      "Type": "SSH",
+      "Host": "localhost",
+      "Meta": {
+        "User": "root",
+        "Encoding": "utf-8",
+        "Private Key": "--------- BEGIN RSA PRIVATE KEY ---------",
+        "Authentication": "Private Key"
+      }
+    },
+    {
+      "Title": "My own super expensive router",
+      "Type": "Telnet",
+      "Host": "10.0.0.1",
+      "Meta": {
+        "Encoding": "ibm866"
+      }
+    }
+  ],
+  "OnlyAllowPresetRemotes": false
 }

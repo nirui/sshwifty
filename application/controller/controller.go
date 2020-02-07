@@ -46,6 +46,7 @@ type handler struct {
 	logger          log.Logger
 	homeCtl         home
 	socketCtl       socket
+	socketVerifyCtl socketVerification
 }
 
 func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -80,6 +81,8 @@ func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	case "/sshwifty/socket":
 		err = serveController(h.socketCtl, w, r, clientLogger)
+	case "/sshwifty/socket/verify":
+		err = serveController(h.socketVerifyCtl, w, r, clientLogger)
 
 	case "/robots.txt":
 		err = serveStaticCacheData(
@@ -155,12 +158,15 @@ func Builder(cmds command.Commands) server.HandlerBuilder {
 		cfg configuration.Server,
 		logger log.Logger,
 	) http.Handler {
+		socketCtl := newSocketCtl(commonCfg, cfg, cmds)
+
 		return handler{
 			hostNameChecker: commonCfg.HostName + ":",
 			commonCfg:       commonCfg,
 			logger:          logger,
 			homeCtl:         home{},
-			socketCtl:       newSocketCtl(commonCfg, cfg, cmds),
+			socketCtl:       socketCtl,
+			socketVerifyCtl: newSocketVerification(socketCtl, cfg, commonCfg),
 		}
 	}
 }

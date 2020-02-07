@@ -216,6 +216,28 @@ body {
   background: #333;
 }
 
+.hlst.lstcl2 {
+  list-style: none;
+  list-style-position: inside;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  overflow: auto;
+}
+
+.hlst.lstcl2 > li {
+  width: 33%;
+  white-space: nowrap;
+}
+
+.hlst.lstcl2 > li .lst-wrap {
+  padding: 10px;
+  margin: 5px;
+  background: #333;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
 /* Icon */
 .icon {
   line-height: 1;

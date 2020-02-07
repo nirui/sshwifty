@@ -15,8 +15,9 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import Exception from "./exception.js";
 import * as subscribe from "../stream/subscribe.js";
+import Exception from "./exception.js";
+import * as presets from "./presets.js";
 
 export const NEXT_PROMPT = 1;
 export const NEXT_WAIT = 2;
@@ -131,8 +132,12 @@ const defField = {
   type: "",
   value: "",
   example: "",
+  readonly: false,
+  suggestions(input) {
+    return [];
+  },
   verify(v) {
-    return "OK";
+    return "";
   }
 };
 
@@ -155,19 +160,21 @@ export function field(def, f) {
   }
 
   for (let i in f) {
-    if (typeof n[i] !== typeof f[i]) {
-      throw new Exception(
-        'Field data type for "' +
-          i +
-          '" was not unmatched. Expecting "' +
-          typeof def[i] +
-          '", got "' +
-          typeof f[i] +
-          '" instead'
-      );
+    if (typeof n[i] === typeof f[i]) {
+      n[i] = f[i];
+
+      continue;
     }
 
-    n[i] = f[i];
+    throw new Exception(
+      'Field data type for "' +
+        i +
+        '" was unmatched. Expecting "' +
+        typeof n[i] +
+        '", got "' +
+        typeof f[i] +
+        '" instead'
+    );
   }
 
   if (!n["name"]) {
@@ -204,6 +211,31 @@ export function fields(definitions, fs) {
   }
 
   return fss;
+}
+
+/**
+ * Build command fields with preset data
+ *
+ * @param {object} definitions Definition of a group of fields
+ * @param {object} fieldsData field data object, formated like a `defField`
+ * @param {presets.Preset} presetData Preset data
+ *
+ * @returns {object}
+ *
+ */
+export function fieldsWithPreset(definitions, fieldsData, presetData) {
+  let newFields = fields(definitions, fieldsData);
+
+  for (let i in newFields) {
+    try {
+      newFields[i].value = presetData.meta(newFields[i].name);
+      newFields[i].readonly = true;
+    } catch (e) {
+      // Do nothing
+    }
+  }
+
+  return newFields;
 }
 
 class Prompt {
@@ -457,7 +489,7 @@ class Wizard {
   /**
    * constructor
    *
-   * @param {function} builder Command builder
+   * @param {object} built Command executer
    * @param {subscribe.Subscribe} subs Wizard step subscriber
    * @param {function} done Callback which will be called when the wizard
    *                        is done
@@ -468,6 +500,8 @@ class Wizard {
     this.subs = subs;
     this.done = done;
     this.closed = false;
+
+    this.built.run();
   }
 
   /**
@@ -583,8 +617,14 @@ class Builder {
    */
   constructor(command) {
     this.cid = command.id();
-    this.builder = (n, i, r, u, y, x, l) => {
-      return command.builder(n, i, r, u, y, x, l);
+    this.represeter = n => {
+      return command.represet(n);
+    };
+    this.wizarder = (n, i, r, u, y, x, l) => {
+      return command.wizard(n, i, r, u, y, x, l);
+    };
+    this.executer = (n, i, r, u, y, x, l) => {
+      return command.execute(n, i, r, u, y, x, l);
     };
     this.launchCmd = (n, i, r, u, y, x) => {
       return command.launch(n, i, r, u, y, x);
@@ -638,7 +678,38 @@ class Builder {
   }
 
   /**
-   * Build command wizard
+   * Execute an automatic command wizard
+   *
+   * @param {stream.Streams} streams
+   * @param {controls.Controls} controls
+   * @param {history.History} history
+   * @param {presets.Preset} preset
+   * @param {object} session
+   * @param {function} done Callback which will be called when wizard is done
+   *
+   * @returns {Wizard} Command wizard
+   *
+   */
+  wizard(streams, controls, history, preset, session, done) {
+    let subs = new subscribe.Subscribe();
+
+    return new Wizard(
+      this.wizarder(
+        new Info(this),
+        preset,
+        session,
+        streams,
+        subs,
+        controls,
+        history
+      ),
+      subs,
+      done
+    );
+  }
+
+  /**
+   * Execute an automatic command wizard
    *
    * @param {stream.Streams} streams
    * @param {controls.Controls} controls
@@ -650,11 +721,11 @@ class Builder {
    * @returns {Wizard} Command wizard
    *
    */
-  build(streams, controls, history, config, session, done) {
+  execute(streams, controls, history, config, session, done) {
     let subs = new subscribe.Subscribe();
 
     return new Wizard(
-      this.builder(
+      this.executer(
         new Info(this),
         config,
         session,
@@ -707,19 +778,44 @@ class Builder {
   launcher(config) {
     return this.name() + ":" + encodeURI(this.launcherCmd(config));
   }
+
+  /**
+   * Reconfigure the preset data for the command wizard
+   *
+   * @param {presets.Preset} n preset
+   *
+   * @return {presets.Preset} modified new preset
+   */
+  represet(n) {
+    return this.represeter(n);
+  }
+}
+
+export class Preset {
+  /**
+   * constructor
+   *
+   * @param {presets.Preset} preset preset
+   * @param {Builder} command executor
+   *
+   */
+  constructor(preset, command) {
+    this.preset = preset;
+    this.command = command;
+  }
 }
 
 export class Commands {
   /**
    * constructor
    *
-   * @param {[]object} commands Command array
+   * @param {Array<object>} commands Command array
    *
    */
   constructor(commands) {
     this.commands = [];
 
-    for (let i in commands) {
+    for (let i = 0; i < commands.length; i++) {
       this.commands.push(new Builder(commands[i]));
     }
   }
@@ -727,7 +823,7 @@ export class Commands {
   /**
    * Return all commands
    *
-   * @returns {[]Builder} A group of command
+   * @returns {Array<Builder>} A group of command
    *
    */
   all() {
@@ -744,5 +840,29 @@ export class Commands {
    */
   select(id) {
     return this.commands[id];
+  }
+
+  /**
+   * Returns presets with merged command
+   *
+   * @param {presets.Presets} ps
+   *
+   * @returns {Array<Preset>}
+   *
+   */
+  mergePresets(ps) {
+    let pp = [];
+
+    for (let i = 0; i < this.commands.length; i++) {
+      const fetched = ps.fetch(this.commands[i].name());
+
+      for (let j = 0; j < fetched.length; j++) {
+        pp.push(
+          new Preset(this.commands[i].represet(fetched[j]), this.commands[i])
+        );
+      }
+    }
+
+    return pp;
   }
 }

@@ -110,6 +110,8 @@
       :inputting="connector.inputting"
       :display="windows.connect"
       :connectors="connector.connectors"
+      :presets="presets"
+      :restricted-to-presets="restrictedToPresets"
       :knowns="connector.knowns"
       :knowns-launcher-builder="buildknownLauncher"
       :knowns-export="exportKnowns"
@@ -119,6 +121,7 @@
       @connector-select="connectNew"
       @known-select="connectKnown"
       @known-remove="removeKnown"
+      @preset-select="connectPreset"
       @known-clear-session="clearSessionKnown"
     >
       <connector
@@ -143,8 +146,9 @@
       @current="switchTab"
       @retap="retapTab"
       @close="closeTab"
-    ></tab-window></div
-></template>
+    ></tab-window>
+  </div>
+</template>
 
 <script>
 import "./home.css";
@@ -158,6 +162,8 @@ import Screens from "./widgets/screens.vue";
 
 import * as home_socket from "./home_socketctl.js";
 import * as home_history from "./home_historyctl.js";
+
+import * as presets from "./commands/presets.js";
 
 const BACKEND_CONNECT_ERROR =
   "Unable to connect to the Sshwifty backend server: ";
@@ -198,6 +204,18 @@ export default {
       default: () => {
         return null;
       }
+    },
+    presetData: {
+      type: Object,
+      default: () => {
+        return new presets.Presets([]);
+      }
+    },
+    restrictedToPresets: {
+      type: Boolean,
+      default: () => {
+        return false;
+      }
     }
   },
   data() {
@@ -220,6 +238,7 @@ export default {
         busy: false,
         knowns: history.all()
       },
+      presets: this.commands.mergePresets(this.presetData),
       tab: {
         current: -1,
         lastID: 0,
@@ -317,22 +336,45 @@ export default {
       );
     },
     connectNew(connector) {
-      this.runConnect(stream => {
-        this.connector.connector = {
+      const self = this;
+
+      self.runConnect(stream => {
+        self.connector.connector = {
           id: connector.id(),
           name: connector.name(),
           description: connector.description(),
-          wizard: connector.build(
+          wizard: connector.wizard(
             stream,
-            this.controls,
-            this.connector.historyRec,
-            null,
+            self.controls,
+            self.connector.historyRec,
+            presets.emptyPreset(),
             null,
             () => {}
           )
         };
 
-        this.connector.inputting = true;
+        self.connector.inputting = true;
+      });
+    },
+    connectPreset(preset) {
+      const self = this;
+
+      self.runConnect(stream => {
+        self.connector.connector = {
+          id: preset.command.id(),
+          name: preset.command.name(),
+          description: preset.command.description(),
+          wizard: preset.command.wizard(
+            stream,
+            self.controls,
+            self.connector.historyRec,
+            preset.preset,
+            null,
+            () => {}
+          )
+        };
+
+        self.connector.inputting = true;
       });
     },
     getConnectorByType(type) {
@@ -349,27 +391,27 @@ export default {
       return connector;
     },
     connectKnown(known) {
-      this.runConnect(stream => {
-        let connector = this.getConnectorByType(known.type);
+      const self = this;
+
+      self.runConnect(stream => {
+        let connector = self.getConnectorByType(known.type);
 
         if (!connector) {
           alert("Unknown connector: " + known.type);
 
-          this.connector.inputting = false;
+          self.connector.inputting = false;
 
           return;
         }
 
-        const self = this;
-
-        this.connector.connector = {
+        self.connector.connector = {
           id: connector.id(),
           name: connector.name(),
           description: connector.description(),
-          wizard: connector.build(
+          wizard: connector.execute(
             stream,
-            this.controls,
-            this.connector.historyRec,
+            self.controls,
+            self.connector.historyRec,
             known.data,
             known.session,
             () => {
@@ -378,7 +420,7 @@ export default {
           )
         };
 
-        this.connector.inputting = true;
+        self.connector.inputting = true;
       });
     },
     parseConnectLauncher(ll) {

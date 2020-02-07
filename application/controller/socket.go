@@ -162,54 +162,6 @@ func (s socket) Options(
 	return nil
 }
 
-func (s socket) setServerConfigHeader(hd *http.Header) {
-	hd.Add("X-Heartbeat",
-		strconv.FormatFloat(s.serverCfg.HeartbeatTimeout.Seconds(), 'g', 2, 64))
-	hd.Add("X-Timeout",
-		strconv.FormatFloat(s.serverCfg.ReadTimeout.Seconds(), 'g', 2, 64))
-}
-
-func (s socket) Head(
-	w http.ResponseWriter, r *http.Request, l log.Logger) error {
-	key := r.Header.Get("X-Key")
-	hd := w.Header()
-
-	if len(key) <= 0 {
-		hd.Add("X-Key", s.randomKey)
-
-		if len(s.commonCfg.SharedKey) <= 0 {
-			s.setServerConfigHeader(&hd)
-
-			return nil
-		}
-
-		return ErrSocketAuthFailed
-	}
-
-	if len(key) > 64 {
-		return ErrSocketAuthFailed
-	}
-
-	// Delay the brute force attack. Use it with connection limits (via
-	// iptables or nginx etc)
-	time.Sleep(500 * time.Millisecond)
-
-	decodedKey, decodedKeyErr := base64.StdEncoding.DecodeString(key)
-
-	if decodedKeyErr != nil {
-		return NewError(http.StatusBadRequest, decodedKeyErr.Error())
-	}
-
-	if !hmac.Equal(s.authKey, decodedKey) {
-		return ErrSocketAuthFailed
-	}
-
-	hd.Add("X-Key", s.randomKey)
-	s.setServerConfigHeader(&hd)
-
-	return nil
-}
-
 func (s socket) buildWSFetcher(c *websocket.Conn) rw.FetchReaderFetcher {
 	return func() ([]byte, error) {
 		for {

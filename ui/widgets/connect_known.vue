@@ -19,53 +19,104 @@
 
 <template>
   <div id="connect-known-list" :class="{ reloaded: reloaded }">
-    <div v-if="knownList.length <= 0" id="connect-known-list-empty">
+    <div
+      v-if="knownList.length <= 0 && presets <= 0"
+      id="connect-known-list-empty"
+    >
       No known remote available
     </div>
-    <ul v-else id="connect-known-list-list" class="hlst lstcl1">
-      <li v-for="(known, kk) in knownList" :key="kk">
-        <div class="labels">
-          <span class="type" :style="'background-color: ' + known.data.color">
-            {{ known.data.type }}
-          </span>
+    <div v-else>
+      <div v-if="knownList.length > 0" id="connect-known-list-list">
+        <h3>Connected before</h3>
 
-          <a
-            class="opt link"
-            href="javascript:;"
-            @click="launcher(known, $event)"
-          >
-            {{ known.copyStatus }}
-          </a>
+        <ul class="hlst lstcl1">
+          <li v-for="(known, kk) in knownList" :key="kk">
+            <div class="labels">
+              <span
+                class="type"
+                :style="'background-color: ' + known.data.color"
+              >
+                {{ known.data.type }}
+              </span>
 
-          <a
-            v-if="!known.data.session"
-            class="opt del"
-            href="javascript:;"
-            @click="remove(known.data.uid)"
+              <a
+                class="opt link"
+                href="javascript:;"
+                @click="launcher(known, $event)"
+              >
+                {{ known.copyStatus }}
+              </a>
+
+              <a
+                v-if="!known.data.session"
+                class="opt del"
+                href="javascript:;"
+                @click="remove(known.data.uid)"
+              >
+                Remove
+              </a>
+              <a
+                v-else
+                class="opt clr"
+                href="javascript:;"
+                title="Clear session data"
+                @click="clearSession(known.data.uid)"
+              >
+                Clear
+              </a>
+            </div>
+
+            <div class="lst-wrap" @click="select(known.data)">
+              <h4
+                :title="known.data.title"
+                :class="{ highlight: known.data.session }"
+              >
+                {{ known.data.title }}
+              </h4>
+              Last: {{ known.data.last.toLocaleString() }}
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <div
+        v-if="presets.length > 0"
+        id="connect-known-list-presets"
+        :class="{
+          'last-planel': knownList.length > 0
+        }"
+      >
+        <h3>Presets</h3>
+
+        <ul class="hlst lstcl2">
+          <li
+            v-for="(preset, pk) in presets"
+            :key="pk"
+            :class="{ disabled: presetDisabled(preset) }"
           >
-            Remove
-          </a>
-          <a
-            v-else
-            class="opt clr"
-            href="javascript:;"
-            title="Clear session data"
-            @click="clearSession(known.data.uid)"
-          >
-            Clear
-          </a>
+            <div class="lst-wrap" @click="selectPreset(preset)">
+              <div class="labels">
+                <span
+                  class="type"
+                  :style="'background-color: ' + preset.command.color()"
+                >
+                  {{ preset.command.name() }}
+                </span>
+              </div>
+
+              <h4 :title="preset.preset.title()">
+                {{ preset.preset.title() }}
+              </h4>
+            </div>
+          </li>
+        </ul>
+
+        <div v-if="restrictedToPresets" id="connect-known-list-presets-alert">
+          The operator has disabled outgoing access to all remote hosts except
+          those been defined as preset.
         </div>
-        <div class="lst-wrap" @click="select(known.data)">
-          <h2
-            :title="known.data.title"
-            :class="{ highlight: known.data.session }"
-          >
-            {{ known.data.title }}
-          </h2>
-          Last: {{ known.data.last.toLocaleString() }}
-        </div>
-      </li>
-    </ul>
+      </div>
+    </div>
 
     <div id="connect-known-list-import">
       Tip: You can
@@ -81,6 +132,14 @@ import "./connect_known.css";
 
 export default {
   props: {
+    presets: {
+      type: Array,
+      default: () => []
+    },
+    restrictedToPresets: {
+      type: Boolean,
+      default: () => false
+    },
     knowns: {
       type: Array,
       default: () => []
@@ -146,6 +205,20 @@ export default {
       }
 
       this.$emit("select", known);
+    },
+    presetDisabled(preset) {
+      if (!this.restrictedToPresets || preset.preset.host().length > 0) {
+        return false;
+      }
+
+      return true;
+    },
+    selectPreset(preset) {
+      if (this.busy || this.presetDisabled(preset)) {
+        return;
+      }
+
+      this.$emit("select-preset", preset);
     },
     async launcher(known, ev) {
       if (known.copying || this.busy) {

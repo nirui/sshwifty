@@ -44,11 +44,14 @@
 
       <connect-known
         v-if="tab === 'known' && !inputting"
+        :presets="presets"
+        :restricted-to-presets="restrictedToPresets"
         :knowns="knowns"
         :launcher-builder="knownsLauncherBuilder"
         :knowns-export="knownsExport"
         :knowns-import="knownsImport"
         @select="selectKnown"
+        @select-preset="selectPreset"
         @remove="removeKnown"
         @clear-session="clearSessionKnown"
       ></connect-known>
@@ -99,6 +102,14 @@ export default {
     inputting: {
       type: Boolean,
       default: false
+    },
+    presets: {
+      type: Array,
+      default: () => []
+    },
+    restrictedToPresets: {
+      type: Boolean,
+      default: () => false
     },
     knowns: {
       type: Array,
@@ -159,6 +170,13 @@ export default {
       }
 
       this.$emit("known-remove", uid);
+    },
+    selectPreset(preset) {
+      if (this.inputting) {
+        return;
+      }
+
+      this.$emit("preset-select", preset);
     },
     clearSessionKnown(uid) {
       if (this.inputting) {
