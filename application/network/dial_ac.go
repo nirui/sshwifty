@@ -26,8 +26,7 @@ import (
 // Errors
 var (
 	ErrAccessControlDialTargetHostNotAllowed = errors.New(
-		"Refuse to connect to specified target host due to outgoing " +
-			"restriction")
+		"Unable to dial to the specified remote host due to restriction")
 )
 
 // AllowedHosts contains a map of allowed remote hosts
