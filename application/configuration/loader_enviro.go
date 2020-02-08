@@ -57,6 +57,10 @@ func Enviro() Loader {
 			Socks5:         parseEviro("SSHWIFTY_SOCKS5"),
 			Socks5User:     parseEviro("SSHWIFTY_SOCKS5_USER"),
 			Socks5Password: parseEviro("SSHWIFTY_SOCKS5_PASSWORD"),
+			Servers:        nil,
+			Presets:        nil,
+			OnlyAllowPresetRemotes: len(
+				parseEviro("SSHWIFTY_ONLYALLOWPRESETREMOTES")) > 0,
 		}.build()
 
 		if cfgErr != nil {
@@ -116,14 +120,13 @@ func Enviro() Loader {
 		}
 
 		return enviroTypeName, Configuration{
-			HostName:    cfg.HostName,
-			SharedKey:   cfg.SharedKey,
-			Dialer:      dialer,
-			DialTimeout: time.Duration(cfg.DialTimeout) * time.Second,
-			Servers:     []Server{cfgSer.build()},
-			Presets:     presets,
-			OnlyAllowPresetRemotes: len(
-				parseEviro("SSHWIFTY_ONLYALLOWPRESETREMOTES")) > 0,
+			HostName:               cfg.HostName,
+			SharedKey:              cfg.SharedKey,
+			Dialer:                 dialer,
+			DialTimeout:            time.Duration(cfg.DialTimeout) * time.Second,
+			Servers:                []Server{cfgSer.build()},
+			Presets:                presets,
+			OnlyAllowPresetRemotes: cfg.OnlyAllowPresetRemotes,
 		}, nil
 	}
 }

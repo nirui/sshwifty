@@ -170,32 +170,10 @@ func (c Configuration) Verify() error {
 
 // Common returns common settings
 func (c Configuration) Common() Common {
-	dialer := c.Dialer
-
-	if dialer == nil {
-		dialer = network.TCPDial()
-	}
-
-	if c.OnlyAllowPresetRemotes {
-		accessList := make(network.AllowedHosts, len(c.Presets))
-
-		for _, k := range c.Presets {
-			accessList[k.Host] = struct{}{}
-		}
-
-		dialer = network.AccessControlDial(accessList, dialer)
-	}
-
-	dialTimeout := c.DialTimeout
-
-	if dialTimeout <= 1*time.Second {
-		dialTimeout = 1 * time.Second
-	}
-
 	return Common{
 		HostName:               c.HostName,
 		SharedKey:              c.SharedKey,
-		Dialer:                 dialer,
+		Dialer:                 c.Dialer,
 		DialTimeout:            c.DialTimeout,
 		Presets:                c.Presets,
 		OnlyAllowPresetRemotes: c.OnlyAllowPresetRemotes,

@@ -144,6 +144,20 @@ func (f fileCfgCommon) build() (fileCfgCommon, network.Dial, error) {
 		dialer = sDial
 	}
 
+	if f.OnlyAllowPresetRemotes {
+		accessList := make(network.AllowedHosts, len(f.Presets))
+
+		for _, k := range f.Presets {
+			if len(k.Host) <= 0 {
+				continue
+			}
+
+			accessList[k.Host] = struct{}{}
+		}
+
+		dialer = network.AccessControlDial(accessList, dialer)
+	}
+
 	return fileCfgCommon{
 		HostName:               f.HostName,
 		SharedKey:              f.SharedKey,
