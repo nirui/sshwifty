@@ -196,6 +196,9 @@ Here is all the options of a configuration file:
   //
   // Presets will be displayed in the "Known remotes" tab on the Connector
   // window
+  //
+  // Notice: You can use the same JSON value for `SSHWIFTY_PRESETS` if you are
+  //         configuring your Sshwifty through enviroment variables.
   "Presets": [
     {
       // Title of the preset
