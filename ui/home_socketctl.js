@@ -1,5 +1,5 @@
-import { ECHO_FAILED } from "./socket.js";
 import * as history from "./history.js";
+import { ECHO_FAILED } from "./socket.js";
 
 export function build(ctx) {
   const connectionStatusNotConnected = "Sshwifty is ready to connect";
