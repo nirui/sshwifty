@@ -199,6 +199,10 @@ Here is all the options of a configuration file:
   //
   // Notice: You can use the same JSON value for `SSHWIFTY_PRESETS` if you are
   //         configuring your Sshwifty through enviroment variables.
+  //
+  // Warning: Presets Data will be sent to user client WITHOUT any protection.
+  //          DO NOT add any secret information into Preset.
+  //
   "Presets": [
     {
       // Title of the preset
@@ -223,8 +227,9 @@ Here is all the options of a configuration file:
         // Data for predefined Password field
         "Password": "pre-defined-password",
 
-        // Data for predefined Private Key field
-        "Private Key": "pre-defined-private-key",
+        // Data for predefined Private Key field, should contains the content
+        // of a Key file
+        "Private Key": "-----BEGIN RSA PRIV...\nMIIE...\n-----END RSA PRI...\n",
 
         // Data for predefined Authentication field. Valid values is what
         // displayed on the page (Password, Private Key, None)
@@ -234,7 +239,7 @@ Here is all the options of a configuration file:
     {
       "Title": "Endpoint Telnet",
       "Type": "Telnet",
-      "Host": "endpoint.vaguly.com",
+      "Host": "endpoint.vaguly.com:23",
       "Meta": {
         // Data for predefined Encoding field. Valid data is those displayed on
         // the page

@@ -36,7 +36,7 @@
       "Meta": {
         "User": "root",
         "Encoding": "utf-8",
-        "Private Key": "--------- BEGIN RSA PRIVATE KEY ---------",
+        "Private Key": "-----BEGIN RSA PRIV...\nMIIE...\n-----END RSA PRI...\n",
         "Authentication": "Private Key"
       }
     },
