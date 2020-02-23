@@ -43,7 +43,8 @@ func main() {
 			len(os.Getenv("SSHWIFTY_DEBUG")) > 0, application.Name, os.Stderr)).
 		Run(configuration.Redundant(configLoaders...),
 			application.DefaultProccessSignallerBuilder,
-			controller.Builder(commands.New()))
+			commands.New(),
+			controller.Builder)
 
 	if e == nil {
 		return

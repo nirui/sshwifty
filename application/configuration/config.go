@@ -132,8 +132,10 @@ type Preset struct {
 type Configuration struct {
 	HostName               string
 	SharedKey              string
-	Dialer                 network.Dial
 	DialTimeout            time.Duration
+	Socks5                 string
+	Socks5User             string
+	Socks5Password         string
 	Servers                []Server
 	Presets                []Preset
 	OnlyAllowPresetRemotes bool
@@ -168,12 +170,50 @@ func (c Configuration) Verify() error {
 	return nil
 }
 
+// Dialer builds a Dialer
+func (c Configuration) Dialer() network.Dial {
+	dialTimeout := c.DialTimeout
+
+	if dialTimeout < 3 {
+		dialTimeout = 3
+	}
+
+	dialer := network.TCPDial()
+
+	if len(c.Socks5) > 0 {
+		sDial, sDialErr := network.BuildSocks5Dial(
+			c.Socks5, c.Socks5User, c.Socks5Password)
+
+		if sDialErr != nil {
+			panic("Unable to build Socks5 Dialer: " + sDialErr.Error())
+		}
+
+		dialer = sDial
+	}
+
+	if c.OnlyAllowPresetRemotes {
+		accessList := make(network.AllowedHosts, len(c.Presets))
+
+		for _, k := range c.Presets {
+			if len(k.Host) <= 0 {
+				continue
+			}
+
+			accessList[k.Host] = struct{}{}
+		}
+
+		dialer = network.AccessControlDial(accessList, dialer)
+	}
+
+	return dialer
+}
+
 // Common returns common settings
 func (c Configuration) Common() Common {
 	return Common{
 		HostName:               c.HostName,
 		SharedKey:              c.SharedKey,
-		Dialer:                 c.Dialer,
+		Dialer:                 c.Dialer(),
 		DialTimeout:            c.DialTimeout,
 		Presets:                c.Presets,
 		OnlyAllowPresetRemotes: c.OnlyAllowPresetRemotes,

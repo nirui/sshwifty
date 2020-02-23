@@ -44,13 +44,16 @@ func parseEviro(name string) string {
 
 // Enviro creates an environment variable based configuration loader
 func Enviro() Loader {
-	return func(log log.Logger) (string, Configuration, error) {
+	return func(
+		log log.Logger,
+		r Reconfigurator,
+	) (string, Configuration, error) {
 		log.Info("Loading configuration from environment variables ...")
 
 		dialTimeout, _ := strconv.ParseUint(
 			parseEviro("SSHWIFTY_DIALTIMEOUT"), 10, 32)
 
-		cfg, dialer, cfgErr := fileCfgCommon{
+		cfg, cfgErr := fileCfgCommon{
 			HostName:       parseEviro("SSHWIFTY_HOSTNAME"),
 			SharedKey:      parseEviro("SSHWIFTY_SHAREDKEY"),
 			DialTimeout:    int(dialTimeout),
@@ -68,13 +71,14 @@ func Enviro() Loader {
 				"Failed to build the configuration: %s", cfgErr)
 		}
 
-		listenPort, listenPortErr := strconv.ParseUint(
-			parseEviro("SSHWIFTY_LISTENPORT"), 10, 16)
+		listenIface := parseEviro("SSHWIFTY_LISTENINTERFACE")
 
-		if listenPortErr != nil {
-			return enviroTypeName, Configuration{}, fmt.Errorf(
-				"Invalid \"SSHWIFTY_LISTENPORT\": %s", listenPortErr)
+		if len(listenIface) <= 0 {
+			listenIface = "127.0.0.1"
 		}
+
+		listenPort, _ := strconv.ParseUint(
+			parseEviro("SSHWIFTY_LISTENPORT"), 10, 16)
 
 		initialTimeout, _ := strconv.ParseUint(
 			parseEviro("SSHWIFTY_INITIALTIMEOUT"), 10, 32)
@@ -95,7 +99,7 @@ func Enviro() Loader {
 			parseEviro("SSHWIFTY_WRITEELAY"), 10, 32)
 
 		cfgSer := fileCfgServer{
-			ListenInterface:       parseEviro("SSHWIFTY_LISTENINTERFACE"),
+			ListenInterface:       listenIface,
 			ListenPort:            uint16(listenPort),
 			InitialTimeout:        int(initialTimeout),
 			ReadTimeout:           int(readTimeout),
@@ -122,8 +126,10 @@ func Enviro() Loader {
 		return enviroTypeName, Configuration{
 			HostName:               cfg.HostName,
 			SharedKey:              cfg.SharedKey,
-			Dialer:                 dialer,
 			DialTimeout:            time.Duration(cfg.DialTimeout) * time.Second,
+			Socks5:                 cfg.Socks5,
+			Socks5User:             cfg.Socks5User,
+			Socks5Password:         cfg.Socks5Password,
 			Servers:                []Server{cfgSer.build()},
 			Presets:                presets,
 			OnlyAllowPresetRemotes: cfg.OnlyAllowPresetRemotes,

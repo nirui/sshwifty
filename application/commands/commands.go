@@ -24,7 +24,7 @@ import (
 // New creates a new commands group
 func New() command.Commands {
 	return command.Commands{
-		newTelnet,
-		newSSH,
+		command.Register(newTelnet, parseTelnetConfig),
+		command.Register(newSSH, parseSSHConfig),
 	}
 }

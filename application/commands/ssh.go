@@ -27,6 +27,7 @@ import (
 	"golang.org/x/crypto/ssh"
 
 	"github.com/niruix/sshwifty/application/command"
+	"github.com/niruix/sshwifty/application/configuration"
 	"github.com/niruix/sshwifty/application/log"
 	"github.com/niruix/sshwifty/application/network"
 	"github.com/niruix/sshwifty/application/rw"
@@ -105,6 +106,10 @@ var (
 
 var (
 	sshEmptyTime = time.Time{}
+)
+
+const (
+	sshDefaultPortString = "22"
 )
 
 type sshRemoteConnWrapper struct {
@@ -196,6 +201,30 @@ func newSSH(
 		remoteConnReceive:                    make(chan sshRemoteConn, 1),
 		remoteConn:                           sshRemoteConn{},
 	}
+}
+
+func parseSSHConfig(p configuration.Configuration) configuration.Configuration {
+	for i := range p.Presets {
+		if p.Presets[i].Type != "SSH" {
+			continue
+		}
+
+		oldHost := p.Presets[i].Host
+
+		_, _, sErr := net.SplitHostPort(p.Presets[i].Host)
+
+		if sErr != nil {
+			p.Presets[i].Host = net.JoinHostPort(
+				p.Presets[i].Host,
+				sshDefaultPortString)
+		}
+
+		if len(p.Presets[i].Host) <= 0 {
+			p.Presets[i].Host = oldHost
+		}
+	}
+
+	return p
 }
 
 func (d *sshClient) Bootup(

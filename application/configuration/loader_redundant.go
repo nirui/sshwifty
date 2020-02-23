@@ -30,11 +30,14 @@ const (
 // Redundant creates a group of loaders. They will be executed one by one until
 // one of it successfully returned a configuration
 func Redundant(loaders ...Loader) Loader {
-	return func(log log.Logger) (string, Configuration, error) {
+	return func(
+		log log.Logger,
+		r Reconfigurator,
+	) (string, Configuration, error) {
 		ll := log.Context("Redundant")
 
 		for i := range loaders {
-			lLoaderName, lCfg, lErr := loaders[i](ll)
+			lLoaderName, lCfg, lErr := loaders[i](ll, r)
 
 			if lErr != nil {
 				ll.Warning("Unable to load configuration from \"%s\": %s",

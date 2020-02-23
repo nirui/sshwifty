@@ -24,6 +24,7 @@ import (
 	"time"
 
 	"github.com/niruix/sshwifty/application/command"
+	"github.com/niruix/sshwifty/application/configuration"
 	"github.com/niruix/sshwifty/application/log"
 	"github.com/niruix/sshwifty/application/network"
 	"github.com/niruix/sshwifty/application/rw"
@@ -38,6 +39,10 @@ var (
 // Error codes
 const (
 	TelnetRequestErrorBadRemoteAddress = command.StreamError(0x01)
+)
+
+const (
+	telnetDefaultPortString = "23"
 )
 
 // Server signal codes
@@ -69,6 +74,32 @@ func newTelnet(
 		remoteConn: nil,
 		closeWait:  sync.WaitGroup{},
 	}
+}
+
+func parseTelnetConfig(
+	p configuration.Configuration,
+) configuration.Configuration {
+	for i := range p.Presets {
+		if p.Presets[i].Type != "Telnet" {
+			continue
+		}
+
+		oldHost := p.Presets[i].Host
+
+		_, _, sErr := net.SplitHostPort(p.Presets[i].Host)
+
+		if sErr != nil {
+			p.Presets[i].Host = net.JoinHostPort(
+				p.Presets[i].Host,
+				telnetDefaultPortString)
+		}
+
+		if len(p.Presets[i].Host) <= 0 {
+			p.Presets[i].Host = oldHost
+		}
+	}
+
+	return p
 }
 
 func (d *telnetClient) Bootup(

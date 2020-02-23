@@ -26,6 +26,7 @@ import (
 	"sync"
 	"syscall"
 
+	"github.com/niruix/sshwifty/application/command"
 	"github.com/niruix/sshwifty/application/configuration"
 	"github.com/niruix/sshwifty/application/log"
 	"github.com/niruix/sshwifty/application/server"
@@ -66,11 +67,14 @@ func New(screen io.Writer, logger log.Logger) Application {
 func (a Application) run(
 	cLoader configuration.Loader,
 	closeSigBuilder ProccessSignallerBuilder,
-	handlerBuilder server.HandlerBuilder,
+	commands command.Commands,
+	handlerBuilder server.HandlerBuilderBuilder,
 ) (bool, error) {
 	var err error
 
-	loaderName, c, cErr := cLoader(a.logger.Context("Configuration"))
+	loaderName, c, cErr := cLoader(
+		a.logger.Context("Configuration"),
+		commands.Reconfigure)
 
 	if cErr != nil {
 		a.logger.Error("\"%s\" loader cannot load configuration: %s",
@@ -117,7 +121,7 @@ func (a Application) run(
 
 			close(closeNotify)
 			closeNotify = nil
-		}, handlerBuilder)
+		}, handlerBuilder(commands))
 
 		servers = append(servers, newServer)
 	}
@@ -148,7 +152,8 @@ func (a Application) run(
 func (a Application) Run(
 	cLoader configuration.Loader,
 	closeSigBuilder ProccessSignallerBuilder,
-	handlerBuilder server.HandlerBuilder,
+	commands command.Commands,
+	handlerBuilder server.HandlerBuilderBuilder,
 ) error {
 	fmt.Fprintf(a.screen, banner, FullName, version, Author, URL)
 
@@ -159,7 +164,8 @@ func (a Application) Run(
 	defer a.logger.Info("Closed")
 
 	for {
-		restart, runErr := a.run(cLoader, closeSigBuilder, handlerBuilder)
+		restart, runErr := a.run(
+			cLoader, closeSigBuilder, commands, handlerBuilder)
 
 		if runErr != nil {
 			a.logger.Error("Unable to start due to error: %s", runErr)

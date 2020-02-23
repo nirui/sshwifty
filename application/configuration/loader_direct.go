@@ -28,7 +28,10 @@ const (
 // Direct creates a loader that return raw configuration data directly.
 // Good for integration.
 func Direct(cfg Configuration) Loader {
-	return func(log log.Logger) (string, Configuration, error) {
+	return func(
+		log log.Logger,
+		r Reconfigurator,
+	) (string, Configuration, error) {
 		return directTypeName, cfg, nil
 	}
 }

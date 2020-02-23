@@ -28,6 +28,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/niruix/sshwifty/application/command"
 	"github.com/niruix/sshwifty/application/configuration"
 	"github.com/niruix/sshwifty/application/log"
 )
@@ -49,6 +50,9 @@ type HandlerBuilder func(
 	commonCfg configuration.Common,
 	cfg configuration.Server,
 	logger log.Logger) http.Handler
+
+// HandlerBuilderBuilder builds HandlerBuilder
+type HandlerBuilderBuilder func(command.Commands) HandlerBuilder
 
 // CloseCallback will be called when the server has closed
 type CloseCallback func(error)

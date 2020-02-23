@@ -28,7 +28,6 @@ import (
 	"time"
 
 	"github.com/niruix/sshwifty/application/log"
-	"github.com/niruix/sshwifty/application/network"
 )
 
 const (
@@ -122,56 +121,24 @@ type fileCfgCommon struct {
 	OnlyAllowPresetRemotes bool
 }
 
-func (f fileCfgCommon) build() (fileCfgCommon, network.Dial, error) {
-	dialTimeout := f.DialTimeout
-
-	if dialTimeout < 3 {
-		dialTimeout = 3
-	}
-
-	var dialer network.Dial
-
-	if len(f.Socks5) <= 0 {
-		dialer = network.TCPDial()
-	} else {
-		sDial, sDialErr := network.BuildSocks5Dial(
-			f.Socks5, f.Socks5User, f.Socks5Password)
-
-		if sDialErr != nil {
-			return fileCfgCommon{}, nil, sDialErr
-		}
-
-		dialer = sDial
-	}
-
-	if f.OnlyAllowPresetRemotes {
-		accessList := make(network.AllowedHosts, len(f.Presets))
-
-		for _, k := range f.Presets {
-			if len(k.Host) <= 0 {
-				continue
-			}
-
-			accessList[k.Host] = struct{}{}
-		}
-
-		dialer = network.AccessControlDial(accessList, dialer)
-	}
-
+func (f fileCfgCommon) build() (fileCfgCommon, error) {
 	return fileCfgCommon{
 		HostName:               f.HostName,
 		SharedKey:              f.SharedKey,
-		DialTimeout:            dialTimeout,
+		DialTimeout:            f.DialTimeout,
 		Socks5:                 f.Socks5,
 		Socks5User:             f.Socks5User,
 		Socks5Password:         f.Socks5Password,
 		Servers:                f.Servers,
 		Presets:                f.Presets,
 		OnlyAllowPresetRemotes: f.OnlyAllowPresetRemotes,
-	}, dialer, nil
+	}, nil
 }
 
-func loadFile(filePath string) (string, Configuration, error) {
+func loadFile(
+	filePath string,
+	r Reconfigurator,
+) (string, Configuration, error) {
 	f, fErr := os.Open(filePath)
 
 	if fErr != nil {
@@ -189,7 +156,7 @@ func loadFile(filePath string) (string, Configuration, error) {
 		return fileTypeName, Configuration{}, jDecodeErr
 	}
 
-	finalCfg, dialer, cfgErr := cfg.build()
+	finalCfg, cfgErr := cfg.build()
 
 	if cfgErr != nil {
 		return fileTypeName, Configuration{}, cfgErr
@@ -207,25 +174,30 @@ func loadFile(filePath string) (string, Configuration, error) {
 		presets[i] = finalCfg.Presets[i].build()
 	}
 
-	return fileTypeName, Configuration{
+	return fileTypeName, r(Configuration{
 		HostName:  finalCfg.HostName,
 		SharedKey: finalCfg.SharedKey,
-		Dialer:    dialer,
 		DialTimeout: time.Duration(finalCfg.DialTimeout) *
 			time.Second,
+		Socks5:                 cfg.Socks5,
+		Socks5User:             cfg.Socks5User,
+		Socks5Password:         cfg.Socks5Password,
 		Servers:                servers,
 		Presets:                presets,
 		OnlyAllowPresetRemotes: cfg.OnlyAllowPresetRemotes,
-	}, nil
+	}), nil
 }
 
 // File creates a configuration file loader
 func File(customPath string) Loader {
-	return func(log log.Logger) (string, Configuration, error) {
+	return func(
+		log log.Logger,
+		r Reconfigurator,
+	) (string, Configuration, error) {
 		if len(customPath) > 0 {
 			log.Info("Loading configuration from: %s", customPath)
 
-			return loadFile(customPath)
+			return loadFile(customPath, r)
 		}
 
 		log.Info("Loading configuration from one of the default " +
@@ -267,7 +239,7 @@ func File(customPath string) Loader {
 			log.Info("Configuration file \"%s\" has been selected",
 				fallbackFileSearchList[f])
 
-			return loadFile(fallbackFileSearchList[f])
+			return loadFile(fallbackFileSearchList[f], r)
 		}
 
 		return fileTypeName, Configuration{}, fmt.Errorf(
