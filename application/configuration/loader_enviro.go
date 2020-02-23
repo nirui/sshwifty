@@ -123,7 +123,7 @@ func Enviro() Loader {
 			}
 		}
 
-		return enviroTypeName, Configuration{
+		return enviroTypeName, r(Configuration{
 			HostName:               cfg.HostName,
 			SharedKey:              cfg.SharedKey,
 			DialTimeout:            time.Duration(cfg.DialTimeout) * time.Second,
@@ -133,6 +133,6 @@ func Enviro() Loader {
 			Servers:                []Server{cfgSer.build()},
 			Presets:                presets,
 			OnlyAllowPresetRemotes: cfg.OnlyAllowPresetRemotes,
-		}, nil
+		}), nil
 	}
 }
