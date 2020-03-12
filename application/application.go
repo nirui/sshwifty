@@ -72,9 +72,7 @@ func (a Application) run(
 ) (bool, error) {
 	var err error
 
-	loaderName, c, cErr := cLoader(
-		a.logger.Context("Configuration"),
-		commands.Reconfigure)
+	loaderName, c, cErr := cLoader(a.logger.Context("Configuration"))
 
 	if cErr != nil {
 		a.logger.Error("\"%s\" loader cannot load configuration: %s",
@@ -83,6 +81,16 @@ func (a Application) run(
 		return false, cErr
 	}
 
+	// Allowing command to alter presets
+	c.Presets, err = commands.Reconfigure(c.Presets)
+
+	if err != nil {
+		a.logger.Error("Unable to reconfigure presets: %s", err)
+
+		return false, err
+	}
+
+	// Verify all configuration
 	err = c.Verify()
 
 	if err != nil {

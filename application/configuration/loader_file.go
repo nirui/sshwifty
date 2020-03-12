@@ -135,10 +135,7 @@ func (f fileCfgCommon) build() (fileCfgCommon, error) {
 	}, nil
 }
 
-func loadFile(
-	filePath string,
-	r Reconfigurator,
-) (string, Configuration, error) {
+func loadFile(filePath string) (string, Configuration, error) {
 	f, fErr := os.Open(filePath)
 
 	if fErr != nil {
@@ -174,7 +171,7 @@ func loadFile(
 		presets[i] = finalCfg.Presets[i].build()
 	}
 
-	return fileTypeName, r(Configuration{
+	return fileTypeName, Configuration{
 		HostName:  finalCfg.HostName,
 		SharedKey: finalCfg.SharedKey,
 		DialTimeout: time.Duration(finalCfg.DialTimeout) *
@@ -185,19 +182,16 @@ func loadFile(
 		Servers:                servers,
 		Presets:                presets,
 		OnlyAllowPresetRemotes: cfg.OnlyAllowPresetRemotes,
-	}), nil
+	}, nil
 }
 
 // File creates a configuration file loader
 func File(customPath string) Loader {
-	return func(
-		log log.Logger,
-		r Reconfigurator,
-	) (string, Configuration, error) {
+	return func(log log.Logger) (string, Configuration, error) {
 		if len(customPath) > 0 {
 			log.Info("Loading configuration from: %s", customPath)
 
-			return loadFile(customPath, r)
+			return loadFile(customPath)
 		}
 
 		log.Info("Loading configuration from one of the default " +
@@ -239,7 +233,7 @@ func File(customPath string) Loader {
 			log.Info("Configuration file \"%s\" has been selected",
 				fallbackFileSearchList[f])
 
-			return loadFile(fallbackFileSearchList[f], r)
+			return loadFile(fallbackFileSearchList[f])
 		}
 
 		return fileTypeName, Configuration{}, fmt.Errorf(

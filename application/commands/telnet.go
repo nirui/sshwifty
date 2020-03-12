@@ -76,30 +76,20 @@ func newTelnet(
 	}
 }
 
-func parseTelnetConfig(
-	p configuration.Configuration,
-) configuration.Configuration {
-	for i := range p.Presets {
-		if p.Presets[i].Type != "Telnet" {
-			continue
-		}
+func parseTelnetConfig(p configuration.Preset) (configuration.Preset, error) {
+	oldHost := p.Host
 
-		oldHost := p.Presets[i].Host
+	_, _, sErr := net.SplitHostPort(p.Host)
 
-		_, _, sErr := net.SplitHostPort(p.Presets[i].Host)
-
-		if sErr != nil {
-			p.Presets[i].Host = net.JoinHostPort(
-				p.Presets[i].Host,
-				telnetDefaultPortString)
-		}
-
-		if len(p.Presets[i].Host) <= 0 {
-			p.Presets[i].Host = oldHost
-		}
+	if sErr != nil {
+		p.Host = net.JoinHostPort(p.Host, telnetDefaultPortString)
 	}
 
-	return p
+	if len(p.Host) <= 0 {
+		p.Host = oldHost
+	}
+
+	return p, nil
 }
 
 func (d *telnetClient) Bootup(

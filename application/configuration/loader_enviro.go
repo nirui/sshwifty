@@ -44,10 +44,7 @@ func parseEviro(name string) string {
 
 // Enviro creates an environment variable based configuration loader
 func Enviro() Loader {
-	return func(
-		log log.Logger,
-		r Reconfigurator,
-	) (string, Configuration, error) {
+	return func(log log.Logger) (string, Configuration, error) {
 		log.Info("Loading configuration from environment variables ...")
 
 		dialTimeout, _ := strconv.ParseUint(
@@ -123,7 +120,7 @@ func Enviro() Loader {
 			}
 		}
 
-		return enviroTypeName, r(Configuration{
+		return enviroTypeName, Configuration{
 			HostName:               cfg.HostName,
 			SharedKey:              cfg.SharedKey,
 			DialTimeout:            time.Duration(cfg.DialTimeout) * time.Second,
@@ -133,6 +130,6 @@ func Enviro() Loader {
 			Servers:                []Server{cfgSer.build()},
 			Presets:                presets,
 			OnlyAllowPresetRemotes: cfg.OnlyAllowPresetRemotes,
-		}), nil
+		}, nil
 	}
 }

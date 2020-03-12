@@ -171,7 +171,7 @@ func (d *dummyStreamCommand) Release() error {
 
 func TestHandlerHandleStream(t *testing.T) {
 	cmds := Commands{}
-	cmds.Register(0, newDummyStreamCommand, nil)
+	cmds.Register(0, "name", newDummyStreamCommand, nil)
 
 	readerDataInput := make(chan []byte)
 

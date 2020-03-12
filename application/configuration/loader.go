@@ -21,11 +21,8 @@ import (
 	"github.com/niruix/sshwifty/application/log"
 )
 
-// Reconfigurator reloads configuration
-type Reconfigurator func(p Configuration) Configuration
+// PresetReloader reloads preset
+type PresetReloader func(p Preset) (Preset, error)
 
 // Loader Configuration loader
-type Loader func(
-	log log.Logger,
-	r Reconfigurator,
-) (name string, cfg Configuration, err error)
+type Loader func(log log.Logger) (name string, cfg Configuration, err error)

@@ -45,13 +45,15 @@ type Command func(
 
 // Builder builds a command
 type Builder struct {
+	name         string
 	command      Command
-	configurator configuration.Reconfigurator
+	configurator configuration.PresetReloader
 }
 
 // Register builds a Builder for registration
-func Register(c Command, p configuration.Reconfigurator) Builder {
+func Register(name string, c Command, p configuration.PresetReloader) Builder {
 	return Builder{
+		name:         name,
 		command:      c,
 		configurator: p,
 	}
@@ -62,7 +64,11 @@ type Commands [MaxCommandID + 1]Builder
 
 // Register registers a new command
 func (c *Commands) Register(
-	id byte, cb Command, ps configuration.Reconfigurator) {
+	id byte,
+	name string,
+	cb Command,
+	ps configuration.PresetReloader,
+) {
 	if id > MaxCommandID {
 		panic("Command ID must be not greater than MaxCommandID")
 	}
@@ -71,7 +77,7 @@ func (c *Commands) Register(
 		panic(fmt.Sprintf("Command %d already been registered", id))
 	}
 
-	(*c)[id] = Register(cb, ps)
+	(*c)[id] = Register(name, cb, ps)
 }
 
 // Run creates command executer
@@ -96,15 +102,27 @@ func (c Commands) Run(
 
 // Reconfigure lets commands reset configuration
 func (c Commands) Reconfigure(
-	p configuration.Configuration,
-) configuration.Configuration {
-	for i := range c {
-		if c[i].configurator == nil {
-			continue
-		}
+	p []configuration.Preset,
+) ([]configuration.Preset, error) {
+	newP := make([]configuration.Preset, 0, len(p))
 
-		p = c[i].configurator(p)
+	for i := range c {
+		for pp := range p {
+			if c[i].name != p[pp].Type {
+				continue
+			}
+
+			newPP, pErr := c[i].configurator(p[pp])
+
+			if pErr == nil {
+				newP = append(newP, newPP)
+
+				continue
+			}
+
+			return nil, pErr
+		}
 	}
 
-	return p
+	return newP, nil
 }
