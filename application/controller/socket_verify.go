@@ -98,6 +98,8 @@ func (s socketVerification) setServerConfigRespond(
 func (s socketVerification) Get(
 	w http.ResponseWriter, r *http.Request, l log.Logger) error {
 	hd := w.Header()
+	hd.Add("Cache-Control", "no-store")
+	hd.Add("Pragma", "no-store")
 
 	key := r.Header.Get("X-Key")
 
@@ -110,11 +112,11 @@ func (s socketVerification) Get(
 			return nil
 		}
 
-		return ErrSocketAuthFailed
+		return ErrSocketInvalidAuthKey
 	}
 
 	if len(key) > 64 {
-		return ErrSocketAuthFailed
+		return ErrSocketInvalidAuthKey
 	}
 
 	// Delay the brute force attack. Use it with connection limits (via

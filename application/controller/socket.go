@@ -41,9 +41,13 @@ import (
 
 // Errors
 var (
-	ErrSocketAuthFailed = NewError(
+	ErrSocketInvalidAuthKey = NewError(
 		http.StatusForbidden,
 		"To use Websocket interface, a valid Auth Key must be provided")
+
+	ErrSocketAuthFailed = NewError(
+		http.StatusForbidden,
+		"Authentication has failed with provided Auth Key")
 
 	ErrSocketUnableToGenerateKey = NewError(
 		http.StatusInternalServerError,
