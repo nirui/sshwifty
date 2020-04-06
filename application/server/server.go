@@ -19,7 +19,6 @@ package server
 
 import (
 	"context"
-	"crypto/tls"
 	"errors"
 	goLog "log"
 	"net"
@@ -93,6 +92,7 @@ func (s Server) Serve(
 	ss := &Serving{
 		server: http.Server{
 			Handler:           handlerBuilder(commonCfg, ssCfg, l),
+			TLSConfig:         nil,
 			ReadTimeout:       ssCfg.ReadTimeout,
 			ReadHeaderTimeout: ssCfg.InitialTimeout,
 			WriteTimeout:      ssCfg.WriteTimeout,
@@ -195,10 +195,6 @@ func (s *Serving) run(
 	}
 
 	logger.Info("Serving TLS")
-
-	if s.server.TLSConfig != nil {
-		s.server.TLSConfig.MinVersion = tls.VersionTLS12
-	}
 
 	err = s.server.ServeTLS(
 		ls, cfg.TLSCertificateFile, cfg.TLSCertificateKeyFile)
