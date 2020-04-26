@@ -22,7 +22,7 @@ const webpack = require("webpack"),
   MiniCssExtractPlugin = require("mini-css-extract-plugin"),
   OptimizeCssAssetsPlugin = require("optimize-css-assets-webpack-plugin"),
   VueLoaderPlugin = require("vue-loader/lib/plugin"),
-  WebappWebpackPlugin = require("webapp-webpack-plugin"),
+  FaviconsWebpackPlugin = require("favicons-webpack-plugin"),
   ManifestPlugin = require("webpack-manifest-plugin"),
   ImageminPlugin = require("imagemin-webpack-plugin").default,
   CopyPlugin = require("copy-webpack-plugin"),
@@ -321,10 +321,11 @@ module.exports = {
           );
         }
       },
-      new WebappWebpackPlugin({
+      new FaviconsWebpackPlugin({
         logo: path.join(__dirname, "ui", "sshwifty.svg"),
         prefix: "",
         cache: false,
+        inject: true,
         favicons: {
           appName: "Sshwifty SSH Client",
           appDescription: "Web SSH Client",
@@ -334,12 +335,12 @@ module.exports = {
           theme_color: "#333",
           appleStatusBarStyle: "black",
           icons: {
-            android: { offset: 5, overlayGlow: false, overlayShadow: true },
-            appleIcon: { offset: 10, overlayGlow: false },
-            appleStartup: { offset: 10, overlayGlow: false },
+            android: { offset: 0, overlayGlow: false, overlayShadow: true },
+            appleIcon: { offset: 5, overlayGlow: false },
+            appleStartup: { offset: 5, overlayGlow: false },
             coast: false,
             favicons: { overlayGlow: false },
-            firefox: { offset: 0, overlayGlow: false },
+            firefox: { offset: 5, overlayGlow: false },
             windows: { offset: 5, overlayGlow: false },
             yandex: false
           }
