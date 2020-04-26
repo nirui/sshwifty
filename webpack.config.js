@@ -254,7 +254,15 @@ module.exports = {
       },
       {
         test: /\.(gif|png|jpe?g|svg)$/i,
-        use: "file-loader"
+        use: [
+          {
+            loader: "file-loader",
+            options: {
+              name: '[contenthash].[ext]',
+              esModule: false
+            }
+          }
+        ]
       },
       {
         test: /\.js$/,
