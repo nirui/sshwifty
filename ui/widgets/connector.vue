@@ -155,7 +155,7 @@
           autocomplete="off"
           :name="field.field.name"
           :placeholder="field.field.example"
-          style="display: none"
+          style="display: none;"
           @input="changed(key, field, false)"
           @change="changed(key, field, true)"
         />
@@ -275,7 +275,15 @@
 
     <div
       v-if="preloaderIDName.length > 0"
-      style="width: 1px; height: 1px; margin: 10px; position: absolute; top: 0; bottom: 0; overflow: hidden;"
+      style="
+        width: 1px;
+        height: 1px;
+        margin: 10px;
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        overflow: hidden;
+      "
     >
       <div :id="preloaderIDName">
         {{ current.title || connector.name }} wizard
@@ -400,7 +408,13 @@ export default {
               const f = fieldBuilder.build(tabIndex, i, fields[i]);
 
               this.current.fields.push(f);
-              tabIndex = f.nextTabIndex();
+
+              const newTabIndex = f.nextTabIndex();
+
+              // Ignore if the field does not contain tabIndex
+              if (newTabIndex > 1) {
+                tabIndex = newTabIndex;
+              }
             }
 
             this.submitterTabIndex = tabIndex > 0 ? tabIndex : 1;
