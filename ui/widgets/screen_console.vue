@@ -24,7 +24,7 @@
       style="top: 0; right: 0; left: 0; bottom: 0; padding： 0; margin: 0; z-index: 0; position: absolute; overflow: hidden"
       :style="'font-family: ' + typeface + ', inherit'"
     >
-      <h2 style="display:none;">Console</h2>
+      <h2 style="display: none;">Console</h2>
 
       <div class="console-loading">
         <div class="console-loading-icon"></div>
@@ -45,7 +45,7 @@
       class="console-toolbar"
       :style="'background-color: ' + control.activeColor() + 'ee'"
     >
-      <h2 style="display:none;">Tool bar</h2>
+      <h2 style="display: none;">Tool bar</h2>
 
       <div class="console-toolbar-group console-toolbar-group-left">
         <div class="console-toolbar-item">
