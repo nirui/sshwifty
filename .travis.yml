@@ -26,6 +26,7 @@ go:
 
 before_install:
   - export
+  - nvm install node --latest-npm && nvm use node
   - npm install && npm run generate
   - |
     if [[ "$SSHWIFTY_TEST_COVER" == "yes" ]]; then
