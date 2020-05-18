@@ -102,11 +102,11 @@ describe("Reader", () => {
 
     let rr = await reader.readOne(r);
 
-    assert.deepEqual(rr, [0]);
+    assert.deepEqual(rr, Uint8Array.from([0]));
 
     rr = await reader.readOne(r);
 
-    assert.deepEqual(rr, [1]);
+    assert.deepEqual(rr, Uint8Array.from([1]));
   });
 
   it("readN", async () => {
@@ -120,11 +120,11 @@ describe("Reader", () => {
 
     let rr = await reader.readN(r, 3);
 
-    assert.deepEqual(rr, [0, 1, 2]);
+    assert.deepEqual(rr, Uint8Array.from([0, 1, 2]));
 
     rr = await reader.readN(r, 3);
 
-    assert.deepEqual(rr, [3, 4, 5]);
+    assert.deepEqual(rr, Uint8Array.from([3, 4, 5]));
   });
 
   it("Limited", async () => {
@@ -180,7 +180,7 @@ describe("Reader", () => {
     let result = await reader.readCompletely(limited);
 
     assert.equal(limited.completed(), true);
-    assert.deepEqual(result, expected);
+    assert.deepEqual(result, Uint8Array.from(expected));
   });
 
   it("readUntil", async () => {
