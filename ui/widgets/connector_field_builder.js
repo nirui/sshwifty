@@ -49,17 +49,26 @@ export function build(tabIndex, i, field) {
     blockedSuggestionValue: "",
     blockingSuggestion: false,
     nextTabIndex() {
+      let nextTabIndex = 0;
+
       if (this.field.readonly) {
-        return this.tabIndex;
+        nextTabIndex = this.tabIndex;
+      } else {
+        switch (this.field.type) {
+          case "radio":
+            nextTabIndex = this.tabIndex + this.field.example.split(",").length;
+            break;
+
+          default:
+            nextTabIndex = this.tabIndex + 1;
+        }
       }
 
-      switch (this.field.type) {
-        case "radio":
-          return this.tabIndex + this.field.example.split(",").length;
-
-        default:
-          return this.tabIndex + 1;
+      if (tabIndex >= nextTabIndex) {
+        return tabIndex;
       }
+
+      return nextTabIndex;
     },
     nextSubTabIndex(subIndex) {
       if (this.field.readonly) {

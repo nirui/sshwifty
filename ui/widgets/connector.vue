@@ -409,12 +409,7 @@ export default {
 
               this.current.fields.push(f);
 
-              const newTabIndex = f.nextTabIndex();
-
-              // Ignore if the field does not contain tabIndex
-              if (newTabIndex > 1) {
-                tabIndex = newTabIndex;
-              }
+              tabIndex = f.nextTabIndex();
             }
 
             this.submitterTabIndex = tabIndex > 0 ? tabIndex : 1;
