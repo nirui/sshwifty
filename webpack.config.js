@@ -208,11 +208,12 @@ module.exports = {
         ? {}
         : {
             chunks: "all",
-            minSize: 12800,
+            minSize: 102400,
+            maxSize: 244000,
             automaticNameDelimiter: ".",
             automaticNameMaxLength: 8,
-            maxAsyncRequests: 5,
-            maxInitialRequests: 6,
+            maxAsyncRequests: 8,
+            maxInitialRequests: 8,
             name: true,
           },
     minimize: process.env.NODE_ENV !== "development",
@@ -412,7 +413,7 @@ module.exports = {
         pngquant: {
           speed: 3,
           strip: true,
-          quality: "0-5",
+          quality: "0-3",
         },
       }),
       new MiniCssExtractPlugin({
