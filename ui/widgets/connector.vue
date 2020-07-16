@@ -76,7 +76,7 @@
           :autofocus="field.autofocus"
           :tabindex="field.tabIndex"
           :disabled="field.field.readonly"
-          @keydown="keydown($event, key, field)"
+          @keydown="triggerSuggestions($event, key, field)"
           @focus="focus(key, field, true)"
           @blur="focus(key, field, false)"
           @input="changed(key, field, false)"
@@ -126,11 +126,13 @@
           :autofocus="field.autofocus"
           :tabindex="field.tabIndex"
           :disabled="field.field.readonly"
-          @keydown="keydown(key, field)"
+          @keyup="expandTextarea($event)"
+          @keydown="
+            triggerSuggestions($event, key, field) || expandTextarea($event)
+          "
           @focus="focus(key, field, true)"
           @blur="focus(key, field, false)"
           @input="changed(key, field, false)"
-          @keyup="expandTextarea"
           @change="changed(key, field, true)"
         ></textarea>
 
@@ -311,7 +313,7 @@ function buildEmptyCurrent() {
     actionText: "Continue",
     cancellable: false,
     submittable: false,
-    submitting: false
+    submitting: false,
   };
 }
 
@@ -324,14 +326,14 @@ export default {
         }
 
         el.focus();
-      }
-    }
+      },
+    },
   },
   props: {
     connector: {
       type: Object,
-      default: () => null
-    }
+      default: () => null,
+    },
   },
   data() {
     return {
@@ -343,7 +345,7 @@ export default {
       submitterTabIndex: 1,
       working: false,
       disabled: false,
-      cancelled: false
+      cancelled: false,
     };
   },
   watch: {
@@ -355,7 +357,7 @@ export default {
       this.cancelled = false;
       this.currentConnector = newV;
       this.runWizard();
-    }
+    },
   },
   async mounted() {
     await this.closeWizard();
@@ -487,10 +489,7 @@ export default {
 
       this.preloaderIDName =
         preloaderIDPrefix +
-        this.getConnector()
-          .wizard.control()
-          .ui()
-          .toLowerCase();
+        this.getConnector().wizard.control().ui().toLowerCase();
 
       this.currentConnectorCloseWait = (async () => {
         while (!this.disabled) {
@@ -560,7 +559,9 @@ export default {
       }
     },
     expandTextarea(event) {
-      event.target.style.overflowY = "hidden";
+      // WARNING: This function may cause rendering stutter due to
+      //          combined problem of CSS "Position" and Vue render.
+      //          Use of "TextArea" element is thus not recommended.
       event.target.style.height = "";
       event.target.style.height = event.target.scrollHeight + "px";
     },
@@ -706,7 +707,7 @@ export default {
 
       this.verify(key, field, force);
     },
-    keydown(event, key, field) {
+    triggerSuggestions(event, key, field) {
       switch (event.key) {
         case "ArrowUp":
           event.preventDefault();
@@ -825,7 +826,7 @@ export default {
       this.current.submitting = true;
 
       await this.current.data.cancel();
-    }
-  }
+    },
+  },
 };
 </script>
