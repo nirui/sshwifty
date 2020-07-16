@@ -1,3 +1,18 @@
+# This configuration will allow Sshwifty to run on Heroku via Dockerfile. You'll
+# have to switch your Heroku "app" to Docker mode in order to deploy it. And
+# after you've deployed the app, you must go to the "app" control panel and
+# manually add an enviroment variable named `SSHWIFTY_LISTENPORT`, then set it's
+# value to `SSHWIFTY_ENV_RENAMED:PORT` so Sshwifty can listen to the correct
+# port.
+#
+# To enable Docker mode, see:
+# https://devcenter.heroku.com/articles/build-docker-images-heroku-yml
+#
+# To add the enviroment variable (or "Config Vars"), go to:
+# https://dashboard.heroku.com/apps/<"your_app_name">/settings
+#
+# You only need to to it once per Heroku app.
+
 build:
   config:
     SSHWIFTY_LISTENPORT: SSHWIFTY_ENV_RENAMED:PORT
