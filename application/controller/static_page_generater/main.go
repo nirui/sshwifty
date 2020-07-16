@@ -311,7 +311,7 @@ func parseFile(
 	fileExt := ""
 
 	if fileExtDotIdx >= 0 {
-		fileExt = name[fileExtDotIdx:len(name)]
+		fileExt = name[fileExtDotIdx:]
 	}
 
 	mimeType := getMimeTypeByExtension(fileExt)
@@ -369,7 +369,7 @@ func parseFile(
 		ContentHash: base64.StdEncoding.EncodeToString(
 			getHash(content[0:contentLen])[:8]),
 		CompressedHash: base64.StdEncoding.EncodeToString(
-			getHash(content[contentLen:len(content)])[:8]),
+			getHash(content[contentLen:])[:8]),
 		Date: time.Now(),
 	}
 }
