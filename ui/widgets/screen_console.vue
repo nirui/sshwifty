@@ -136,7 +136,7 @@ class Term {
       cursorStyle: "block",
       fontFamily: termTypeFace + ", " + termFallbackTypeFace,
       fontSize: this.fontSize,
-      logLevel: process.env.NODE_ENV === "development" ? "info" : "off"
+      logLevel: process.env.NODE_ENV === "development" ? "info" : "off",
     });
     this.fit = new FitAddon();
 
@@ -144,10 +144,10 @@ class Term {
     this.term.loadAddon(new WebLinksAddon());
 
     this.term.setOption("theme", {
-      background: control.activeColor()
+      background: control.activeColor(),
     });
 
-    this.term.onData(data => {
+    this.term.onData((data) => {
       if (this.closed) {
         return;
       }
@@ -155,7 +155,7 @@ class Term {
       control.send(data);
     });
 
-    this.term.onBinary(data => {
+    this.term.onBinary((data) => {
       if (this.closed) {
         return;
       }
@@ -163,7 +163,7 @@ class Term {
       control.sendBinary(data);
     });
 
-    this.term.onKey(ev => {
+    this.term.onKey((ev) => {
       if (this.closed) {
         return;
       }
@@ -201,7 +201,7 @@ class Term {
       oldRows = 0,
       oldCols = 0;
 
-    this.term.onResize(dim => {
+    this.term.onResize((dim) => {
       if (this.closed) {
         return;
       }
@@ -229,7 +229,7 @@ class Term {
 
         control.resize({
           rows: dim.rows,
-          cols: dim.cols
+          cols: dim.cols,
         });
 
         resizeDelay = null;
@@ -247,7 +247,7 @@ class Term {
     this.term.textarea.addEventListener("focus", callbacks.focus);
     this.term.textarea.addEventListener("blur", callbacks.blur);
 
-    this.term.textarea.addEventListener("keyup", async ev => {
+    this.term.textarea.addEventListener("keyup", async (ev) => {
       if (this.closed) {
         return;
       }
@@ -431,32 +431,32 @@ export default {
         tail = "</span>";
 
       return head + key.split("+").join(tail + "+" + head) + tail;
-    }
+    },
   },
   props: {
     active: {
       type: Boolean,
-      default: false
+      default: false,
     },
     control: {
       type: Object,
-      default: () => null
+      default: () => null,
     },
     change: {
       type: Object,
-      default: () => null
+      default: () => null,
     },
     toolbar: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
   data() {
     return {
       screenKeys: consoleScreenKeys,
       term: new Term(this.control),
       typeface: termTypeFace,
-      runner: null
+      runner: null,
     };
   },
   watch: {
@@ -471,8 +471,8 @@ export default {
 
         this.fit();
       },
-      deep: true
-    }
+      deep: true,
+    },
   },
   async mounted() {
     await this.init();
@@ -485,8 +485,8 @@ export default {
       return Promise.all([
         new FontFaceObserver(typeface).load(null, timeout),
         new FontFaceObserver(typeface, {
-          weight: "bold"
-        }).load(null, timeout)
+          weight: "bold",
+        }).load(null, timeout),
       ]);
     },
     async retryLoadRemoteFont(typeface, timeout, onSuccess) {
@@ -566,15 +566,15 @@ export default {
           warn(msg, toDismiss) {
             self.$emit("warning", {
               text: msg,
-              toDismiss: toDismiss
+              toDismiss: toDismiss,
             });
           },
           info(msg, toDismiss) {
             self.$emit("info", {
               text: msg,
-              toDismiss: toDismiss
+              toDismiss: toDismiss,
             });
-          }
+          },
         }
       );
 
@@ -601,8 +601,8 @@ export default {
       e.preventDefault();
     },
     activate() {
-      this.fit();
       window.addEventListener("resize", this.fit);
+      this.fit();
       this.term.focus();
     },
     async deactivate() {
@@ -657,7 +657,7 @@ export default {
     },
     fontSizeDown() {
       this.term.fontSizeDown();
-    }
-  }
+    },
+  },
 };
 </script>
