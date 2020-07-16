@@ -84,7 +84,7 @@ class SSH {
         "@stdout",
         "@stderr",
         "close",
-        "@completed"
+        "@completed",
       ],
       callbacks
     );
@@ -264,7 +264,7 @@ const initialFieldDef = {
       }
 
       return "We'll login as user \"" + d + '"';
-    }
+    },
   },
   Host: {
     name: "Host",
@@ -298,7 +298,7 @@ const initialFieldDef = {
       }
 
       return "Look like " + addr.type + " address";
-    }
+    },
   },
   Encoding: {
     name: "Encoding",
@@ -320,7 +320,7 @@ const initialFieldDef = {
       }
 
       throw new Error('The character encoding "' + d + '" is not supported');
-    }
+    },
   },
   Notice: {
     name: "Notice",
@@ -336,7 +336,7 @@ const initialFieldDef = {
     },
     verify(d) {
       return "";
-    }
+    },
   },
   Password: {
     name: "Password",
@@ -360,7 +360,7 @@ const initialFieldDef = {
       }
 
       return "We'll login with this password";
-    }
+    },
   },
   "Private Key": {
     name: "Private Key",
@@ -370,7 +370,7 @@ const initialFieldDef = {
       'To decrypt the Private Key, use command: <i style="color: #fff;' +
       ' font-style: normal;">ssh-keygen -f /path/to/private_key -p</i><br />' +
       "<br />" +
-      "It is strongly recommanded to use one Private Key per SSH server if " +
+      "It is strongly recommended to use one Private Key per SSH server if " +
       "the Private Key will be submitted to Sshwifty. To generate a new SSH " +
       'key pair, use command <i style="color: #fff; font-style: normal;">' +
       "ssh-keygen -o -f /path/to/my_server_key</i> and then deploy the " +
@@ -426,7 +426,7 @@ const initialFieldDef = {
       }
 
       return "We'll login with this Private Key";
-    }
+    },
   },
   Authentication: {
     name: "Authentication",
@@ -451,7 +451,7 @@ const initialFieldDef = {
         default:
           throw new Error("Authentication method must be specified");
       }
-    }
+    },
   },
   Fingerprint: {
     name: "Fingerprint",
@@ -468,8 +468,8 @@ const initialFieldDef = {
     },
     verify(d) {
       return "";
-    }
-  }
+    },
+  },
 };
 
 /**
@@ -519,7 +519,7 @@ class Wizard {
     this.session = session
       ? session
       : {
-          credential: ""
+          credential: "",
         };
     this.step = subs;
     this.controls = controls.get("SSH");
@@ -597,7 +597,7 @@ class Wizard {
       charset: configInput.charset,
       credential: sessionData.credential,
       host: address.parseHostPort(configInput.host, DEFAULT_PORT),
-      fingerprint: configInput.fingerprint
+      fingerprint: configInput.fingerprint,
     };
 
     return new SSH(sender, config, {
@@ -655,7 +655,7 @@ class Wizard {
                 resize(rows, cols) {
                   return commandHandler.sendResize(rows, cols);
                 },
-                events: commandHandler.events
+                events: commandHandler.events,
               }),
               self.controls.ui()
             )
@@ -676,7 +676,7 @@ class Wizard {
           await self.stepFingerprintPrompt(
             rd,
             sd,
-            v => {
+            (v) => {
               if (!configInput.fingerprint) {
                 return FingerprintPromptVerifyNoRecord;
               }
@@ -687,7 +687,7 @@ class Wizard {
 
               return FingerprintPromptVerifyMismatch;
             },
-            newFingerprint => {
+            (newFingerprint) => {
               configInput.fingerprint = newFingerprint;
             }
           )
@@ -695,7 +695,7 @@ class Wizard {
       },
       async "connect.credential"(rd, sd) {
         self.step.resolve(
-          self.stepCredentialPrompt(rd, sd, config, newCredential => {
+          self.stepCredentialPrompt(rd, sd, config, (newCredential) => {
             sessionData.credential = newCredential;
           })
         );
@@ -710,7 +710,7 @@ class Wizard {
             "Connection has been cancelled"
           )
         );
-      }
+      },
     });
   }
 
@@ -721,10 +721,10 @@ class Wizard {
       "SSH",
       "Secure Shell Host",
       "Connect",
-      r => {
+      (r) => {
         self.hasStarted = true;
 
-        self.streams.request(COMMAND_ID, sd => {
+        self.streams.request(COMMAND_ID, (sd) => {
           return self.buildCommand(
             sd,
             {
@@ -732,7 +732,7 @@ class Wizard {
               authentication: r.authentication,
               host: r.host,
               charset: r.encoding,
-              fingerprint: ""
+              fingerprint: "",
             },
             self.session
           );
@@ -764,17 +764,17 @@ class Wizard {
                   meta: {
                     User: hosts[i].data.user,
                     Authentication: hosts[i].data.authentication,
-                    Encoding: hosts[i].data.charset
-                  }
+                    Encoding: hosts[i].data.charset,
+                  },
                 });
               }
 
               return sugg;
-            }
+            },
           },
           { name: "Authentication" },
           { name: "Encoding" },
-          { name: "Notice" }
+          { name: "Notice" },
         ],
         self.preset
       )
@@ -807,7 +807,7 @@ class Wizard {
         ? "Verify server fingerprint displayed below"
         : "It's very unusual. Please verify the new server fingerprint below",
       !fingerprintChanged ? "Yes, I do" : "I'm aware of the change",
-      r => {
+      (r) => {
         newFingerprint(fingerprintData);
 
         sd.send(CLIENT_CONNECT_RESPOND_FINGERPRINT, new Uint8Array([0]));
@@ -824,8 +824,8 @@ class Wizard {
       command.fields(initialFieldDef, [
         {
           name: "Fingerprint",
-          value: fingerprintData
-        }
+          value: fingerprintData,
+        },
       ])
     );
   }
@@ -863,7 +863,7 @@ class Wizard {
       "Provide credential",
       "Please input your credential",
       "Login",
-      r => {
+      (r) => {
         let vv = r[fields[0].name.toLowerCase()];
 
         sd.send(
@@ -922,7 +922,7 @@ class Executer extends Wizard {
 
     self.hasStarted = true;
 
-    self.streams.request(COMMAND_ID, sd => {
+    self.streams.request(COMMAND_ID, (sd) => {
       return self.buildCommand(
         sd,
         {
@@ -930,7 +930,7 @@ class Executer extends Wizard {
           authentication: self.config.authentication,
           host: self.config.host,
           charset: self.config.charset ? self.config.charset : "utf-8",
-          fingerprint: self.config.fingerprint
+          fingerprint: self.config.fingerprint,
         },
         self.session
       );
@@ -1010,7 +1010,7 @@ export class Command {
         user: user,
         host: host,
         authentication: auth,
-        charset: charset
+        charset: charset,
       },
       null,
       streams,
