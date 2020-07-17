@@ -2,8 +2,8 @@
 FROM debian:testing AS base
 RUN set -ex && \
     cd / && \
-    echo 'res=0; for i in $(seq 0 36); do $@; res=$?; [ $res -eq 0 ] && exit $res || sleep 10; done; exit $res' > /try.sh && chmod +x /try.sh && \
-    echo 'cpid=""; ret=0; i=0; for c in "$@"; do ( (((((eval $c; echo $? >&3) | sed "s/^/|-($i) /" >&4) 2>&1 | sed "s/^/|-($i)!/" >&2) 3>&1) | (read xs; exit $xs)) 4>&1) & ppid=$!; cpid="$cpid $ppid"; echo "+ Child $i (PID $ppid): $c ..."; i=$((i+1)); done; for c in $cpid; do wait $c; cret=$?; [ $cret -eq 0 ] && continue; echo "* Child PID $c has failed." >&2; ret=$cret; done; exit $ret' > /child.sh && chmod +x /child.sh && \
+    echo $'#!/bin/sh\n\nres=0; for i in $(seq 0 36); do $@; res=$?; [ $res -eq 0 ] && exit $res || sleep 10; done; exit $res' > /try.sh && chmod +x /try.sh && \
+    echo $'#!/bin/sh\n\ncpid=""; ret=0; i=0; for c in "$@"; do ( (((((eval $c; echo $? >&3) | sed "s/^/|-($i) /" >&4) 2>&1 | sed "s/^/|-($i)!/" >&2) 3>&1) | (read xs; exit $xs)) 4>&1) & ppid=$!; cpid="$cpid $ppid"; echo "+ Child $i (PID $ppid): $c ..."; i=$((i+1)); done; for c in $cpid; do wait $c; cret=$?; [ $cret -eq 0 ] && continue; echo "* Child PID $c has failed." >&2; ret=$cret; done; exit $ret' > /child.sh && chmod +x /child.sh && \
     export PATH=$PATH:/ && \
     echo 'apt-get update && apt-get install autoconf automake libtool build-essential curl git npm golang-go -y' > ./install.sh && chmod +x ./install.sh && \
     ([ -z "$HTTP_PROXY" ] || (echo "Acquire::http::Proxy \"$HTTP_PROXY\";" >> /etc/apt/apt.conf)) && \
