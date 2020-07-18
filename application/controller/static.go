@@ -15,6 +15,9 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+//go:generate go run ./static_page_generater ../../.tmp/dist ./static_pages.go
+//go:generate go fmt ./static_pages.go
+
 package controller
 
 import (
