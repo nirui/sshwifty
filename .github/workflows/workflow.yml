@@ -1,0 +1,33 @@
+name: Sshwifty-CI
+
+on:
+  push:
+    branches: [master, dev]
+    tags: ["**-release"]
+  pull_request:
+
+jobs:
+  CI:
+    runs-on: ubuntu-20.04
+
+    steps:
+      - name: Checking out source code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 50
+
+      - name: Run CI
+        run: |
+          export GITHUB_USER="${{ github.repository_owner }}"
+          export GITHUB_USER_TOKEN="${{ secrets.GITHUB_TOKEN }}"
+          export DOCKER_HUB_PASSWORD="${{ secrets.DOCKER_HUB_PASSWORD }}"
+          export COVERALLS_TOKEN="${{ secrets.COVERALLS_TOKEN }}"
+          export DOCKER_HUB_USER="${{ github.repository_owner }}"
+          export DOCKER_NPM_REGISTRY="http://registry.npmjs.org/"
+
+          sudo apt-get update -qq -y
+          sudo apt-get upgrade -qq -y
+          sudo apt-get install -qq -y qemu qemu-user-static binfmt-support
+          sudo systemctl restart docker
+
+          chmod +x ./.ci.sh && ./.ci.sh

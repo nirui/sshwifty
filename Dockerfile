@@ -10,9 +10,10 @@ RUN set -ex && \
     (echo "Acquire::Retries \"8\";" >> /etc/apt/apt.conf) && \
     echo '#!/bin/sh' > /install.sh && echo 'apt-get update && apt-get install autoconf automake libtool build-essential ca-certificates curl git npm golang-go -y' >> /install.sh && chmod +x /install.sh && \
     /try.sh /install.sh && rm /install.sh && \
+    /try.sh update-ca-certificates -f && c_rehash && \
     ([ -z "$HTTP_PROXY" ] || (git config --global http.proxy "$HTTP_PROXY" && npm config set proxy "$HTTP_PROXY")) && \
     ([ -z "$HTTPS_PROXY" ] || (git config --global https.proxy "$HTTPS_PROXY" && npm config set https-proxy "$HTTPS_PROXY")) && \
-    /try.sh update-ca-certificates && \
+    ([ -z "$NPM_REGISTRY" ] || (npm config set registry="$NPM_REGISTRY")) && \
     export PATH=$PATH:"$(go env GOPATH)/bin" && \
     echo '#!/bin/sh' > /install.sh && echo "npm install -g npm || (npm cache clean -f && false)" >> /install.sh && chmod +x /install.sh && /try.sh /install.sh && rm /install.sh
 
@@ -22,6 +23,7 @@ COPY . /tmp/.build/sshwifty
 RUN set -ex && \
     cd / && \
     export PATH=$PATH:/ && \
+    export CPPFLAGS='-DPNG_ARM_NEON_OPT=0' && \
     /try.sh apt-get install libpng-dev -y && \
     ls -l /tmp/.build/sshwifty && \
     /child.sh \
