@@ -6,7 +6,7 @@ compatible (standard) web browser.
 
 ![Web Interface](Screenshot.png)
 
-[![Build Status](https://travis-ci.org/niruix/sshwifty.svg?branch=master)](https://travis-ci.org/niruix/sshwifty)
+![Build Status](https://github.com/niruix/sshwifty/workflows/Sshwifty-CI/badge.svg)
 
 ## Install
 
