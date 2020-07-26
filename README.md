@@ -6,7 +6,7 @@ compatible (standard) web browser.
 
 ![Web Interface](Screenshot.png)
 
-[![Build Status](https://travis-ci.org/niruix/sshwifty.svg?branch=master)](https://travis-ci.org/niruix/sshwifty)
+![Build Status](https://github.com/niruix/sshwifty/workflows/Sshwifty-CI/badge.svg)
 
 ## Install
 
@@ -27,7 +27,7 @@ by executing following command:
 
 ```
 $ docker run --detach \
-  --restart=always \
+  --restart always \
   --publish 8182:8182 \
   --name sshwifty \
   niruix/sshwifty:latest
@@ -41,7 +41,7 @@ to import credential files to the container and automatically apply them:
 $ openssl req \
   -newkey rsa:4096 -nodes -keyout domain.key -x509 -days 90 -out domain.crt
 $ docker run --detach \
-  --restart=always \
+  --restart always \
   --publish 8182:8182 \
   --env SSHWIFTY_DOCKER_TLSCERT="$(cat domain.crt)" \
   --env SSHWIFTY_DOCKER_TLSCERTKEY="$(cat domain.key)" \
