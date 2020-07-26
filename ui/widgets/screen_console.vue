@@ -21,7 +21,7 @@
   <div class="screen-console">
     <div
       class="console-console"
-      style="top: 0; right: 0; left: 0; bottom: 0; padding： 0; margin: 0; z-index: 0; position: absolute; overflow: hidden"
+      style="width: 100%; height: 100%; top: 0; right: 0; left: 0; bottom: 0; padding: 0; margin: 0; z-index: 0; position: absolute; overflow: hidden"
       :style="'font-family: ' + typeface + ', inherit'"
     >
       <h2 style="display: none;">Console</h2>
@@ -219,6 +219,8 @@ class Term {
       }
 
       resizeDelay = setTimeout(() => {
+        resizeDelay = null;
+
         if (!isNumber(dim.cols) || !isNumber(dim.rows)) {
           return;
         }
@@ -232,7 +234,6 @@ class Term {
           cols: dim.cols,
         });
 
-        resizeDelay = null;
       }, resizeDelayInterval);
     });
   }
@@ -457,6 +458,11 @@ export default {
       term: new Term(this.control),
       typeface: termTypeFace,
       runner: null,
+      eventHandlers: {
+        resize: null,
+        keydown: null,
+        keyup: null,
+      },
     };
   },
   watch: {
@@ -552,38 +558,46 @@ export default {
     async init() {
       let self = this;
 
-      await this.openTerm(
-        this.$el.getElementsByClassName("console-console")[0],
-        {
-          focus(e) {
-            document.addEventListener("keyup", self.localKeypress);
-            document.addEventListener("keydown", self.localKeypress);
-          },
-          blur(e) {
-            document.removeEventListener("keyup", self.localKeypress);
-            document.removeEventListener("keydown", self.localKeypress);
-          },
-          warn(msg, toDismiss) {
-            self.$emit("warning", {
-              text: msg,
-              toDismiss: toDismiss,
-            });
-          },
-          info(msg, toDismiss) {
-            self.$emit("info", {
-              text: msg,
-              toDismiss: toDismiss,
-            });
-          },
-        }
+      self.eventHandlers = {
+	resize: () => self.fit(),
+	keyup: e => self.localKeypress(e),
+	keydown: e => self.localKeypress(e),
+      };
+
+      await self.openTerm(
+	self.$el.getElementsByClassName("console-console")[0],
+	{
+	  focus(e) {
+	    document.addEventListener("keyup", self.eventHandlers.keyup);
+	    document.addEventListener("keydown", self.eventHandlers.keydown);
+	  },
+	  blur(e) {
+	    document.removeEventListener("keyup", self.eventHandlers.keyup);
+	    document.removeEventListener("keydown", self.eventHandlers.keydown);
+	  },
+	  warn(msg, toDismiss) {
+	    self.$emit("warning", {
+	      text: msg,
+	      toDismiss: toDismiss,
+	    });
+	  },
+	  info(msg, toDismiss) {
+	    self.$emit("info", {
+	      text: msg,
+	      toDismiss: toDismiss,
+	    });
+	  },
+	}
       );
 
-      if (this.term.destroyed()) {
-        return;
+      if (self.term.destroyed()) {
+	return;
       }
 
-      this.triggerActive();
-      this.runRunner();
+      self.triggerActive();
+      self.runRunner();
+
+      self.$nextTick(() => self.eventHandlers.resize());
     },
     async deinit() {
       await this.closeRunner();
@@ -601,14 +615,12 @@ export default {
       e.preventDefault();
     },
     activate() {
-      window.addEventListener("resize", this.fit);
-      this.fit();
+      this.eventHandlers.resize();
       this.term.focus();
+      window.addEventListener("resize", this.eventHandlers.resize);
     },
     async deactivate() {
-      window.removeEventListener("resize", this.fit);
-      document.removeEventListener("keyup", this.localKeypress);
-      document.removeEventListener("keydown", this.localKeypress);
+      window.removeEventListener("resize", this.eventHandlers.resize);
       this.term.blur();
     },
     runRunner() {
@@ -621,11 +633,11 @@ export default {
       this.runner = (async () => {
         try {
           for (;;) {
-            if (this.term.destroyed()) {
+            if (self.term.destroyed()) {
               break;
             }
 
-            this.term.write(await this.control.receive());
+            self.term.write(await this.control.receive());
 
             self.$emit("updated");
           }
