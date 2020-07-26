@@ -23,6 +23,9 @@ jobs:
           export DOCKER_HUB_PASSWORD="${{ secrets.DOCKER_HUB_PASSWORD }}"
           export COVERALLS_TOKEN="${{ secrets.COVERALLS_TOKEN }}"
           export DOCKER_HUB_USER="${{ github.repository_owner }}"
+
+          # The `DOCKER_NPM_REGISTRY` is here due to problematic build process
+          # for ARM64 Docker Image caused by Docker/QEMU
           export DOCKER_NPM_REGISTRY="http://registry.npmjs.org/"
 
           sudo apt-get update -qq -y

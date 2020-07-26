@@ -3,7 +3,6 @@
 PATH=$PATH:"$(go env GOPATH)/bin"
 GO111MODULE=on
 ASC_URL=https://keybase.io/nirui/pgp_keys.asc
-PACKAGE=github.com/niruix/sshwifty
 VERSION_VARIABLE=github.com/niruix/sshwifty/application.version
 BUILD_TARGETS="darwin/amd64 windows/386 windows/amd64 openbsd/386 openbsd/amd64 openbsd/arm openbsd/arm64 freebsd/386 freebsd/amd64 freebsd/arm freebsd/arm64 linux/386 linux/amd64 linux/arm linux/arm64 linux/riscv64 linux/ppc64 linux/ppc64le linux/mips linux/mipsle linux/mips64 linux/mips64le"
 
@@ -14,7 +13,6 @@ SSHWIFTY_VERSION=$(git describe --always --dirty='*' --tag)
 SSHWIFTY_COMMIT=$(git describe --always)
 SSHWIFTY_RELEASE=$([ "$(echo $SSHWIFTY_VERSION | grep -oP ^[0-9]+\.[0-9]+\.[0-9]+\-[a-zA-Z0-9]+\-release$)" = '' ] || echo 'yes')
 SSHWIFTY_DEPLOY=$([ "$SSHWIFTY_RELEASE" != 'yes' ] || echo 'yes')
-SSHWIFTY_TEST_COVER=$([ "$COVERALLS_TOKEN" = '' ] || echo 'yes')
 SSHWIFTY_DOCKER_IMAGE_TAG="$DOCKER_HUB_USER/github_action_test"
 SSHWIFTY_DOCKER_IMAGE_PUSH_TAG="$SSHWIFTY_DOCKER_IMAGE_TAG:$SSHWIFTY_VERSION"
 SSHWIFTY_DOCKER_IMAGE_PUSH_TAG_LATEST="$SSHWIFTY_DOCKER_IMAGE_TAG:latest"
@@ -74,13 +72,6 @@ catch() {
     exit $res
 }
 
-if [ "$SSHWIFTY_TEST_COVER" = 'yes' ]; then
-    echo 'Downloading test cover reporter ...'
-
-    [ "$(which overalls)" != '' ] || catch retry go get -v github.com/go-playground/overalls
-    [ "$(which goveralls)" != '' ] || catch retry go get -v github.com/mattn/goveralls
-fi
-
 if [ "$SSHWIFTY_DEPLOY" = 'yes' ]; then
     echo 'Downloading compile & deploy tools ...'
 
@@ -102,11 +93,6 @@ catch npm run generate
 
 catch go vet ./...
 catch npm run testonly
-
-if [ "$SSHWIFTY_TEST_COVER" = 'yes' ]; then
-    catch overalls -project="$PACKAGE" -covermode=count
-    catch goveralls -coverprofile=./overalls.coverprofile -service github
-fi
 
 if [ "$SSHWIFTY_DEPLOY" = 'yes' ]; then
     catch child \
