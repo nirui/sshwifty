@@ -13,7 +13,7 @@ SSHWIFTY_VERSION=$(git describe --always --dirty='*' --tag)
 SSHWIFTY_COMMIT=$(git describe --always)
 SSHWIFTY_RELEASE=$([ "$(echo $SSHWIFTY_VERSION | grep -oP ^[0-9]+\.[0-9]+\.[0-9]+\-[a-zA-Z0-9]+\-release$)" = '' ] || echo 'yes')
 SSHWIFTY_DEPLOY=$([ "$SSHWIFTY_RELEASE" != 'yes' ] || echo 'yes')
-SSHWIFTY_DOCKER_IMAGE_TAG="$DOCKER_HUB_USER/github_action_test"
+SSHWIFTY_DOCKER_IMAGE_TAG="$DOCKER_HUB_USER/sshwifty"
 SSHWIFTY_DOCKER_IMAGE_PUSH_TAG="$SSHWIFTY_DOCKER_IMAGE_TAG:$SSHWIFTY_VERSION"
 SSHWIFTY_DOCKER_IMAGE_PUSH_TAG_LATEST="$SSHWIFTY_DOCKER_IMAGE_TAG:latest"
 
@@ -86,6 +86,8 @@ fi
 echo "Version: $SSHWIFTY_VERSION"
 echo "Files: $(pwd)" && ls -la
 export
+git status --short
+git log --pretty=oneline --since="last tag"
 
 catch retry npm install
 
@@ -110,7 +112,7 @@ if [ "$SSHWIFTY_DEPLOY" = 'yes' ]; then
         echo "# Version $SSHWIFTY_VERSION" > ./.tmp/release/Note &&
         echo >> ./.tmp/release/Note &&
         echo "Updates introduced since $(git describe --abbrev=0 --tags $(git rev-list --tags --skip=1 --max-count=1))" >> ./.tmp/release/Note &&
-        git log $(git describe --abbrev=0 --tags $(git rev-list --tags --skip=1 --max-count=1))..HEAD --pretty=format:"- %h %s - (%an) %GK %G?" >> ./.tmp/release/Note &&
+        git log --since="last tag" --pretty=format:"- %h %s - (%an) %GK %G?" >> ./.tmp/release/Note &&
         echo '"'"'#!/bin/sh'"'"' > ./.tmp/generated/prepare.sh &&
         echo '"'"'echo Preparing for $1 ... && \'"'"' >> ./.tmp/generated/prepare.sh &&
         echo '"'"'(cd $1/ && find . -maxdepth 1 -type f ! -name "SUM.*" -exec sha512sum {} \; > SUM.sha512) && \'"'"' >> ./.tmp/generated/prepare.sh &&

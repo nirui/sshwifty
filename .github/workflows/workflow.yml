@@ -33,4 +33,4 @@ jobs:
           sudo apt-get install -qq -y qemu qemu-user-static binfmt-support
           sudo systemctl restart docker
 
-          chmod +x ./.ci.sh && ./.ci.sh
+          cp ./.ci.sh ./.github-action-ci-script.sh && chmod +x ./.github-action-ci-script.sh && ./.github-action-ci-script.sh && rm ./.github-action-ci-script.sh
