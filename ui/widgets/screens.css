@@ -19,11 +19,17 @@
 
 @charset "utf-8";
 
+#home-content.active {
+  min-height: 0;
+}
+
 #home-content > .screen {
   display: flex;
-  justify-content: top;
+  justify-content: start;
   flex-direction: column;
   font-size: 1em;
+  overflow: hidden;
+  flex: auto;
 }
 
 #home-content > .screen > .screen-error {
@@ -49,4 +55,17 @@
 
 #home-content > .screen > .screen-screen {
   flex: auto;
+  padding: 0;
+  margin: 0;
+  position: relative;
+  min-height: 0;
+}
+
+#home-content > .screen > .screen-screen > .screen-content {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  position: relative;
+  overflow: hidden;
 }

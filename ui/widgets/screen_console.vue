@@ -21,7 +21,6 @@
   <div class="screen-console">
     <div
       class="console-console"
-      style="width: 100%; height: 100%; top: 0; right: 0; left: 0; bottom: 0; padding: 0; margin: 0; z-index: 0; position: absolute; overflow: hidden"
       :style="'font-family: ' + typeface + ', inherit'"
     >
       <h2 style="display: none;">Console</h2>
@@ -233,7 +232,6 @@ class Term {
           rows: dim.rows,
           cols: dim.cols,
         });
-
       }, resizeDelayInterval);
     });
   }
@@ -278,16 +276,6 @@ class Term {
             return;
         }
       }
-    });
-
-    this.term.element.addEventListener("click", () => {
-      if (this.closed) {
-        return;
-      }
-
-      this.term.textarea.blur();
-      this.term.textarea.click();
-      this.term.textarea.focus();
     });
 
     this.refit();
@@ -451,6 +439,10 @@ export default {
       type: Boolean,
       default: false,
     },
+    viewPort: {
+      type: Object,
+      default: () => null,
+    },
   },
   data() {
     return {
@@ -459,7 +451,6 @@ export default {
       typeface: termTypeFace,
       runner: null,
       eventHandlers: {
-        resize: null,
         keydown: null,
         keyup: null,
       },
@@ -470,6 +461,16 @@ export default {
       this.triggerActive();
     },
     change: {
+      handler() {
+        if (!this.active) {
+          return;
+        }
+
+        this.fit();
+      },
+      deep: true,
+    },
+    viewPort: {
       handler() {
         if (!this.active) {
           return;
@@ -559,45 +560,42 @@ export default {
       let self = this;
 
       self.eventHandlers = {
-	resize: () => self.fit(),
-	keyup: e => self.localKeypress(e),
-	keydown: e => self.localKeypress(e),
+        keyup: (e) => self.localKeypress(e),
+        keydown: (e) => self.localKeypress(e),
       };
 
       await self.openTerm(
-	self.$el.getElementsByClassName("console-console")[0],
-	{
-	  focus(e) {
-	    document.addEventListener("keyup", self.eventHandlers.keyup);
-	    document.addEventListener("keydown", self.eventHandlers.keydown);
-	  },
-	  blur(e) {
-	    document.removeEventListener("keyup", self.eventHandlers.keyup);
-	    document.removeEventListener("keydown", self.eventHandlers.keydown);
-	  },
-	  warn(msg, toDismiss) {
-	    self.$emit("warning", {
-	      text: msg,
-	      toDismiss: toDismiss,
-	    });
-	  },
-	  info(msg, toDismiss) {
-	    self.$emit("info", {
-	      text: msg,
-	      toDismiss: toDismiss,
-	    });
-	  },
-	}
+        self.$el.getElementsByClassName("console-console")[0],
+        {
+          focus(e) {
+            document.addEventListener("keyup", self.eventHandlers.keyup);
+            document.addEventListener("keydown", self.eventHandlers.keydown);
+          },
+          blur(e) {
+            document.removeEventListener("keyup", self.eventHandlers.keyup);
+            document.removeEventListener("keydown", self.eventHandlers.keydown);
+          },
+          warn(msg, toDismiss) {
+            self.$emit("warning", {
+              text: msg,
+              toDismiss: toDismiss,
+            });
+          },
+          info(msg, toDismiss) {
+            self.$emit("info", {
+              text: msg,
+              toDismiss: toDismiss,
+            });
+          },
+        }
       );
 
       if (self.term.destroyed()) {
-	return;
+        return;
       }
 
       self.triggerActive();
       self.runRunner();
-
-      self.$nextTick(() => self.eventHandlers.resize());
     },
     async deinit() {
       await this.closeRunner();
@@ -615,12 +613,9 @@ export default {
       e.preventDefault();
     },
     activate() {
-      this.eventHandlers.resize();
       this.term.focus();
-      window.addEventListener("resize", this.eventHandlers.resize);
     },
     async deactivate() {
-      window.removeEventListener("resize", this.eventHandlers.resize);
       this.term.blur();
     },
     runRunner() {

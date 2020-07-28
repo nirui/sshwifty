@@ -18,7 +18,7 @@
 -->
 
 <template>
-  <main style="position: relative">
+  <main :class="{ active: screens.length > 0 }">
     <slot v-if="screens.length <= 0"></slot>
 
     <div
@@ -26,9 +26,8 @@
       :key="screenInfo.id"
       :style="'visibility: ' + (screen === idx ? 'visible' : 'hidden')"
       class="screen"
-      style="width: 100%; height: 100%; top: 0; right: 0; left: 0; bottom: 0; padding: 0; margin: 0; overflow: auto; position: absolute;"
     >
-      <h1 style="display:none;">Main Interface</h1>
+      <h1 style="display: none;">Main Interface</h1>
 
       <div
         v-if="screenInfo.indicator.message.length > 0"
@@ -38,15 +37,16 @@
         {{ screenInfo.indicator.message }}
       </div>
 
-      <div class="screen-screen" style="position: relative">
+      <div class="screen-screen">
         <component
           :is="getComponent(screenInfo.ui)"
           :active="screen === idx"
           :control="screenInfo.control"
           :change="screenInfo.indicator"
           :toolbar="screenInfo.toolbar"
+          :view-port="viewPort"
           :style="'background-color: ' + screenInfo.control.activeColor()"
-          style="top: 0; right: 0; left: 0; bottom: 0; padding： 0; margin: 0; position: absolute; overflow: hidden"
+          class="screen-content"
           @stopped="stopped(idx, $event)"
           @warning="warning(idx, $event)"
           @info="info(idx, $event)"
@@ -64,17 +64,21 @@ import "./screens.css";
 
 export default {
   components: {
-    ConsoleScreen
+    ConsoleScreen,
   },
   props: {
     screen: {
       type: Number,
-      default: 0
+      default: 0,
     },
     screens: {
       type: Array,
-      default: () => []
-    }
+      default: () => [],
+    },
+    viewPort: {
+      type: Object,
+      default: () => [],
+    },
   },
   methods: {
     getComponent(ui) {
@@ -97,7 +101,7 @@ export default {
     },
     updated(index) {
       this.$emit("updated", index);
-    }
-  }
+    },
+  },
 };
 </script>

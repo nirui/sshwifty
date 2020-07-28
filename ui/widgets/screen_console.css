@@ -37,6 +37,7 @@
 
 #home-content > .screen > .screen-screen > .screen-console {
   position: relative;
+  min-height: 1px;
 }
 
 #home-content > .screen > .screen-screen > .screen-console > .console-toolbar {
@@ -50,6 +51,7 @@
   background: #222;
   color: #fff;
   box-shadow: 0 0 5px #0006;
+  z-index: 1;
 }
 
 #home-content
@@ -190,11 +192,13 @@
 }
 
 #home-content > .screen > .screen-screen > .screen-console > .console-console {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  justify-items: center;
   color: #fff;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  position: relative;
+  z-index: 0;
 }
 
 #home-content

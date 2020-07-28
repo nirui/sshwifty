@@ -50,6 +50,7 @@ const mainTemplate = `
   :commands="commands"
   :preset-data="presetData.presets"
   :restricted-to-presets="presetData.restricted"
+  :view-port="viewPort"
   @navigate-to="changeURLHash"
   @tab-opened="tabOpened"
   @tab-closed="tabClosed"
@@ -76,7 +77,7 @@ function startApp(rootEl) {
     components: {
       loading: Loading,
       auth: Auth,
-      home: Home
+      home: Home,
     },
     data() {
       return {
@@ -94,17 +95,32 @@ function startApp(rootEl) {
         key: "",
         presetData: {
           presets: new Presets([]),
-          restricted: false
+          restricted: false,
         },
         authErr: "",
         loadErr: "",
         socket: null,
         controls: new Controls([
           new telnetctl.Telnet(uiControlColor),
-          new sshctl.SSH(uiControlColor)
+          new sshctl.SSH(uiControlColor),
         ]),
         commands: new Commands([new telnet.Command(), new ssh.Command()]),
-        tabUpdateIndicator: null
+        tabUpdateIndicator: null,
+        viewPort: {
+          dim: {
+            width: 0,
+            height: 0,
+            renew(width, height) {
+              this.width = width;
+              this.height = height;
+            },
+          },
+        },
+        viewPortUpdaters: {
+          width: 0,
+          height: 0,
+          dimResizer: null,
+        },
       };
     },
     watch: {
@@ -117,10 +133,29 @@ function startApp(rootEl) {
         this.isErrored()
           ? document.body.classList.add("app-error")
           : document.body.classList.remove("app-error");
-      }
+      },
     },
     mounted() {
-      this.tryInitialAuth();
+      const self = this;
+
+      self.tryInitialAuth();
+
+      self.viewPortUpdaters.dimResizer = () => {
+        self.viewPortUpdaters.height = window.innerHeight;
+        self.viewPortUpdaters.width = window.innerWidth;
+
+        self.$nextTick(() => {
+          self.viewPort.dim.renew(
+            self.viewPortUpdaters.width,
+            self.viewPortUpdaters.height
+          );
+        });
+      };
+
+      window.addEventListener("resize", self.viewPortUpdaters.dimResizer);
+    },
+    beforeDestroy() {
+      window.removeEventListener("resize", self.viewPortUpdaters.dimResizer);
     },
     methods: {
       changeTitleInfo(newTitleInfo) {
@@ -169,7 +204,7 @@ function startApp(rootEl) {
       executeHomeApp(authResult, key) {
         this.presetData = {
           presets: new Presets(JSON.parse(authResult.data)),
-          restricted: authResult.onlyAllowPresetRemotes
+          restricted: authResult.onlyAllowPresetRemotes,
         };
         this.socket = this.buildSocket(
           key,
@@ -225,7 +260,7 @@ function startApp(rootEl) {
                   }
 
                   return result.key;
-                }
+                },
               });
               break;
 
@@ -262,7 +297,9 @@ function startApp(rootEl) {
             : await this.getSocketAuthKey(privateKey, this.key);
 
         let h = await xhr.get(socksVerificationInterface, {
-          "X-Key": authKey ? btoa(String.fromCharCode.apply(null, authKey)) : ""
+          "X-Key": authKey
+            ? btoa(String.fromCharCode.apply(null, authKey))
+            : "",
         });
 
         let serverDate = h.getResponseHeader("Date");
@@ -275,7 +312,7 @@ function startApp(rootEl) {
           date: serverDate ? new Date(serverDate) : null,
           data: h.responseText,
           onlyAllowPresetRemotes:
-            h.getResponseHeader("X-OnlyAllowPresetRemotes") === "yes"
+            h.getResponseHeader("X-OnlyAllowPresetRemotes") === "yes",
         };
       },
       async submitAuth(passphrase) {
@@ -290,7 +327,7 @@ function startApp(rootEl) {
                 data: passphrase,
                 fetch() {
                   return this.data;
-                }
+                },
               });
               break;
 
@@ -344,8 +381,8 @@ function startApp(rootEl) {
           this.tabUpdateIndicator = null;
           this.updateTabTitleInfo(tabs, false);
         }, updateIndicatorMaxDisplayTime);
-      }
-    }
+      },
+    },
   });
 }
 
@@ -360,11 +397,11 @@ function initializeClient() {
     console.log("Currently in Development environment");
   }
 
-  window.addEventListener("unhandledrejection", function(e) {
+  window.addEventListener("unhandledrejection", function (e) {
     console.error("Error:", e);
   });
 
-  window.addEventListener("error", function(e) {
+  window.addEventListener("error", function (e) {
     console.error("Error:", e);
   });
 
