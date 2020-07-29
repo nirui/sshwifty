@@ -32,6 +32,10 @@
   flex: auto;
 }
 
+#home-content > .screen.screen-inactive {
+  flex: 0 0 0;
+}
+
 #home-content > .screen > .screen-error {
   display: block;
   padding: 10px;

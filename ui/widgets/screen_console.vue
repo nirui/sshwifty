@@ -26,9 +26,11 @@
       <h2 style="display: none;">Console</h2>
 
       <div class="console-loading">
-        <div class="console-loading-icon"></div>
-        <div class="console-loading-message">
-          Initializing console ...
+        <div class="console-loading-frame">
+          <div class="console-loading-icon"></div>
+          <div class="console-loading-message">
+            Initializing console ...
+          </div>
         </div>
       </div>
     </div>
@@ -457,8 +459,8 @@ export default {
     };
   },
   watch: {
-    active() {
-      this.triggerActive();
+    active(newVal, oldVal) {
+      this.triggerActive(newVal);
     },
     change: {
       handler() {
@@ -553,8 +555,8 @@ export default {
         callbacks.warn(termTypeFaceLoadError, true);
       });
     },
-    triggerActive() {
-      this.active ? this.activate() : this.deactivate();
+    triggerActive(active) {
+      active ? this.activate() : this.deactivate();
     },
     async init() {
       let self = this;
@@ -594,7 +596,7 @@ export default {
         return;
       }
 
-      self.triggerActive();
+      self.triggerActive(this.active);
       self.runRunner();
     },
     async deinit() {
@@ -614,6 +616,7 @@ export default {
     },
     activate() {
       this.term.focus();
+      this.fit();
     },
     async deactivate() {
       this.term.blur();

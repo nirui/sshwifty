@@ -24,7 +24,7 @@
     <div
       v-for="(screenInfo, idx) in screens"
       :key="screenInfo.id"
-      :style="'visibility: ' + (screen === idx ? 'visible' : 'hidden')"
+      :class="{ 'screen-inactive': screen !== idx }"
       class="screen"
     >
       <h1 style="display: none;">Main Interface</h1>

@@ -207,9 +207,13 @@
   > .screen-console
   > .console-console
   > .console-loading {
-  text-align: center;
-  font-size: 1em;
-  font-weight: lighter;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
 }
 
 #home-content
@@ -218,6 +222,22 @@
   > .screen-console
   > .console-console
   > .console-loading
+  > .console-loading-frame {
+  text-align: center;
+  font-size: 1em;
+  font-weight: lighter;
+  padding: 20px;
+  margin: 10px auto;
+  flex: auto;
+}
+
+#home-content
+  > .screen
+  > .screen-screen
+  > .screen-console
+  > .console-console
+  > .console-loading
+  > .console-loading-frame
   > .console-loading-icon {
   background: url(./busy.svg) 50% no-repeat;
   width: 100%;
