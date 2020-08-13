@@ -32,7 +32,7 @@ const (
 	enviroTypeName = "Environment Variable"
 )
 
-func parseEviro(name string) string {
+func parseEnv(name string) string {
 	v := os.Getenv(name)
 
 	if !strings.HasPrefix(v, "SSHWIFTY_ENV_RENAMED:") {
@@ -42,25 +42,35 @@ func parseEviro(name string) string {
 	return os.Getenv(v[21:])
 }
 
+func parseEnvDef(name string, def string) string {
+	v := parseEnv(name)
+
+	if len(v) > 0 {
+		return v
+	}
+
+	return def
+}
+
 // Enviro creates an environment variable based configuration loader
 func Enviro() Loader {
 	return func(log log.Logger) (string, Configuration, error) {
 		log.Info("Loading configuration from environment variables ...")
 
 		dialTimeout, _ := strconv.ParseUint(
-			parseEviro("SSHWIFTY_DIALTIMEOUT"), 10, 32)
+			parseEnv("SSHWIFTY_DIALTIMEOUT"), 10, 32)
 
 		cfg, cfgErr := fileCfgCommon{
-			HostName:       parseEviro("SSHWIFTY_HOSTNAME"),
-			SharedKey:      parseEviro("SSHWIFTY_SHAREDKEY"),
+			HostName:       parseEnv("SSHWIFTY_HOSTNAME"),
+			SharedKey:      parseEnv("SSHWIFTY_SHAREDKEY"),
 			DialTimeout:    int(dialTimeout),
-			Socks5:         parseEviro("SSHWIFTY_SOCKS5"),
-			Socks5User:     parseEviro("SSHWIFTY_SOCKS5_USER"),
-			Socks5Password: parseEviro("SSHWIFTY_SOCKS5_PASSWORD"),
+			Socks5:         parseEnv("SSHWIFTY_SOCKS5"),
+			Socks5User:     parseEnv("SSHWIFTY_SOCKS5_USER"),
+			Socks5Password: parseEnv("SSHWIFTY_SOCKS5_PASSWORD"),
 			Servers:        nil,
 			Presets:        nil,
 			OnlyAllowPresetRemotes: len(
-				parseEviro("SSHWIFTY_ONLYALLOWPRESETREMOTES")) > 0,
+				parseEnv("SSHWIFTY_ONLYALLOWPRESETREMOTES")) > 0,
 		}.build()
 
 		if cfgErr != nil {
@@ -68,32 +78,28 @@ func Enviro() Loader {
 				"Failed to build the configuration: %s", cfgErr)
 		}
 
-		listenIface := parseEviro("SSHWIFTY_LISTENINTERFACE")
-
-		if len(listenIface) <= 0 {
-			listenIface = "127.0.0.1"
-		}
+		listenIface := parseEnv("SSHWIFTY_LISTENINTERFACE")
 
 		listenPort, _ := strconv.ParseUint(
-			parseEviro("SSHWIFTY_LISTENPORT"), 10, 16)
+			parseEnv("SSHWIFTY_LISTENPORT"), 10, 16)
 
 		initialTimeout, _ := strconv.ParseUint(
-			parseEviro("SSHWIFTY_INITIALTIMEOUT"), 10, 32)
+			parseEnv("SSHWIFTY_INITIALTIMEOUT"), 10, 32)
 
 		readTimeout, _ := strconv.ParseUint(
-			parseEviro("SSHWIFTY_READTIMEOUT"), 10, 32)
+			parseEnv("SSHWIFTY_READTIMEOUT"), 10, 32)
 
 		writeTimeout, _ := strconv.ParseUint(
-			parseEviro("SSHWIFTY_WRITETIMEOUT"), 10, 32)
+			parseEnv("SSHWIFTY_WRITETIMEOUT"), 10, 32)
 
 		heartbeatTimeout, _ := strconv.ParseUint(
-			parseEviro("SSHWIFTY_HEARTBEATTIMEOUT"), 10, 32)
+			parseEnv("SSHWIFTY_HEARTBEATTIMEOUT"), 10, 32)
 
 		readDelay, _ := strconv.ParseUint(
-			parseEviro("SSHWIFTY_READDELAY"), 10, 32)
+			parseEnv("SSHWIFTY_READDELAY"), 10, 32)
 
 		writeDelay, _ := strconv.ParseUint(
-			parseEviro("SSHWIFTY_WRITEELAY"), 10, 32)
+			parseEnv("SSHWIFTY_WRITEELAY"), 10, 32)
 
 		cfgSer := fileCfgServer{
 			ListenInterface:       listenIface,
@@ -104,12 +110,12 @@ func Enviro() Loader {
 			HeartbeatTimeout:      int(heartbeatTimeout),
 			ReadDelay:             int(readDelay),
 			WriteDelay:            int(writeDelay),
-			TLSCertificateFile:    parseEviro("SSHWIFTY_TLSCERTIFICATEFILE"),
-			TLSCertificateKeyFile: parseEviro("SSHWIFTY_TLSCERTIFICATEKEYFILE"),
+			TLSCertificateFile:    parseEnv("SSHWIFTY_TLSCERTIFICATEFILE"),
+			TLSCertificateKeyFile: parseEnv("SSHWIFTY_TLSCERTIFICATEKEYFILE"),
 		}
 
-		presets := make([]Preset, 0, 16)
-		presetStr := strings.TrimSpace(parseEviro("SSHWIFTY_PRESETS"))
+		presets := make(fileCfgPresets, 0, 16)
+		presetStr := strings.TrimSpace(parseEnv("SSHWIFTY_PRESETS"))
 
 		if len(presetStr) > 0 {
 			jErr := json.Unmarshal([]byte(presetStr), &presets)
@@ -120,6 +126,13 @@ func Enviro() Loader {
 			}
 		}
 
+		concretizePresets, err := presets.concretize()
+
+		if err != nil {
+			return enviroTypeName, Configuration{}, fmt.Errorf(
+				"Unable to parse Preset data: %s", err)
+		}
+
 		return enviroTypeName, Configuration{
 			HostName:               cfg.HostName,
 			SharedKey:              cfg.SharedKey,
@@ -128,7 +141,7 @@ func Enviro() Loader {
 			Socks5User:             cfg.Socks5User,
 			Socks5Password:         cfg.Socks5Password,
 			Servers:                []Server{cfgSer.build()},
-			Presets:                presets,
+			Presets:                concretizePresets,
 			OnlyAllowPresetRemotes: cfg.OnlyAllowPresetRemotes,
 		}, nil
 	}

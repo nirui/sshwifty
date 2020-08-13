@@ -120,6 +120,27 @@ func (s Server) Verify() error {
 	return nil
 }
 
+// Meta contains data of a Key -> Value map which can be use to store
+// dynamically structured configuration options
+type Meta map[string]String
+
+// Concretize returns an concretized Meta as a `map[string]string`
+func (m Meta) Concretize() (map[string]string, error) {
+	mm := make(map[string]string, len(m))
+
+	for k, v := range m {
+		result, err := v.Parse()
+
+		if err != nil {
+			return nil, fmt.Errorf("Unable to parse Meta \"%s\": %s", k, err)
+		}
+
+		mm[k] = result
+	}
+
+	return mm, nil
+}
+
 // Preset contains data of a static remote host
 type Preset struct {
 	Title string

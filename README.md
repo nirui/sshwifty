@@ -216,6 +216,25 @@ Here is all the options of a configuration file:
 
       // Form fields and values, you have to manually validate the correctness
       // of the field value
+      //
+      // Values in Meta are scheme enabled, and supports following scheme
+      // prefixes:
+      // - "literal://": Text literal (Default)
+      //                 Example: literal://Data value
+      //                          (The final value will be "Data value")
+      //                 Example: literal://file:///tmp/afile
+      //                          (The final value will be "file:///tmp/afile")
+      // - "file://": Load Meta value from given file.
+      //              Example: file:///home/user/.ssh/private_key
+      //                       (The file path is /home/user/.ssh/private_key)
+      // - "enviroment://": Load Meta value from an Enviroment Variable.
+      //                    Example: enviroment://PRIVATE_KEY_DATA
+      //                    (The name of the target enviroment variable is
+      //                    PRIVATE_KEY_DATA)
+      //
+      // All data in Meta is loaded during start up, and will not be updated
+      // even the source already been modified.
+      //
       "Meta": {
         // Data for predefined User field
         "User": "pre-defined-username",
@@ -229,7 +248,7 @@ Here is all the options of a configuration file:
 
         // Data for predefined Private Key field, should contains the content
         // of a Key file
-        "Private Key": "-----BEGIN RSA PRIV...\nMIIE...\n-----END RSA PRI...\n",
+        "Private Key": "file:///home/user/.ssh/private_key",
 
         // Data for predefined Authentication field. Valid values is what
         // displayed on the page (Password, Private Key, None)

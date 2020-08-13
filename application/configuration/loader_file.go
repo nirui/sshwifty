@@ -47,30 +47,28 @@ type fileCfgServer struct {
 	TLSCertificateKeyFile string // Location of TLS certificate key
 }
 
-func (f fileCfgServer) durationAtLeast(current, min int) int {
-	if current > min {
-		return current
+func (f *fileCfgServer) build() Server {
+	iface := f.ListenInterface
+
+	if len(iface) <= 0 {
+		iface = "127.0.0.1"
 	}
 
-	return min
-}
-
-func (f *fileCfgServer) build() Server {
 	return Server{
-		ListenInterface: f.ListenInterface,
+		ListenInterface: iface,
 		ListenPort:      f.ListenPort,
 		InitialTimeout: time.Duration(
-			f.durationAtLeast(f.InitialTimeout, 5)) * time.Second,
+			durationAtLeast(f.InitialTimeout, 5)) * time.Second,
 		ReadTimeout: time.Duration(
-			f.durationAtLeast(f.ReadTimeout, 30)) * time.Second,
+			durationAtLeast(f.ReadTimeout, 30)) * time.Second,
 		WriteTimeout: time.Duration(
-			f.durationAtLeast(f.WriteTimeout, 30)) * time.Second,
+			durationAtLeast(f.WriteTimeout, 30)) * time.Second,
 		HeartbeatTimeout: time.Duration(
-			f.durationAtLeast(f.HeartbeatTimeout, 10)) * time.Second,
+			durationAtLeast(f.HeartbeatTimeout, 10)) * time.Second,
 		ReadDelay: time.Duration(
-			f.durationAtLeast(f.ReadDelay, 0)) * time.Millisecond,
+			durationAtLeast(f.ReadDelay, 0)) * time.Millisecond,
 		WriteDelay: time.Duration(
-			f.durationAtLeast(f.WriteDelay, 0)) * time.Millisecond,
+			durationAtLeast(f.WriteDelay, 0)) * time.Millisecond,
 		TLSCertificateFile:    f.TLSCertificateFile,
 		TLSCertificateKeyFile: f.TLSCertificateKeyFile,
 	}
@@ -80,16 +78,42 @@ type fileCfgPreset struct {
 	Title string
 	Type  string
 	Host  string
-	Meta  map[string]string
+	Meta  Meta
 }
 
-func (f fileCfgPreset) build() Preset {
+func (f fileCfgPreset) concretize() (Preset, error) {
+	m, err := f.Meta.Concretize()
+
+	if err != nil {
+		return Preset{}, err
+	}
+
 	return Preset{
 		Title: f.Title,
 		Type:  strings.TrimSpace(f.Type),
 		Host:  f.Host,
-		Meta:  f.Meta,
+		Meta:  m,
+	}, nil
+}
+
+type fileCfgPresets []fileCfgPreset
+
+func (f fileCfgPresets) concretize() ([]Preset, error) {
+	ps := make([]Preset, 0, len(f))
+
+	for i, p := range f {
+		pp, err := p.concretize()
+
+		if err != nil {
+			return nil, fmt.Errorf(
+				"Unable to concretize Preset %d (titled \"%s\"): %s",
+				i+1, p.Title, err)
+		}
+
+		ps = append(ps, pp)
 	}
+
+	return ps, nil
 }
 
 type fileCfgCommon struct {
@@ -115,7 +139,7 @@ type fileCfgCommon struct {
 	Servers []*fileCfgServer
 
 	// Remotes
-	Presets []*fileCfgPreset
+	Presets fileCfgPresets
 
 	// Allow predefined remotes only
 	OnlyAllowPresetRemotes bool
@@ -125,7 +149,7 @@ func (f fileCfgCommon) build() (fileCfgCommon, error) {
 	return fileCfgCommon{
 		HostName:               f.HostName,
 		SharedKey:              f.SharedKey,
-		DialTimeout:            f.DialTimeout,
+		DialTimeout:            durationAtLeast(f.DialTimeout, 5),
 		Socks5:                 f.Socks5,
 		Socks5User:             f.Socks5User,
 		Socks5Password:         f.Socks5Password,
@@ -165,10 +189,10 @@ func loadFile(filePath string) (string, Configuration, error) {
 		servers[i] = finalCfg.Servers[i].build()
 	}
 
-	presets := make([]Preset, len(finalCfg.Presets))
+	presets, err := finalCfg.Presets.concretize()
 
-	for i := range presets {
-		presets[i] = finalCfg.Presets[i].build()
+	if err != nil {
+		return fileTypeName, Configuration{}, err
 	}
 
 	return fileTypeName, Configuration{
