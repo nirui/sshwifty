@@ -19,21 +19,21 @@ export function get(url, headers) {
   return new Promise((res, rej) => {
     let authReq = new XMLHttpRequest();
 
-    authReq.onreadystatechange = () => {
+    authReq.addEventListener("readystatechange", () => {
       if (authReq.readyState !== authReq.DONE) {
         return;
       }
 
       res(authReq);
-    };
+    });
 
-    authReq.onerror = e => {
+    authReq.addEventListener("error", (e) => {
       rej(e);
-    };
+    });
 
-    authReq.ontimeout = e => {
+    authReq.addEventListener("timeout", (e) => {
       rej(e);
-    };
+    });
 
     authReq.open("GET", url, true);
 
