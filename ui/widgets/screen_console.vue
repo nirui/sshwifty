@@ -129,6 +129,7 @@ class Term {
   constructor(control) {
     const resizeDelayInterval = 500;
 
+    this.control = control;
     this.closed = false;
     this.fontSize = termDefaultFontSize;
     this.term = new Terminal({
@@ -145,7 +146,7 @@ class Term {
     this.term.loadAddon(new WebLinksAddon());
 
     this.term.setOption("theme", {
-      background: control.activeColor(),
+      background: this.control.activeColor(),
     });
 
     this.term.onData((data) => {
@@ -153,7 +154,7 @@ class Term {
         return;
       }
 
-      control.send(data);
+      this.control.send(data);
     });
 
     this.term.onBinary((data) => {
@@ -161,7 +162,7 @@ class Term {
         return;
       }
 
-      control.sendBinary(data);
+      this.control.sendBinary(data);
     });
 
     this.term.onKey((ev) => {
@@ -169,7 +170,7 @@ class Term {
         return;
       }
 
-      if (!control.echo()) {
+      if (!this.control.echo()) {
         return;
       }
 
@@ -179,13 +180,13 @@ class Term {
         !ev.domEvent.ctrlKey &&
         !ev.domEvent.metaKey;
 
-      switch (ev.domEvent.key.toLowerCase()) {
-        case "enter":
+      switch (ev.domEvent.key) {
+        case "Enter":
           ev.domEvent.preventDefault();
           this.writeStr("\r\n");
           break;
 
-        case "backspace":
+        case "Backspace":
           ev.domEvent.preventDefault();
           this.writeStr("\b \b");
           break;
@@ -196,6 +197,45 @@ class Term {
             this.writeStr(ev.key);
           }
       }
+    });
+
+    this.term.attachCustomKeyEventHandler(async (ev) => {
+      if (this.closed) {
+        return true;
+      }
+
+      if (ev.type == "keyup" && (
+        (ev.key.toLowerCase() === "v" && ev.shiftKey && ev.ctrlKey) ||
+        (ev.key === "Insert" && ev.shiftKey)
+      )) {
+        try {
+          let text = await window.navigator.clipboard.readText();
+
+          this.writeEchoStr(text);
+        } catch (e) {
+          alert(
+            "Unable to paste: " +
+              e +
+              ". Please try again without using the Control+Shift+V / " +
+              "Shift+Insert hot key"
+          );
+        }
+        return false;
+      }
+
+      if (ev.type == "keyup" && (
+        (ev.key.toLowerCase() === "c" && ev.shiftKey && ev.ctrlKey) ||
+        (ev.key === "Insert" && ev.ctrlKey)
+      )) {
+        try {
+          window.navigator.clipboard.writeText(this.term.getSelection());
+        } catch (e) {
+          alert("Unable to copy: " + e);
+        }
+        return false;
+      }
+
+      return true;
     });
 
     let resizeDelay = null,
@@ -230,7 +270,7 @@ class Term {
           return;
         }
 
-        control.resize({
+        this.control.resize({
           rows: dim.rows,
           cols: dim.cols,
         });
@@ -248,38 +288,6 @@ class Term {
     this.term.textarea.addEventListener("focus", callbacks.focus);
     this.term.textarea.addEventListener("blur", callbacks.blur);
 
-    this.term.textarea.addEventListener("keyup", async (ev) => {
-      if (this.closed) {
-        return;
-      }
-
-      if (ev.ctrlKey && ev.shiftKey) {
-        switch (ev.keyCode) {
-          case 86:
-            try {
-              let text = await window.navigator.clipboard.readText();
-
-              this.writeStr(text);
-            } catch (e) {
-              alert(
-                "Unable to paste: " +
-                  e +
-                  ". Please try again without using the Control+Shift+V hot key"
-              );
-            }
-            return;
-
-          case 67:
-            try {
-              window.navigator.clipboard.writeText(this.term.getSelection());
-            } catch (e) {
-              alert("Unable to copy: " + e);
-            }
-            return;
-        }
-      }
-    });
-
     this.refit();
   }
 
@@ -293,6 +301,20 @@ class Term {
     } catch (e) {
       process.env.NODE_ENV === "development" && console.trace(e);
     }
+  }
+
+  writeEchoStr(d) {
+    if (this.closed) {
+      return;
+    }
+
+    this.control.send(d);
+
+    if (!this.control.echo()) {
+      return;
+    }
+
+    this.writeStr(d);
   }
 
   writeStr(d) {
