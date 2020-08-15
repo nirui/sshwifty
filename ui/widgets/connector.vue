@@ -493,6 +493,8 @@ export default {
 
       this.currentConnectorCloseWait = (async () => {
         while (!this.disabled) {
+          this.clearFieldValueBackup();
+
           let next = this.buildCurrent(await this.getConnector().wizard.next());
 
           switch (next.type()) {
