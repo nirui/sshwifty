@@ -87,7 +87,7 @@ echo "Version: $SSHWIFTY_VERSION"
 echo "Files: $(pwd)" && ls -la
 export
 git status --short
-git log --pretty=oneline --since="last tag"
+git log --pretty=oneline $(git describe --tags --abbrev=0 --match '*-release')..HEAD
 
 catch retry npm install
 
@@ -111,8 +111,8 @@ if [ "$SSHWIFTY_DEPLOY" = 'yes' ]; then
         CGO_ENABLED=0 gox -ldflags "-s -w -X $VERSION_VARIABLE=$SSHWIFTY_VERSION" -osarch "$BUILD_TARGETS" -output "./.tmp/release/{{.Dir}}_${SSHWIFTY_VERSION}_{{.OS}}_{{.Arch}}/{{.Dir}}_{{.OS}}_{{.Arch}}" &&
         echo "# Version $SSHWIFTY_VERSION" > ./.tmp/release/Note &&
         echo >> ./.tmp/release/Note &&
-        echo "Updates introduced since $(git describe --abbrev=0 --tags $(git rev-list --tags --skip=1 --max-count=1))" >> ./.tmp/release/Note &&
-        git log --since="last tag" --pretty=format:"- %h %s - (%an) %GK %G?" >> ./.tmp/release/Note &&
+        echo "Updates introduced since $(git describe --abbrev=0 --tags $(git rev-list --tags="*-release" --skip=1 --max-count=1))" >> ./.tmp/release/Note &&
+        git log --pretty=format:"- %h %s - (%an) %GK %G?" $(git describe --tags --abbrev=0 --match "*-release")..HEAD >> ./.tmp/release/Note &&
         echo '"'"'#!/bin/sh'"'"' > ./.tmp/generated/prepare.sh &&
         echo '"'"'echo Preparing for $1 ... && \'"'"' >> ./.tmp/generated/prepare.sh &&
         echo '"'"'(cd $1/ && find . -maxdepth 1 -type f ! -name "SUM.*" -exec sha512sum {} \; > SUM.sha512) && \'"'"' >> ./.tmp/generated/prepare.sh &&
