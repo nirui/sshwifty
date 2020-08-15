@@ -13,8 +13,8 @@ RUN set -ex && \
     /try.sh update-ca-certificates -f && c_rehash && \
     ([ -z "$HTTP_PROXY" ] || (git config --global http.proxy "$HTTP_PROXY" && npm config set proxy "$HTTP_PROXY")) && \
     ([ -z "$HTTPS_PROXY" ] || (git config --global https.proxy "$HTTPS_PROXY" && npm config set https-proxy "$HTTPS_PROXY")) && \
-    ([ -z "$NPM_REGISTRY" ] || (npm config set registry="$NPM_REGISTRY")) && \
     export PATH=$PATH:"$(go env GOPATH)/bin" && \
+    ([ -z "$CUSTOM_COMMAND" ] || (echo "Running custom command: $CUSTOM_COMMAND" && $CUSTOM_COMMAND)) && \
     echo '#!/bin/sh' > /install.sh && echo "npm install -g npm || (npm cache clean -f && false)" >> /install.sh && chmod +x /install.sh && /try.sh /install.sh && rm /install.sh
 
 # Build the base environment for application libraries

@@ -101,7 +101,7 @@ if [ "$SSHWIFTY_DEPLOY" = 'yes' ]; then
         '
         docker login -u "$DOCKER_HUB_USER" -p "$DOCKER_HUB_PASSWORD" &&
         docker buildx create --use --driver docker-container --name buildx-instance &&
-        docker buildx build --tag "$SSHWIFTY_DOCKER_IMAGE_PUSH_TAG" --tag "$SSHWIFTY_DOCKER_IMAGE_PUSH_TAG_LATEST" --platform "$DOCKER_BUILD_TARGETS" --build-arg "$DOCKER_NPM_REGISTRY" --progress plain --push .
+        docker buildx build --tag "$SSHWIFTY_DOCKER_IMAGE_PUSH_TAG" --tag "$SSHWIFTY_DOCKER_IMAGE_PUSH_TAG_LATEST" --platform "$DOCKER_BUILD_TARGETS" --build-arg CUSTOM_COMMAND="$DOCKER_CUSTOM_COMMAND" --progress plain --push .
         ' \
         '
         mkdir -p ./.tmp/generated ./.tmp/release &&
