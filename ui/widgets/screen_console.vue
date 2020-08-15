@@ -204,10 +204,11 @@ class Term {
         return true;
       }
 
-      if (ev.type == "keyup" && (
-        (ev.key.toLowerCase() === "v" && ev.shiftKey && ev.ctrlKey) ||
-        (ev.key === "Insert" && ev.shiftKey)
-      )) {
+      if (
+        ev.type == "keyup" &&
+        ((ev.key.toLowerCase() === "v" && ev.shiftKey && ev.ctrlKey) ||
+          (ev.key === "Insert" && ev.shiftKey))
+      ) {
         try {
           let text = await window.navigator.clipboard.readText();
 
@@ -223,10 +224,11 @@ class Term {
         return false;
       }
 
-      if (ev.type == "keyup" && (
-        (ev.key.toLowerCase() === "c" && ev.shiftKey && ev.ctrlKey) ||
-        (ev.key === "Insert" && ev.ctrlKey)
-      )) {
+      if (
+        ev.type == "keyup" &&
+        ((ev.key.toLowerCase() === "c" && ev.shiftKey && ev.ctrlKey) ||
+          (ev.key === "Insert" && ev.ctrlKey))
+      ) {
         try {
           window.navigator.clipboard.writeText(this.term.getSelection());
         } catch (e) {
