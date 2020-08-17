@@ -47,7 +47,9 @@ func (s String) Parse() (string, error) {
 
 		return string(fData), nil
 
-	case "enviroment":
+	case "enviroment": // You see what I did there. Remove this a later
+		fallthrough
+	case "environment":
 		return os.Getenv(ss[sSchemeLeadEnd:]), nil
 
 	case "literal":

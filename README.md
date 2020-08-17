@@ -227,9 +227,9 @@ Here is all the options of a configuration file:
       // - "file://": Load Meta value from given file.
       //              Example: file:///home/user/.ssh/private_key
       //                       (The file path is /home/user/.ssh/private_key)
-      // - "enviroment://": Load Meta value from an Enviroment Variable.
-      //                    Example: enviroment://PRIVATE_KEY_DATA
-      //                    (The name of the target enviroment variable is
+      // - "environment://": Load Meta value from an Environment Variable.
+      //                    Example: environment://PRIVATE_KEY_DATA
+      //                    (The name of the target environment variable is
       //                    PRIVATE_KEY_DATA)
       //
       // All data in Meta is loaded during start up, and will not be updated
