@@ -23,7 +23,7 @@ import (
 	"net"
 	"time"
 
-	"github.com/niruix/sshwifty/application/network"
+	"github.com/nirui/sshwifty/application/network"
 )
 
 // Server contains configuration of a HTTP server

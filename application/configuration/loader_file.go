@@ -27,7 +27,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/niruix/sshwifty/application/log"
+	"github.com/nirui/sshwifty/application/log"
 )
 
 const (

@@ -20,9 +20,9 @@ jobs:
         run: |
           export GITHUB_USER="${{ github.repository_owner }}"
           export GITHUB_USER_TOKEN="${{ secrets.GITHUB_TOKEN }}"
+          export DOCKER_HUB_USER="${{ secrets.DOCKER_HUB_USERNAME }}"
           export DOCKER_HUB_PASSWORD="${{ secrets.DOCKER_HUB_PASSWORD }}"
           export COVERALLS_TOKEN="${{ secrets.COVERALLS_TOKEN }}"
-          export DOCKER_HUB_USER="${{ github.repository_owner }}"
 
           export DOCKER_CUSTOM_COMMAND='echo "GitHub Action Build"'
 

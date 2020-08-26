@@ -67,7 +67,7 @@
           <p>
             Sshwifty is a free software, you can deploy it on your own trusted
             infrastructure.
-            <a href="https://github.com/niruix/sshwifty" target="_blank"
+            <a href="https://github.com/nirui/sshwifty" target="_blank"
               >Learn more</a
             >
           </p>
@@ -92,54 +92,54 @@ export default {
     window: Window,
     "connect-switch": ConnectSwitch,
     "connect-known": ConnectKnown,
-    "connect-new": ConnectNew
+    "connect-new": ConnectNew,
   },
   props: {
     display: {
       type: Boolean,
-      default: false
+      default: false,
     },
     inputting: {
       type: Boolean,
-      default: false
+      default: false,
     },
     presets: {
       type: Array,
-      default: () => []
+      default: () => [],
     },
     restrictedToPresets: {
       type: Boolean,
-      default: () => false
+      default: () => false,
     },
     knowns: {
       type: Array,
-      default: () => []
+      default: () => [],
     },
     knownsLauncherBuilder: {
       type: Function,
-      default: () => []
+      default: () => [],
     },
     knownsExport: {
       type: Function,
-      default: () => []
+      default: () => [],
     },
     knownsImport: {
       type: Function,
-      default: () => []
+      default: () => [],
     },
     connectors: {
       type: Array,
-      default: () => []
+      default: () => [],
     },
     busy: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
   data() {
     return {
       tab: "new",
-      canSelect: true
+      canSelect: true,
     };
   },
   methods: {
@@ -184,7 +184,7 @@ export default {
       }
 
       this.$emit("known-clear-session", uid);
-    }
-  }
+    },
+  },
 };
 </script>

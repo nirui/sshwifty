@@ -21,7 +21,7 @@ import (
 	"net"
 	"time"
 
-	"github.com/niruix/sshwifty/application/network"
+	"github.com/nirui/sshwifty/application/network"
 )
 
 var (

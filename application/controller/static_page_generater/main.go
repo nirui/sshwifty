@@ -35,7 +35,7 @@ import (
 )
 
 const (
-	parentPackage = "github.com/niruix/sshwifty/application/controller"
+	parentPackage = "github.com/nirui/sshwifty/application/controller"
 )
 
 const (
@@ -199,7 +199,7 @@ var (
 //
 // Copyright (C) {{ .Date.Year }} Rui NI (nirui@gmx.com)
 //
-// https://github.com/niruix/sshwifty
+// https://github.com/nirui/sshwifty
 //
 // This file is generated at {{ .Date.Format "Mon, 02 Jan 2006 15:04:05 MST" }}
 // by "go generate", DO NOT EDIT! Also, do not open this file, it maybe too large

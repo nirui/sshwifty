@@ -22,9 +22,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/niruix/sshwifty/application/log"
-	"github.com/niruix/sshwifty/application/network"
-	"github.com/niruix/sshwifty/application/rw"
+	"github.com/nirui/sshwifty/application/log"
+	"github.com/nirui/sshwifty/application/network"
+	"github.com/nirui/sshwifty/application/rw"
 )
 
 // Configuration contains configuration data needed to run command

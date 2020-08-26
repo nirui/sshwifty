@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-module github.com/niruix/sshwifty
+module github.com/nirui/sshwifty
 
 go 1.13
 

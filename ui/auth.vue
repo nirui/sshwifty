@@ -28,7 +28,7 @@
             <div
               class="field"
               :class="{
-                error: passphraseErr.length > 0 || error.length > 0
+                error: passphraseErr.length > 0 || error.length > 0,
               }"
             >
               Passphrase
@@ -49,7 +49,7 @@
                 class="message"
               >
                 A valid password is required in order to use this
-                <a href="https://github.com/niruix/sshwifty">Sshwifty</a>
+                <a href="https://github.com/nirui/sshwifty">Sshwifty</a>
                 instance
               </div>
               <div v-else class="error">
@@ -79,20 +79,20 @@ export default {
         }
 
         el.focus();
-      }
-    }
+      },
+    },
   },
   props: {
     error: {
       type: String,
-      default: ""
-    }
+      default: "",
+    },
   },
   data() {
     return {
       submitting: false,
       passphrase: "",
-      passphraseErr: ""
+      passphraseErr: "",
     };
   },
   watch: {
@@ -100,7 +100,7 @@ export default {
       if (newVal.length > 0) {
         this.submitting = false;
       }
-    }
+    },
   },
   mounted() {},
   methods: {
@@ -120,7 +120,7 @@ export default {
       this.passphraseErr = "";
 
       this.$emit("auth", this.passphrase);
-    }
-  }
+    },
+  },
 };
 </script>

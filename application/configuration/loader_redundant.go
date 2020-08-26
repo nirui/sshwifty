@@ -20,7 +20,7 @@ package configuration
 import (
 	"fmt"
 
-	"github.com/niruix/sshwifty/application/log"
+	"github.com/nirui/sshwifty/application/log"
 )
 
 const (

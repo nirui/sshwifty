@@ -23,8 +23,8 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/niruix/sshwifty/application/log"
-	"github.com/niruix/sshwifty/application/rw"
+	"github.com/nirui/sshwifty/application/log"
+	"github.com/nirui/sshwifty/application/rw"
 )
 
 func testDummyFetchGen(data []byte) rw.FetchReaderFetcher {
