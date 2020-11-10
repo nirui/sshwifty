@@ -15,9 +15,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import * as iconv from "iconv-lite";
 import * as buffer from "buffer/";
-
+import * as iconv from "iconv-lite";
 import Exception from "./exception.js";
 
 const availableEncodings = [
@@ -55,7 +54,7 @@ const availableEncodings = [
   "shift-jis",
   "euc-kr",
   "utf-16be",
-  "utf-16le"
+  "utf-16le",
 ];
 
 export const charsetPresets = (() => {
@@ -79,77 +78,35 @@ export const charsetPresets = (() => {
 })();
 
 const numCharators = {
-  "0": true,
-  "1": true,
-  "2": true,
-  "3": true,
-  "4": true,
-  "5": true,
-  "6": true,
-  "7": true,
-  "8": true,
-  "9": true
+  0: true,
+  1: true,
+  2: true,
+  3: true,
+  4: true,
+  5: true,
+  6: true,
+  7: true,
+  8: true,
+  9: true,
 };
 
 const hexCharators = {
-  "0": true,
-  "1": true,
-  "2": true,
-  "3": true,
-  "4": true,
-  "5": true,
-  "6": true,
-  "7": true,
-  "8": true,
-  "9": true,
-  a: true,
-  b: true,
-  c: true,
-  d: true,
-  e: true,
-  f: true
-};
-
-const hostnameCharators = {
-  "0": true,
-  "1": true,
-  "2": true,
-  "3": true,
-  "4": true,
-  "5": true,
-  "6": true,
-  "7": true,
-  "8": true,
-  "9": true,
+  0: true,
+  1: true,
+  2: true,
+  3: true,
+  4: true,
+  5: true,
+  6: true,
+  7: true,
+  8: true,
+  9: true,
   a: true,
   b: true,
   c: true,
   d: true,
   e: true,
   f: true,
-  g: true,
-  h: true,
-  i: true,
-  j: true,
-  k: true,
-  l: true,
-  n: true,
-  m: true,
-  o: true,
-  p: true,
-  q: true,
-  r: true,
-  s: true,
-  t: true,
-  u: true,
-  v: true,
-  w: true,
-  x: true,
-  y: true,
-  z: true,
-  ".": true,
-  "-": true,
-  _: true
 };
 
 /**
@@ -191,7 +148,9 @@ export function isHex(d) {
 }
 
 /**
- * Test whether or not given string is all hex
+ * Test whether or not given string is a valid hostname as far as the Sshwifty
+ * client consider. This function will return true if the string contains only
+ * printable charactors
  *
  * @param {string} d Input data
  *
@@ -199,12 +158,38 @@ export function isHex(d) {
  *
  */
 function isHostname(d) {
-  let dd = d.toLowerCase();
+  for (let i = 0; i < d.length; i++) {
+    const dChar = d.charCodeAt(i);
 
-  for (let i = 0; i < dd.length; i++) {
-    if (!hostnameCharators[dd[i]]) {
-      return false;
+    if (dChar >= 32 && dChar <= 126) {
+      continue;
     }
+
+    if (dChar === 128) {
+      continue;
+    }
+
+    if (dChar >= 130 && dChar <= 140) {
+      continue;
+    }
+
+    if (dChar === 142) {
+      continue;
+    }
+
+    if (dChar >= 145 && dChar <= 156) {
+      continue;
+    }
+
+    if (dChar >= 158 && dChar <= 159) {
+      continue;
+    }
+
+    if (dChar >= 161 && dChar <= 255) {
+      continue;
+    }
+
+    return false;
   }
 
   return true;
@@ -369,7 +354,7 @@ function parseIP(d) {
   try {
     return {
       type: "IPv4",
-      data: parseIPv4(d)
+      data: parseIPv4(d),
     };
   } catch (e) {
     // Do nothing
@@ -378,7 +363,7 @@ function parseIP(d) {
   try {
     return {
       type: "IPv6",
-      data: new Uint8Array(parseIPv6(d).buffer)
+      data: new Uint8Array(parseIPv6(d).buffer),
     };
   } catch (e) {
     // Do nothing
@@ -386,7 +371,7 @@ function parseIP(d) {
 
   return {
     type: "Hostname",
-    data: parseHostname(d)
+    data: parseHostname(d),
   };
 }
 
@@ -401,7 +386,7 @@ export function splitHostPort(d, defPort) {
     return {
       type: a.type,
       addr: a.data,
-      port: defPort
+      port: defPort,
     };
   }
 
@@ -428,6 +413,6 @@ export function splitHostPort(d, defPort) {
   return {
     type: a.type,
     addr: a.data,
-    port: portNum
+    port: portNum,
   };
 }

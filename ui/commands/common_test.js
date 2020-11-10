@@ -24,33 +24,33 @@ describe("Common", () => {
       {
         sample: "127.0.0.1",
         expectingFailure: false,
-        expected: new Uint8Array([127, 0, 0, 1])
+        expected: new Uint8Array([127, 0, 0, 1]),
       },
       {
         sample: "255.255.255.255",
         expectingFailure: false,
-        expected: new Uint8Array([255, 255, 255, 255])
+        expected: new Uint8Array([255, 255, 255, 255]),
       },
       {
         sample: "255.255.a.255",
         expectingFailure: true,
-        expected: null
+        expected: null,
       },
       {
         sample: "255.255.255",
         expectingFailure: true,
-        expected: null
+        expected: null,
       },
       {
         sample: "2001:db8:1f70::999:de8:7648:6e8",
         expectingFailure: true,
-        expected: null
+        expected: null,
       },
       {
         sample: "a.ssh.vaguly.com",
         expectingFailure: true,
-        expected: null
-      }
+        expected: null,
+      },
     ];
 
     for (let i in tests) {
@@ -85,8 +85,8 @@ describe("Common", () => {
           0x999,
           0xde8,
           0x7648,
-          0x6e8
-        ])
+          0x6e8,
+        ]),
       },
       {
         sample: "2001:db8:85a3::8a2e:370:7334",
@@ -99,18 +99,18 @@ describe("Common", () => {
           0x0,
           0x8a2e,
           0x370,
-          0x7334
-        ])
+          0x7334,
+        ]),
       },
       {
         sample: "::1",
         expectingFailure: false,
-        expected: new Uint16Array([0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x01])
+        expected: new Uint16Array([0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x01]),
       },
       {
         sample: "::",
         expectingFailure: false,
-        expected: new Uint16Array([0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x00])
+        expected: new Uint16Array([0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x00]),
       },
       {
         sample: "2001:db8:1f70::999:de8:7648:6e8",
@@ -123,8 +123,8 @@ describe("Common", () => {
           0x999,
           0xde8,
           0x7648,
-          0x6e8
-        ])
+          0x6e8,
+        ]),
       },
       {
         sample: "2001:0db8:ac10:fe01::",
@@ -137,8 +137,8 @@ describe("Common", () => {
           0x0,
           0x0,
           0x0,
-          0x0
-        ])
+          0x0,
+        ]),
       },
       {
         sample: "::7f00:1",
@@ -151,34 +151,34 @@ describe("Common", () => {
           0x0000,
           0x0000,
           0x7f00,
-          0x0001
-        ])
+          0x0001,
+        ]),
       },
       {
         sample: "127.0.0.1",
         expectingFailure: true,
-        expected: null
+        expected: null,
       },
       {
         sample: "255.255.255.255",
         expectingFailure: true,
-        expected: null
+        expected: null,
       },
       {
         sample: "255.255.a.255",
         expectingFailure: true,
-        expected: null
+        expected: null,
       },
       {
         sample: "255.255.255",
         expectingFailure: true,
-        expected: null
+        expected: null,
       },
       {
         sample: "a.ssh.vaguly.com",
         expectingFailure: true,
-        expected: null
-      }
+        expected: null,
+      },
     ];
 
     for (let i in tests) {
@@ -207,13 +207,13 @@ describe("Common", () => {
         sample: "ssh.vaguly.com",
         expectedType: "Hostname",
         expectedAddr: common.strToUint8Array("ssh.vaguly.com"),
-        expectedPort: 22
+        expectedPort: 22,
       },
       {
         sample: "ssh.vaguly.com:22",
         expectedType: "Hostname",
         expectedAddr: common.strToUint8Array("ssh.vaguly.com"),
-        expectedPort: 22
+        expectedPort: 22,
       },
 
       // IPv4
@@ -221,13 +221,13 @@ describe("Common", () => {
         sample: "10.220.179.110",
         expectedType: "IPv4",
         expectedAddr: new Uint8Array([10, 220, 179, 110]),
-        expectedPort: 22
+        expectedPort: 22,
       },
       {
         sample: "10.220.179.110:3333",
         expectedType: "IPv4",
         expectedAddr: new Uint8Array([10, 220, 179, 110]),
-        expectedPort: 3333
+        expectedPort: 3333,
       },
 
       // IPv6
@@ -243,10 +243,10 @@ describe("Common", () => {
             0x999,
             0xde8,
             0x7648,
-            0x6e8
+            0x6e8,
           ]).buffer
         ),
-        expectedPort: 22
+        expectedPort: 22,
       },
       {
         sample: "[2001:db8:1f70::999:de8:7648:6e8]:100",
@@ -260,11 +260,11 @@ describe("Common", () => {
             0x999,
             0xde8,
             0x7648,
-            0x6e8
+            0x6e8,
           ]).buffer
         ),
-        expectedPort: 100
-      }
+        expectedPort: 100,
+      },
     ];
 
     for (let i in tests) {
