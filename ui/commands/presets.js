@@ -25,7 +25,7 @@ const presetItem = {
   title: "",
   type: "",
   host: "",
-  meta: {}
+  meta: {},
 };
 
 /**
@@ -154,6 +154,25 @@ export class Preset {
   }
 
   /**
+   * Return the given meta of current preset, and if failed, return the given
+   * default value
+   *
+   * @param {string} name name of the meta data
+   * @param {string} defaultValue default value to be returned when the meta was
+   *                              not found
+   *
+   * @returns {string}
+   *
+   */
+  metaDefault(name, defaultValue) {
+    try {
+      return this.meta(name);
+    } catch (e) {
+      return defaultValue;
+    }
+  }
+
+  /**
    * Insert new meta item
    *
    * @param {string} name name of the meta data
@@ -182,7 +201,7 @@ export function emptyPreset() {
     title: "Default",
     type: "Default",
     host: "",
-    meta: {}
+    meta: {},
   });
 }
 

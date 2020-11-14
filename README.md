@@ -253,6 +253,12 @@ Here is all the options of a configuration file:
         // Data for predefined Authentication field. Valid values is what
         // displayed on the page (Password, Private Key, None)
         "Authentication": "Password",
+
+        // Data for server public key fingerprint. You can acquire the value of
+        // the fingerprint by manually connect to a new SSH host with Sshwifty,
+        // the fingerprint will be displayed on the Fingerprint comformation
+        // page.
+        "Fingerprint": "SHA256:bgO...."
       }
     },
     {

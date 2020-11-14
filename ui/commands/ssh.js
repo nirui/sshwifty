@@ -732,7 +732,9 @@ class Wizard {
               authentication: r.authentication,
               host: r.host,
               charset: r.encoding,
-              fingerprint: "",
+              fingerprint: self.preset
+                ? self.preset.metaDefault("Fingerprint", "")
+                : "",
             },
             self.session
           );
@@ -855,7 +857,7 @@ class Wizard {
 
       default:
         throw new Exception(
-          "Prompt is not support by auth method: " + config.auth
+          'Auth method "' + config.auth + '" was unsupported'
         );
     }
 
