@@ -83,7 +83,7 @@
         v-if="presets.length > 0"
         id="connect-known-list-presets"
         :class="{
-          'last-planel': knownList.length > 0
+          'last-planel': knownList.length > 0,
         }"
       >
         <h3>Presets</h3>
@@ -134,34 +134,34 @@ export default {
   props: {
     presets: {
       type: Array,
-      default: () => []
+      default: () => [],
     },
     restrictedToPresets: {
       type: Boolean,
-      default: () => false
+      default: () => false,
     },
     knowns: {
       type: Array,
-      default: () => []
+      default: () => [],
     },
     launcherBuilder: {
       type: Function,
-      default: () => []
+      default: () => [],
     },
     knownsExport: {
       type: Function,
-      default: () => []
+      default: () => [],
     },
     knownsImport: {
       type: Function,
-      default: () => []
-    }
+      default: () => [],
+    },
   },
   data() {
     return {
       knownList: [],
       reloaded: false,
-      busy: false
+      busy: false,
     };
   },
   watch: {
@@ -182,7 +182,7 @@ export default {
       setTimeout(() => {
         self.reloaded = false;
       }, 500);
-    }
+    },
   },
   mounted() {
     this.reload(this.knowns);
@@ -195,7 +195,7 @@ export default {
         this.knownList.unshift({
           data: knownList[i],
           copying: false,
-          copyStatus: "Copy link"
+          copyStatus: "Copy link",
         });
       }
     },
@@ -312,7 +312,7 @@ export default {
           "overflow: hidden; opacity: 0; width: 1px; height: 1px; top: -1px;" +
             "left: -1px; position: absolute;"
         );
-        el.addEventListener("change", ev => {
+        el.addEventListener("change", (ev) => {
           const t = ev.target;
 
           if (t.files.length <= 0) {
@@ -346,7 +346,7 @@ export default {
       }
 
       document.body.removeChild(el);
-    }
-  }
+    },
+  },
 };
 </script>

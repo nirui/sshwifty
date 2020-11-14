@@ -138,7 +138,7 @@ const defField = {
   },
   verify(v) {
     return "";
-  }
+  },
 };
 
 /**
@@ -264,7 +264,7 @@ class Prompt {
 
       this.f[data.inputs[i].name.toLowerCase()] = {
         value: f.value,
-        verify: f.verify
+        verify: f.verify,
       };
     }
   }
@@ -376,7 +376,7 @@ function next(type, data) {
     },
     data() {
       return data;
-    }
+    },
   };
 }
 
@@ -396,7 +396,7 @@ export function done(success, successData, errorTitle, errorMessage) {
     success: success,
     successData: successData,
     errorTitle: errorTitle,
-    errorMessage: errorMessage
+    errorMessage: errorMessage,
   });
 }
 
@@ -412,7 +412,7 @@ export function done(success, successData, errorTitle, errorMessage) {
 export function wait(title, message) {
   return next(NEXT_WAIT, {
     title: title,
-    message: message
+    message: message,
   });
 }
 
@@ -436,7 +436,7 @@ export function prompt(title, message, actionText, respond, cancel, inputs) {
     actionText: actionText,
     inputs: inputs,
     respond: respond,
-    cancel: cancel
+    cancel: cancel,
   });
 }
 
@@ -617,7 +617,7 @@ class Builder {
    */
   constructor(command) {
     this.cid = command.id();
-    this.represeter = n => {
+    this.represeter = (n) => {
       return command.represet(n);
     };
     this.wizarder = (n, i, r, u, y, x, l) => {
@@ -629,7 +629,7 @@ class Builder {
     this.launchCmd = (n, i, r, u, y, x) => {
       return command.launch(n, i, r, u, y, x);
     };
-    this.launcherCmd = c => {
+    this.launcherCmd = (c) => {
       return command.launcher(c);
     };
     this.type = command.name();
