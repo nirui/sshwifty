@@ -71,9 +71,11 @@ export class History {
    * @param {Date} lastUsed Last used
    * @param {object} data Data
    * @param {object} sessionData Data which only available for current session
+   * @param {boolean} keepSession Whether or not to keep session data when
+   *                              putting the item to the persistent storage
    *
    */
-  save(uname, title, lastUsed, info, data, sessionData) {
+  save(uname, title, lastUsed, info, data, sessionData, keepSession) {
     const unameIdx = this.indexOf(uname);
 
     if (unameIdx >= 0) {
@@ -87,7 +89,8 @@ export class History {
       color: info.color(),
       last: lastUsed.getTime(),
       data: data,
-      session: sessionData
+      session: sessionData,
+      keepSession: keepSession,
     });
 
     if (this.records.length > this.maxItems) {
@@ -140,8 +143,11 @@ export class History {
       }
 
       this.records[i].session = null;
+      this.records[i].keepSession = false;
       break;
     }
+
+    this.store();
   }
 
   /**
@@ -162,7 +168,8 @@ export class History {
         color: this.records[i].color,
         last: new Date(this.records[i].last),
         data: this.records[i].data,
-        session: this.records[i].session
+        session: this.records[i].session,
+        keepSession: this.records[i].keepSession,
       });
     }
 
@@ -185,7 +192,9 @@ export class History {
         type: this.records[i].type,
         color: this.records[i].color,
         last: this.records[i].last,
-        data: this.records[i].data
+        data: this.records[i].data,
+        session: this.records[i].keepSession ? this.records[i].session : null,
+        keepSession: this.records[i].keepSession,
       });
     }
 
@@ -210,7 +219,9 @@ export class History {
         type: records[i].type,
         color: records[i].color,
         last: records[i].last,
-        data: records[i].data
+        data: records[i].data,
+        session: records[i].session,
+        keepSession: records[i].keepSession,
       });
     }
 

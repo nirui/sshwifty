@@ -247,18 +247,29 @@ class Wizard {
    * @param {command.Info} info
    * @param {presets.Preset} preset
    * @param {object} session
+   * @param {boolean} saveSession
    * @param {streams.Streams} streams
    * @param {subscribe.Subscribe} subs
    * @param {controls.Controls} controls
    * @param {history.History} history
    *
    */
-  constructor(info, preset, session, streams, subs, controls, history) {
+  constructor(
+    info,
+    preset,
+    session,
+    saveSession,
+    streams,
+    subs,
+    controls,
+    history
+  ) {
     this.info = info;
     this.preset = preset;
     this.hasStarted = false;
     this.streams = streams;
     this.session = session;
+    this.saveSession = saveSession;
     this.step = subs;
     this.controls = controls.get("Telnet");
     this.history = history;
@@ -375,7 +386,8 @@ class Wizard {
           new Date(),
           self.info,
           configInput,
-          sessionData
+          sessionData,
+          self.saveSession
         );
       },
       async "connect.failed"(rd) {
@@ -457,17 +469,28 @@ class Executor extends Wizard {
    * @param {command.Info} info
    * @param {object} config
    * @param {object} session
+   * @param {boolean} saveSession
    * @param {streams.Streams} streams
    * @param {subscribe.Subscribe} subs
    * @param {controls.Controls} controls
    * @param {history.History} history
    *
    */
-  constructor(info, config, session, streams, subs, controls, history) {
+  constructor(
+    info,
+    config,
+    session,
+    saveSession,
+    streams,
+    subs,
+    controls,
+    history
+  ) {
     super(
       info,
       presets.emptyPreset(),
       session,
+      saveSession,
       streams,
       subs,
       controls,
@@ -516,15 +539,34 @@ export class Command {
     return "#6ac";
   }
 
-  wizard(info, preset, session, streams, subs, controls, history) {
-    return new Wizard(info, preset, session, streams, subs, controls, history);
+  wizard(info, preset, session, saveSession, streams, subs, controls, history) {
+    return new Wizard(
+      info,
+      preset,
+      session,
+      saveSession,
+      streams,
+      subs,
+      controls,
+      history
+    );
   }
 
-  execute(info, config, session, streams, subs, controls, history) {
+  execute(
+    info,
+    config,
+    session,
+    saveSession,
+    streams,
+    subs,
+    controls,
+    history
+  ) {
     return new Executor(
       info,
       config,
       session,
+      saveSession,
       streams,
       subs,
       controls,

@@ -509,9 +509,19 @@ class Wizard {
    * @param {subscribe.Subscribe} subs
    * @param {controls.Controls} controls
    * @param {history.History} history
+   * @param {boolean} saveSession
    *
    */
-  constructor(info, preset, session, streams, subs, controls, history) {
+  constructor(
+    info,
+    preset,
+    session,
+    saveSession,
+    streams,
+    subs,
+    controls,
+    history
+  ) {
     this.info = info;
     this.preset = preset;
     this.hasStarted = false;
@@ -521,6 +531,7 @@ class Wizard {
       : {
           credential: "",
         };
+    this.saveSession = saveSession;
     this.step = subs;
     this.controls = controls.get("SSH");
     this.history = history;
@@ -668,7 +679,8 @@ class Wizard {
           new Date(),
           self.info,
           configInput,
-          sessionData
+          sessionData,
+          self.saveSession
         );
       },
       async "connect.fingerprint"(rd, sd) {
@@ -899,17 +911,28 @@ class Executer extends Wizard {
    * @param {command.Info} info
    * @param {config} config
    * @param {object} session
+   * @param {boolean} saveSession
    * @param {streams.Streams} streams
    * @param {subscribe.Subscribe} subs
    * @param {controls.Controls} controls
    * @param {history.History} history
    *
    */
-  constructor(info, config, session, streams, subs, controls, history) {
+  constructor(
+    info,
+    config,
+    session,
+    saveSession,
+    streams,
+    subs,
+    controls,
+    history
+  ) {
     super(
       info,
       presets.emptyPreset(),
       session,
+      saveSession,
       streams,
       subs,
       controls,
@@ -961,15 +984,34 @@ export class Command {
     return "#3c8";
   }
 
-  wizard(info, preset, session, streams, subs, controls, history) {
-    return new Wizard(info, preset, session, streams, subs, controls, history);
+  wizard(info, preset, session, saveSession, streams, subs, controls, history) {
+    return new Wizard(
+      info,
+      preset,
+      session,
+      saveSession,
+      streams,
+      subs,
+      controls,
+      history
+    );
   }
 
-  execute(info, config, session, streams, subs, controls, history) {
+  execute(
+    info,
+    config,
+    session,
+    saveSession,
+    streams,
+    subs,
+    controls,
+    history
+  ) {
     return new Executer(
       info,
       config,
       session,
+      saveSession,
       streams,
       subs,
       controls,

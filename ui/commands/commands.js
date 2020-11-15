@@ -620,11 +620,11 @@ class Builder {
     this.represeter = (n) => {
       return command.represet(n);
     };
-    this.wizarder = (n, i, r, u, y, x, l) => {
-      return command.wizard(n, i, r, u, y, x, l);
+    this.wizarder = (n, i, r, u, y, x, l, p) => {
+      return command.wizard(n, i, r, u, y, x, l, p);
     };
-    this.executer = (n, i, r, u, y, x, l) => {
-      return command.execute(n, i, r, u, y, x, l);
+    this.executer = (n, i, r, u, y, x, l, p) => {
+      return command.execute(n, i, r, u, y, x, l, p);
     };
     this.launchCmd = (n, i, r, u, y, x) => {
       return command.launch(n, i, r, u, y, x);
@@ -685,12 +685,13 @@ class Builder {
    * @param {history.History} history
    * @param {presets.Preset} preset
    * @param {object} session
+   * @param {boolean} keepSession
    * @param {function} done Callback which will be called when wizard is done
    *
    * @returns {Wizard} Command wizard
    *
    */
-  wizard(streams, controls, history, preset, session, done) {
+  wizard(streams, controls, history, preset, session, keepSession, done) {
     let subs = new subscribe.Subscribe();
 
     return new Wizard(
@@ -698,6 +699,7 @@ class Builder {
         new Info(this),
         preset,
         session,
+        keepSession,
         streams,
         subs,
         controls,
@@ -716,12 +718,13 @@ class Builder {
    * @param {history.History} history
    * @param {object} config
    * @param {object} session
+   * @param {boolean} saveSession
    * @param {function} done Callback which will be called when wizard is done
    *
    * @returns {Wizard} Command wizard
    *
    */
-  execute(streams, controls, history, config, session, done) {
+  execute(streams, controls, history, config, session, saveSession, done) {
     let subs = new subscribe.Subscribe();
 
     return new Wizard(
@@ -729,6 +732,7 @@ class Builder {
         new Info(this),
         config,
         session,
+        saveSession,
         streams,
         subs,
         controls,
