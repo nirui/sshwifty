@@ -72,6 +72,8 @@ catch() {
     exit $res
 }
 
+SSHWIFTY_LAST_TAG_NAME=HEAD~1
+
 if [ "$SSHWIFTY_DEPLOY" = 'yes' ]; then
     echo 'Downloading compile & deploy tools ...'
 
@@ -81,11 +83,11 @@ if [ "$SSHWIFTY_DEPLOY" = 'yes' ]; then
     echo 'Fetching extra references from the repository ...'
 
     catch retry git fetch --tags --depth 1
+
+    SSHWIFTY_LAST_TAG_NAME=$(git describe --tags --abbrev=0 HEAD~1)
 fi
 
-SSHWIFTY_LAST_TAG_NAME=$(git describe --tags --abbrev=0 HEAD^)
-
-echo "Version: $SSHWIFTY_VERSION $SSHWIFTY_LAST_TAG_NAME"
+echo "Version: $SSHWIFTY_VERSION"
 echo "Files: $(pwd)" && ls -la
 export
 git status --short
@@ -99,9 +101,6 @@ catch go vet ./...
 catch npm run testonly
 
 if [ "$SSHWIFTY_DEPLOY" = 'yes' ]; then
-    SSHWIFTY_PREVIOUS_VERSION_HASH=$(git rev-list --tags='*-release' --skip=1 --max-count=1)
-    SSHWIFTY_PREVIOUS_VERSION_NAME=$(git describe --abbrev=0 --tags "$SSHWIFTY_PREVIOUS_VERSION_HASH")
-
     catch child \
         '
         docker login -u "$DOCKER_HUB_USER" -p "$DOCKER_HUB_PASSWORD" &&
@@ -116,8 +115,8 @@ if [ "$SSHWIFTY_DEPLOY" = 'yes' ]; then
         CGO_ENABLED=0 gox -ldflags "-s -w -X $VERSION_VARIABLE=$SSHWIFTY_VERSION" -osarch "$BUILD_TARGETS" -output "./.tmp/release/{{.Dir}}_${SSHWIFTY_VERSION}_{{.OS}}_{{.Arch}}/{{.Dir}}_{{.OS}}_{{.Arch}}" &&
         echo "# Version $SSHWIFTY_VERSION" > ./.tmp/release/Note &&
         echo >> ./.tmp/release/Note &&
-        echo "Updates introduced since $SSHWIFTY_PREVIOUS_VERSION_NAME" >> ./.tmp/release/Note &&
-        git log --pretty=format:"- %h %s - (%an) %GK %G?" "$SSHWIFTY_PREVIOUS_VERSION_NAME"..HEAD >> ./.tmp/release/Note &&
+        echo "Updates introduced since $SSHWIFTY_LAST_TAG_NAME" >> ./.tmp/release/Note &&
+        git log --pretty=format:"- %h %s - (%an) %GK %G?" "$SSHWIFTY_LAST_TAG_NAME"..HEAD >> ./.tmp/release/Note &&
         echo '"'"'#!/bin/sh'"'"' > ./.tmp/generated/prepare.sh &&
         echo '"'"'echo Preparing for $1 ... && \'"'"' >> ./.tmp/generated/prepare.sh &&
         echo '"'"'(cd $1/ && find . -maxdepth 1 -type f ! -name "SUM.*" -exec sha512sum {} \; > SUM.sha512) && \'"'"' >> ./.tmp/generated/prepare.sh &&
