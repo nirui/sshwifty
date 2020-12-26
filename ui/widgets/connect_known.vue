@@ -112,8 +112,8 @@
         </ul>
 
         <div v-if="restrictedToPresets" id="connect-known-list-presets-alert">
-          The operator has disabled outgoing access to all remote hosts except
-          those been defined as preset.
+          The operator has restricted the outgoing connections. You can only
+          connect to remotes from the pre-defined presets.
         </div>
       </div>
     </div>

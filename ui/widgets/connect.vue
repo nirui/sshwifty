@@ -138,7 +138,7 @@ export default {
   },
   data() {
     return {
-      tab: "new",
+      tab: !this.restrictedToPresets ? "new" : "known",
       canSelect: true,
     };
   },
