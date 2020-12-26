@@ -188,9 +188,9 @@ export function field(def, f) {
  * Build a group of field value
  *
  * @param {object} definitions Definition of a group of fields
- * @param {array<object>} fs Data of the field group
+ * @param {Array<object>} fs Data of the field group
  *
- * @returns {array<object>} Result fields
+ * @returns {Array<object>} Result fields
  *
  * @throws {Exception} When input field is invalid
  *
