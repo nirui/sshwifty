@@ -17,6 +17,46 @@
 
 import * as command from "./commands.js";
 
+/**
+ * Extract needed data
+ *
+ * @param {Array<string>} kept The keys of of the data to be kept
+ * @param {object} input Input data
+ *
+ * @return {object} Extracted data
+ */
+function extractSelectedData(kept, input) {
+  if (!kept || typeof kept !== "object" || kept.length < 0) {
+    return null;
+  }
+
+  let data = {},
+    length = 0;
+
+  for (let k in kept) {
+    if (!input[kept[k]]) {
+      continue;
+    }
+
+    data[kept[k]] = input[kept[k]];
+    length++;
+  }
+
+  if (length <= 0) {
+    return null;
+  }
+
+  return data;
+}
+
+/**
+ * constructor
+ *
+ * @param {object} data to be searched
+ * @param {string} metaName name of the meta
+ * @param {string} valContains target string to search
+ *
+ */
 function metaContains(data, metaName, valContains) {
   switch (typeof data[metaName]) {
     case "string":
@@ -31,7 +71,7 @@ export class History {
   /**
    * constructor
    *
-   * @param {array<object>} records
+   * @param {Array<object>} records
    * @param {function} saver
    * @param {number} maxItems
    *
@@ -71,11 +111,11 @@ export class History {
    * @param {Date} lastUsed Last used
    * @param {object} data Data
    * @param {object} sessionData Data which only available for current session
-   * @param {boolean} keepSession Whether or not to keep session data when
-   *                              putting the item to the persistent storage
+   * @param {Array<string>} keptSessions Keys of the session data that should
+   *                                     be saved
    *
    */
-  save(uname, title, lastUsed, info, data, sessionData, keepSession) {
+  save(uname, title, lastUsed, info, data, sessionData, keptSessions) {
     const unameIdx = this.indexOf(uname);
 
     if (unameIdx >= 0) {
@@ -90,7 +130,7 @@ export class History {
       last: lastUsed.getTime(),
       data: data,
       session: sessionData,
-      keepSession: keepSession,
+      keptSessions: keptSessions,
     });
 
     if (this.records.length > this.maxItems) {
@@ -143,7 +183,7 @@ export class History {
       }
 
       this.records[i].session = null;
-      this.records[i].keepSession = false;
+      this.records[i].keptSessions = [];
       break;
     }
 
@@ -154,7 +194,7 @@ export class History {
    * Return all history records. The exported data is differ than the
    * internal ones, it cannot be directly import back
    *
-   * @returns {array<object>} Records
+   * @returns {Array<object>} Records
    *
    */
   all() {
@@ -169,7 +209,7 @@ export class History {
         last: new Date(this.records[i].last),
         data: this.records[i].data,
         session: this.records[i].session,
-        keepSession: this.records[i].keepSession,
+        keptSessions: this.records[i].keptSessions,
       });
     }
 
@@ -179,7 +219,7 @@ export class History {
   /**
    * Export current history records
    *
-   * @returns {array<object>} Records
+   * @returns {Array<object>} Records
    *
    */
   export() {
@@ -193,8 +233,11 @@ export class History {
         color: this.records[i].color,
         last: this.records[i].last,
         data: this.records[i].data,
-        session: this.records[i].keepSession ? this.records[i].session : null,
-        keepSession: this.records[i].keepSession,
+        session: extractSelectedData(
+          this.records[i].keptSessions,
+          this.records[i].session
+        ),
+        keptSessions: this.records[i].keptSessions,
       });
     }
 
@@ -204,7 +247,7 @@ export class History {
   /**
    * Import data into current history records
    *
-   * @param {array<object>} records Records
+   * @param {Array<object>} records Records
    *
    */
   import(records) {
@@ -220,8 +263,11 @@ export class History {
         color: records[i].color,
         last: records[i].last,
         data: records[i].data,
-        session: records[i].session,
-        keepSession: records[i].keepSession,
+        session: extractSelectedData(
+          records[i].keptSessions,
+          records[i].session
+        ),
+        keptSessions: records[i].keptSessions,
       });
     }
 

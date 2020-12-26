@@ -505,18 +505,18 @@ class Wizard {
    * @param {command.Info} info
    * @param {presets.Preset} preset
    * @param {object} session
+   * @param {Array<string>} keptSessions
    * @param {streams.Streams} streams
    * @param {subscribe.Subscribe} subs
    * @param {controls.Controls} controls
    * @param {history.History} history
-   * @param {boolean} saveSession
    *
    */
   constructor(
     info,
     preset,
     session,
-    saveSession,
+    keptSessions,
     streams,
     subs,
     controls,
@@ -531,7 +531,7 @@ class Wizard {
       : {
           credential: "",
         };
-    this.saveSession = saveSession;
+    this.keptSessions = keptSessions;
     this.step = subs;
     this.controls = controls.get("SSH");
     this.history = history;
@@ -611,6 +611,9 @@ class Wizard {
       fingerprint: configInput.fingerprint,
     };
 
+    // Copy the keptSessions from the record so it will not be overwritten here
+    let keptSessions = self.keptSessions ? [].concat(...self.keptSessions) : [];
+
     return new SSH(sender, config, {
       "initialization.failed"(hd) {
         switch (hd.data()) {
@@ -680,7 +683,7 @@ class Wizard {
           self.info,
           configInput,
           sessionData,
-          self.saveSession
+          keptSessions
         );
       },
       async "connect.fingerprint"(rd, sd) {
@@ -707,8 +710,13 @@ class Wizard {
       },
       async "connect.credential"(rd, sd) {
         self.step.resolve(
-          self.stepCredentialPrompt(rd, sd, config, (newCredential) => {
-            sessionData.credential = newCredential;
+          self.stepCredentialPrompt(rd, sd, config, (newCred, fromPreset) => {
+            sessionData.credential = newCred;
+
+            // Save the credential if the credential was from a preset
+            if (fromPreset && keptSessions.indexOf("credential") < 0) {
+              keptSessions.push("credential");
+            }
           })
         );
       },
@@ -790,7 +798,8 @@ class Wizard {
           { name: "Encoding" },
           { name: "Notice" },
         ],
-        self.preset
+        self.preset,
+        (r) => {}
       )
     );
   }
@@ -873,6 +882,20 @@ class Wizard {
         );
     }
 
+    let presetCredentialUsed = false;
+    const inputFields = command.fieldsWithPreset(
+      initialFieldDef,
+      fields,
+      self.preset,
+      (r) => {
+        if (r !== fields[0].name) {
+          return;
+        }
+
+        presetCredentialUsed = true;
+      }
+    );
+
     return command.prompt(
       "Provide credential",
       "Please input your credential",
@@ -885,7 +908,7 @@ class Wizard {
           new TextEncoder().encode(vv)
         );
 
-        newCredential(vv);
+        newCredential(vv, presetCredentialUsed);
 
         self.step.resolve(self.stepContinueWaitForEstablishWait());
       },
@@ -899,7 +922,7 @@ class Wizard {
           )
         );
       },
-      command.fieldsWithPreset(initialFieldDef, fields, self.preset)
+      inputFields
     );
   }
 }
@@ -911,7 +934,7 @@ class Executer extends Wizard {
    * @param {command.Info} info
    * @param {config} config
    * @param {object} session
-   * @param {boolean} saveSession
+   * @param {Array<string>} keptSessions
    * @param {streams.Streams} streams
    * @param {subscribe.Subscribe} subs
    * @param {controls.Controls} controls
@@ -922,7 +945,7 @@ class Executer extends Wizard {
     info,
     config,
     session,
-    saveSession,
+    keptSessions,
     streams,
     subs,
     controls,
@@ -932,7 +955,7 @@ class Executer extends Wizard {
       info,
       presets.emptyPreset(),
       session,
-      saveSession,
+      keptSessions,
       streams,
       subs,
       controls,
@@ -984,12 +1007,21 @@ export class Command {
     return "#3c8";
   }
 
-  wizard(info, preset, session, saveSession, streams, subs, controls, history) {
+  wizard(
+    info,
+    preset,
+    session,
+    keptSessions,
+    streams,
+    subs,
+    controls,
+    history
+  ) {
     return new Wizard(
       info,
       preset,
       session,
-      saveSession,
+      keptSessions,
       streams,
       subs,
       controls,
@@ -1001,7 +1033,7 @@ export class Command {
     info,
     config,
     session,
-    saveSession,
+    keptSessions,
     streams,
     subs,
     controls,
@@ -1011,7 +1043,7 @@ export class Command {
       info,
       config,
       session,
-      saveSession,
+      keptSessions,
       streams,
       subs,
       controls,
@@ -1056,6 +1088,7 @@ export class Command {
         authentication: auth,
         charset: charset,
       },
+      null,
       null,
       streams,
       subs,

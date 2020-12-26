@@ -188,6 +188,22 @@ export class Preset {
 
     this.preset.meta[name] = data;
   }
+
+  /**
+   * Export all meta keys
+   *
+   * @returns {Array<string>} All meta keys
+   *
+   */
+  metaKeys() {
+    let keys = [];
+
+    for (let k in this.preset.meta) {
+      keys.push(k);
+    }
+
+    return keys;
+  }
 }
 
 /**

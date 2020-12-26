@@ -366,7 +366,7 @@ export default {
             self.connector.historyRec,
             preset.preset,
             null,
-            true,
+            [],
             () => {}
           ),
         };
@@ -411,7 +411,7 @@ export default {
             self.connector.historyRec,
             known.data,
             known.session,
-            known.keepSession,
+            known.keptSessions,
             () => {
               self.connector.knowns = self.connector.historyRec.all();
             }

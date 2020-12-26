@@ -219,17 +219,25 @@ export function fields(definitions, fs) {
  * @param {object} definitions Definition of a group of fields
  * @param {object} fieldsData field data object, formated like a `defField`
  * @param {presets.Preset} presetData Preset data
+ * @param {function} presetApplied Called when a preset is used for a field
  *
  * @returns {object}
  *
  */
-export function fieldsWithPreset(definitions, fieldsData, presetData) {
+export function fieldsWithPreset(
+  definitions,
+  fieldsData,
+  presetData,
+  presetApplied
+) {
   let newFields = fields(definitions, fieldsData);
 
   for (let i in newFields) {
     try {
       newFields[i].value = presetData.meta(newFields[i].name);
       newFields[i].readonly = true;
+
+      presetApplied(newFields[i].name);
     } catch (e) {
       // Do nothing
     }
@@ -685,13 +693,13 @@ class Builder {
    * @param {history.History} history
    * @param {presets.Preset} preset
    * @param {object} session
-   * @param {boolean} keepSession
+   * @param {Array<string>} keptSessions
    * @param {function} done Callback which will be called when wizard is done
    *
    * @returns {Wizard} Command wizard
    *
    */
-  wizard(streams, controls, history, preset, session, keepSession, done) {
+  wizard(streams, controls, history, preset, session, keptSessions, done) {
     let subs = new subscribe.Subscribe();
 
     return new Wizard(
@@ -699,7 +707,7 @@ class Builder {
         new Info(this),
         preset,
         session,
-        keepSession,
+        keptSessions,
         streams,
         subs,
         controls,
@@ -718,13 +726,13 @@ class Builder {
    * @param {history.History} history
    * @param {object} config
    * @param {object} session
-   * @param {boolean} saveSession
+   * @param {Array<string>} keptSessions
    * @param {function} done Callback which will be called when wizard is done
    *
    * @returns {Wizard} Command wizard
    *
    */
-  execute(streams, controls, history, config, session, saveSession, done) {
+  execute(streams, controls, history, config, session, keptSessions, done) {
     let subs = new subscribe.Subscribe();
 
     return new Wizard(
@@ -732,7 +740,7 @@ class Builder {
         new Info(this),
         config,
         session,
-        saveSession,
+        keptSessions,
         streams,
         subs,
         controls,

@@ -247,7 +247,7 @@ class Wizard {
    * @param {command.Info} info
    * @param {presets.Preset} preset
    * @param {object} session
-   * @param {boolean} saveSession
+   * @param {Array<string>} keptSessions
    * @param {streams.Streams} streams
    * @param {subscribe.Subscribe} subs
    * @param {controls.Controls} controls
@@ -258,7 +258,7 @@ class Wizard {
     info,
     preset,
     session,
-    saveSession,
+    keptSessions,
     streams,
     subs,
     controls,
@@ -269,7 +269,7 @@ class Wizard {
     this.hasStarted = false;
     this.streams = streams;
     this.session = session;
-    this.saveSession = saveSession;
+    this.keptSessions = keptSessions;
     this.step = subs;
     this.controls = controls.get("Telnet");
     this.history = history;
@@ -338,6 +338,9 @@ class Wizard {
       charset: configInput.charset,
     };
 
+    // Copy the keptSessions from the record so it will not be overwritten here
+    let keptSessions = self.keptSessions ? [].concat(...self.keptSessions) : [];
+
     return new Telnet(sender, parsedConfig, {
       "initialization.failed"(streamInitialHeader) {
         switch (streamInitialHeader.data()) {
@@ -387,7 +390,7 @@ class Wizard {
           self.info,
           configInput,
           sessionData,
-          self.saveSession
+          keptSessions
         );
       },
       async "connect.failed"(rd) {
@@ -456,7 +459,8 @@ class Wizard {
           },
           { name: "Encoding" },
         ],
-        self.preset
+        self.preset,
+        (r) => {}
       )
     );
   }
@@ -469,7 +473,7 @@ class Executor extends Wizard {
    * @param {command.Info} info
    * @param {object} config
    * @param {object} session
-   * @param {boolean} saveSession
+   * @param {Array<string>} keptSessions
    * @param {streams.Streams} streams
    * @param {subscribe.Subscribe} subs
    * @param {controls.Controls} controls
@@ -480,7 +484,7 @@ class Executor extends Wizard {
     info,
     config,
     session,
-    saveSession,
+    keptSessions,
     streams,
     subs,
     controls,
@@ -490,7 +494,7 @@ class Executor extends Wizard {
       info,
       presets.emptyPreset(),
       session,
-      saveSession,
+      keptSessions,
       streams,
       subs,
       controls,
@@ -539,12 +543,21 @@ export class Command {
     return "#6ac";
   }
 
-  wizard(info, preset, session, saveSession, streams, subs, controls, history) {
+  wizard(
+    info,
+    preset,
+    session,
+    keptSessions,
+    streams,
+    subs,
+    controls,
+    history
+  ) {
     return new Wizard(
       info,
       preset,
       session,
-      saveSession,
+      keptSessions,
       streams,
       subs,
       controls,
@@ -556,7 +569,7 @@ export class Command {
     info,
     config,
     session,
-    saveSession,
+    keptSessions,
     streams,
     subs,
     controls,
@@ -566,7 +579,7 @@ export class Command {
       info,
       config,
       session,
-      saveSession,
+      keptSessions,
       streams,
       subs,
       controls,
@@ -610,6 +623,7 @@ export class Command {
         host: d[0],
         charset: charset,
       },
+      null,
       null,
       streams,
       subs,
