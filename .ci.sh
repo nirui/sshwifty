@@ -82,9 +82,17 @@ if [ "$SSHWIFTY_DEPLOY" = 'yes' ]; then
 
     echo 'Fetching extra references from the repository ...'
 
-    catch retry git fetch --tags --depth 1
+    GIT_TAG_FETCH_PARAM=
 
-    SSHWIFTY_LAST_TAG_NAME=$(git describe --tags --abbrev=0 HEAD~1)
+    if [ "$(git rev-parse --is-shallow-repository)" ]; then
+        echo 'Shallow clone detected, will unshallow ...'
+
+        GIT_TAG_FETCH_PARAM='--unshallow'
+    fi
+
+    catch retry git fetch --tags "$GIT_TAG_FETCH_PARAM"
+
+    SSHWIFTY_LAST_TAG_NAME=$(git describe --tags --abbrev=0 --always HEAD~1)
 fi
 
 echo "Version: $SSHWIFTY_VERSION"
