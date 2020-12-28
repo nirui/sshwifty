@@ -217,6 +217,10 @@ Here is all the options of a configuration file:
       // Form fields and values, you have to manually validate the correctness
       // of the field value
       //
+      // Defining a Meta field will prevent user from changing it on their
+      // Connector Wizard. If you want to allow users to use their own settings,
+      // leave the field unsetted
+      //
       // Values in Meta are scheme enabled, and supports following scheme
       // prefixes:
       // - "literal://": Text literal (Default)
@@ -352,15 +356,59 @@ support has been disabled.
 If you're using Google Chrome, please connect Sshwifty with HTTPS. Chrome will
 disable WebCrypt and many other APIs when the connection is not safe.
 
+### Can I serve Sshwifty under a subpath such as `https://my.domain/ssh`?
+
+The short story is NO. Sshwifty was designed based on an assumption that it will
+run as the only service under a given hostname, allowing web browsers to better
+enforce their data isolation rules. This is very important because Sshwifty
+saves user data locally.
+
+However, if you really want to put Sshwifty into a subpath, you can do so by
+taking advantage of the fact that Sshwifty backend interface and assets are
+always located under an URL prefix `/sshwifty`. You can thus redirect or proxy
+those requests to their new location.
+
+Keep in mind, doing so is really hacky, and it's not recommended by the author
+thus no support will be provided if you decide to go with that.
+
+### Why I can't add my own key combinations to the Console tool bar?
+
+The pre-defined key combinations are there mainly to make mobile operation
+possible as well as to resolve some hotkey conflicts. However, if efficiency is
+your first goal, please consider to use a software/on screen keyboard which is
+specially designed for terminal.
+
+And if that's not enough, connect a physical keyboard through Bluetooth or OTA
+could be a better alternative. This way you can type as if you're using a
+computer console.
+
+There are many good Bluetooth keyboards out there, for example the HHKB HYBRID
+TYPE-S, FILCO Majestouch Convertible 2 and GANSS ALT71D which is more afforable
+than the previous two. And if you don't want go get that serious, then a $10 one
+would also do.
+
+If you use JD.COM, you can purchase aformentioned keyboards with my links. I
+will be rewarded base on your purchase.
+
+- [HHKB HYBRID TYPE-S], and [HHKB HYBRID TYPE-S (White)]
+- [FILCO Majestouch Convertible 2]
+- [GANSS ALT71D]
+
+[HHKB HYBRID TYPE-S]: https://union-click.jd.com/jdc?e=&p=AyIGZRtZFgsbBFAYXhUyFQRSGlkSAxEDVx9rUV1KWQorAlBHU0VeBUVNR0ZbSkdETlcNVQtHRVNSUVNLXANBRA1XB14DS10cQQVYD21XHgBWHFoXBRMEURlfJXdIY1FQMGl7cWwFW0EQVmlBFWEocXIeC2UeWxQDEQBcGVoSMhIGVBlSEgEWBVYraxUBIkY7EloVAhcEZRlaFAARD1QTWRAyEgBUE1sXChMDVB1bEzIVB1wrAEBsRHkmRi1hQ0paDE8HJTIVBFIaWRIDEQNXH2sWMiI3VStYJUB8BgAcCxFRQAcBS19HBxVVU0tdElUbU1FOWRQDEg5RHFwlABMGURI%3D
+[HHKB HYBRID TYPE-S (White)]: https://union-click.jd.com/jdc?e=&p=AyIGZRtZFgsbBFAYXhUyFQRSGlkSAxEDVxlrUV1KWQorAlBHU0VeBUVNR0ZbSkdETlcNVQtHRVNSUVNLXANBRA1XB14DS10cQQVYD21XHgBWHFoXBRMEURlZJX5LVQdGEG5hcVsNbyF8V09BIHkSdEQeC2UeWxQDEQBcGVoSMhIGVBlSEgEWBVYraxUBIkY7EloVAhcEZRlaFAARD1QTWRAyEgBUE1sXChMOVhJfFDIVB1wrAEBsRHkmRi1hQ0paDE8HJTIVBFIaWRIDEQNXGWsWMiI3VStYJUB8BgAcCxFRQAcBS19HBxVVU0tdElUbU1FOWRQDEg5RHFwlABMGURI%3D
+[FILCO Majestouch Convertible 2]: https://union-click.jd.com/jdc?e=&p=AyIGZRhfEQETBFEbXxMyFgdRGlgQCxYCVxprUV1KWQorAlBHU0VeBUVNR0ZbSkdETlcNVQtHRVNSUVNLXANBRA1XB14DS10cQQVYD21XHgNVH1oWBxsDUBlaJXV1UFdCE2ADcXMRHV8UZ2dDLEFeD0QeC2UeWxQDEQBcGVoSMhIGVBlSEgEWBVYraxUBIkY7G1oVChAGVhNrFwMTBVYTWh0AFzdVHFodAhAOUxNZFwoaN1IbUiVZR2kDZShIdGZGDUYCQV4iN1EbXxQBFw5RHlkUMhE3ZStbJQEiRTsdCBAKRQ9dEwgcUhECUx5dHFUTAgBMXhdSEgNWElkTAyIFVBpfHA%3D%3D
+[GANSS ALT71D]: https://union-click.jd.com/jdc?e=&p=AyIGZRteFAsRAFweWxEyFwFTG1scChAOXBlrUV1KWQorAlBHU0VeBUVNR0ZbSkdETlcNVQtHRVNSUVNLXANBRA1XB14DS10cQQVYD21XHgJTHVsVCxoFXBJZJWZ7ZF1%2FCGdrcmVSXBJxfHNnChsicFQeC2UeWxQDEQBcGVoSMhIGVBlSEgEWBVYraxUBIkY7ElgQARYCZRlaFAARD1QTWRAyEgBUE1sXCxsBUBpfETIVB1wrAEBsRHkmRi1hQ0paDE8HJTIXAVMbWxwKEA5cGWsWMiI3VStYJUB8DgUbWxcBFVVSGF5FBxYEAEhbRQMVAVAfXh0DGgVXHl8lABMGURI%3D
+
 ## License
 
 Code of this project is licensed under AGPL, see [LICENSE.md] for detail.
 
 Third-party components used by this project are licensed under their respective
-licenses. See [DEPENDENCIES.md] for dependencies used by this project.
+licenses. See [DEPENDENCIES.md] to learn more about dependencies used by this
+project and read their copyright statements.
 
-[license.md]: LICENSE.md
-[dependencies.md]: DEPENDENCIES.md
+[LICENSE.md]: LICENSE.md
+[DEPENDENCIES.md]: DEPENDENCIES.md
 
 ## Contribute
 
