@@ -113,14 +113,14 @@ if [ "$SSHWIFTY_DEPLOY" = 'yes' ]; then
         '
         docker login -u "$DOCKER_HUB_USER" -p "$DOCKER_HUB_PASSWORD" &&
         docker buildx create --use --driver docker-container --name buildx-instance &&
-        docker buildx build --tag "$SSHWIFTY_DOCKER_IMAGE_PUSH_TAG" --tag "$SSHWIFTY_DOCKER_IMAGE_PUSH_TAG_LATEST" --platform "$DOCKER_BUILD_TARGETS" --build-arg CUSTOM_COMMAND="$DOCKER_CUSTOM_COMMAND" --progress plain --push .
+        docker buildx build --tag "$SSHWIFTY_DOCKER_IMAGE_PUSH_TAG" --tag "$SSHWIFTY_DOCKER_IMAGE_PUSH_TAG_LATEST" --platform "$DOCKER_BUILD_TARGETS" --build-arg GOMIPS=softfloat --build-arg CUSTOM_COMMAND="$DOCKER_CUSTOM_COMMAND" --progress plain --push .
         ' \
         '
         mkdir -p ./.tmp/generated ./.tmp/release &&
         curl "$ASC_URL" > ./.tmp/release/GPG.asc &&
         gpg --import ./.tmp/release/GPG.asc &&
         git archive --format tar --output ./.tmp/release/src HEAD &&
-        CGO_ENABLED=0 gox -ldflags "-s -w -X $VERSION_VARIABLE=$SSHWIFTY_VERSION" -osarch "$BUILD_TARGETS" -output "./.tmp/release/{{.Dir}}_${SSHWIFTY_VERSION}_{{.OS}}_{{.Arch}}/{{.Dir}}_{{.OS}}_{{.Arch}}" &&
+        CGO_ENABLED=0 GOMIPS=softfloat gox -ldflags "-s -w -X $VERSION_VARIABLE=$SSHWIFTY_VERSION" -osarch "$BUILD_TARGETS" -output "./.tmp/release/{{.Dir}}_${SSHWIFTY_VERSION}_{{.OS}}_{{.Arch}}/{{.Dir}}_{{.OS}}_{{.Arch}}" &&
         echo "# Version $SSHWIFTY_VERSION" > ./.tmp/release/Note &&
         echo >> ./.tmp/release/Note &&
         echo "Updates introduced since $SSHWIFTY_LAST_TAG_NAME" >> ./.tmp/release/Note &&
