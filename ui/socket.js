@@ -15,10 +15,10 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import * as streams from "./stream/streams.js";
+import * as crypt from "./crypto.js";
 import * as reader from "./stream/reader.js";
 import * as sender from "./stream/sender.js";
-import * as crypt from "./crypto.js";
+import * as streams from "./stream/streams.js";
 
 export const ECHO_FAILED = streams.ECHO_FAILED;
 
@@ -56,7 +56,7 @@ class Dial {
         timeoutTimer = setTimeout(() => {
           ws.close();
         }, timeout),
-        myRes = w => {
+        myRes = (w) => {
           if (promised) {
             return;
           }
@@ -66,7 +66,7 @@ class Dial {
 
           return resolve(w);
         },
-        myRej = e => {
+        myRej = (e) => {
           if (promised) {
             return;
           }
@@ -77,11 +77,11 @@ class Dial {
           return reject(e);
         };
 
-      ws.addEventListener("open", _event => {
+      ws.addEventListener("open", (_event) => {
         myRes(ws);
       });
 
-      ws.addEventListener("close", event => {
+      ws.addEventListener("close", (event) => {
         event.toString = () => {
           return "WebSocket Error (" + event.code + ")";
         };
@@ -89,7 +89,7 @@ class Dial {
         myRej(event);
       });
 
-      ws.addEventListener("error", _event => {
+      ws.addEventListener("error", (_event) => {
         ws.close();
       });
     });
@@ -100,15 +100,7 @@ class Dial {
    *
    */
   async buildKeyString() {
-    const enc = new TextEncoder();
-
-    let rTime = Number(Math.trunc(new Date().getTime() / 100000)),
-      key = await crypt.hmac512(
-        enc.encode(await this.privateKey.fetch()),
-        enc.encode(rTime)
-      );
-
-    return key.slice(0, 16);
+    return this.privateKey.fetch();
   }
 
   /**
@@ -131,12 +123,14 @@ class Dial {
    *
    */
   async dial(callbacks) {
-    let ws = await this.connect(this.timeout),
-      rd = new reader.Reader(new reader.Multiple(() => {}), data => {
-        return new Promise(resolve => {
+    let ws = await this.connect(this.timeout);
+
+    try {
+      let rd = new reader.Reader(new reader.Multiple(() => {}), (data) => {
+        return new Promise((resolve) => {
           let bufferReader = new FileReader();
 
-          bufferReader.onload = event => {
+          bufferReader.onload = (event) => {
             let d = new Uint8Array(event.target.result);
 
             resolve(d);
@@ -148,105 +142,112 @@ class Dial {
         });
       });
 
-    ws.addEventListener("message", event => {
-      callbacks.inbound(event.data);
+      ws.addEventListener("message", (event) => {
+        callbacks.inbound(event.data);
 
-      rd.feed(event.data);
-    });
+        rd.feed(event.data);
+      });
 
-    ws.addEventListener("error", event => {
-      event.toString = () => {
-        return (
-          "WebSocket Error (" + (event.code ? event.code : "Unknown") + ")"
+      ws.addEventListener("error", (event) => {
+        event.toString = () => {
+          return (
+            "WebSocket Error (" + (event.code ? event.code : "Unknown") + ")"
+          );
+        };
+
+        rd.closeWithReason(event);
+      });
+
+      ws.addEventListener("close", (_event) => {
+        rd.closeWithReason("Connection is closed");
+      });
+
+      let sdDataConvert = (rawData) => {
+          return rawData;
+        },
+        getSdDataConvert = () => {
+          return sdDataConvert;
+        },
+        sd = new sender.Sender(
+          async (rawData) => {
+            try {
+              let data = await getSdDataConvert()(rawData);
+
+              ws.send(data.buffer);
+              callbacks.outbound(data);
+            } catch (e) {
+              ws.close();
+              rd.closeWithReason(e);
+
+              if (process.env.NODE_ENV === "development") {
+                console.error(e);
+              }
+
+              throw e;
+            }
+          },
+          4096 - 64, // Server has a 4096 bytes receive buffer, can be no greater,
+          minSenderDelay, // 30ms input delay
+          10 // max 10 buffered requests
         );
+
+      let senderNonce = crypt.generateNonce();
+      sd.send(senderNonce);
+
+      let receiverNonce = await reader.readN(rd, crypt.GCMNonceSize);
+
+      let key = await this.buildKey();
+
+      sdDataConvert = async (rawData) => {
+        let encoded = await crypt.encryptGCM(key, senderNonce, rawData);
+
+        crypt.increaseNonce(senderNonce);
+
+        let dataToSend = new Uint8Array(encoded.byteLength + 2);
+
+        dataToSend[0] = (encoded.byteLength >> 8) & 0xff;
+        dataToSend[1] = encoded.byteLength & 0xff;
+
+        dataToSend.set(new Uint8Array(encoded), 2);
+
+        return dataToSend;
       };
 
-      rd.closeWithReason(event);
-    });
+      let cgmReader = new reader.Multiple(async (r) => {
+        try {
+          let dSizeBytes = await reader.readN(rd, 2),
+            dSize = 0;
 
-    ws.addEventListener("close", _event => {
-      rd.closeWithReason("Connection is closed");
-    });
+          dSize = dSizeBytes[0];
+          dSize <<= 8;
+          dSize |= dSizeBytes[1];
 
-    let sdDataConvert = rawData => {
-        return rawData;
-      },
-      getSdDataConvert = () => {
-        return sdDataConvert;
-      },
-      sd = new sender.Sender(
-        async rawData => {
-          try {
-            let data = await getSdDataConvert()(rawData);
+          let decoded = await crypt.decryptGCM(
+            key,
+            receiverNonce,
+            await reader.readN(rd, dSize)
+          );
 
-            ws.send(data.buffer);
-            callbacks.outbound(data);
-          } catch (e) {
-            ws.close();
-            rd.closeWithReason(e);
+          crypt.increaseNonce(receiverNonce);
 
-            if (process.env.NODE_ENV === "development") {
-              console.error(e);
-            }
+          r.feed(
+            new reader.Buffer(new Uint8Array(decoded), () => {}),
+            () => {}
+          );
+        } catch (e) {
+          r.closeWithReason(e);
+        }
+      });
 
-            throw e;
-          }
-        },
-        4096 - 64, // Server has a 4096 bytes receive buffer, can be no greater,
-        minSenderDelay, // 30ms input delay
-        10 // max 10 buffered requests
-      );
-
-    let senderNonce = crypt.generateNonce();
-    sd.send(senderNonce);
-
-    let receiverNonce = await reader.readN(rd, crypt.GCMNonceSize);
-
-    let key = await this.buildKey();
-
-    sdDataConvert = async rawData => {
-      let encoded = await crypt.encryptGCM(key, senderNonce, rawData);
-
-      crypt.increaseNonce(senderNonce);
-
-      let dataToSend = new Uint8Array(encoded.byteLength + 2);
-
-      dataToSend[0] = (encoded.byteLength >> 8) & 0xff;
-      dataToSend[1] = encoded.byteLength & 0xff;
-
-      dataToSend.set(new Uint8Array(encoded), 2);
-
-      return dataToSend;
-    };
-
-    let cgmReader = new reader.Multiple(async r => {
-      try {
-        let dSizeBytes = await reader.readN(rd, 2),
-          dSize = 0;
-
-        dSize = dSizeBytes[0];
-        dSize <<= 8;
-        dSize |= dSizeBytes[1];
-
-        let decoded = await crypt.decryptGCM(
-          key,
-          receiverNonce,
-          await reader.readN(rd, dSize)
-        );
-
-        crypt.increaseNonce(receiverNonce);
-
-        r.feed(new reader.Buffer(new Uint8Array(decoded), () => {}), () => {});
-      } catch (e) {
-        r.closeWithReason(e);
-      }
-    });
-
-    return {
-      reader: cgmReader,
-      sender: sd,
-      ws: ws
-    };
+      return {
+        reader: cgmReader,
+        sender: sd,
+        ws: ws,
+      };
+    } catch (e) {
+      ws.close();
+      throw e;
+    }
   }
 }
 
@@ -328,7 +329,7 @@ export class Socket {
         },
         outbound(data) {
           callbacks.traffic(0, data.length);
-        }
+        },
       });
 
       let streamHandler = new streams.Streams(conn.reader, conn.sender, {
@@ -357,12 +358,12 @@ export class Socket {
           // risk sending things out
           conn.ws.close();
           callbacks.close(e);
-        }
+        },
       });
 
       callbacks.connected();
 
-      streamHandler.serve().catch(e => {
+      streamHandler.serve().catch((e) => {
         if (process.env.NODE_ENV !== "development") {
           return;
         }

@@ -32,6 +32,7 @@ import Home from "./home.vue";
 import "./landing.css";
 import Loading from "./loading.vue";
 import { Socket } from "./socket.js";
+import * as stream from "./stream/common";
 import * as xhr from "./xhr.js";
 
 const backendQueryRetryDelay = 2000;
@@ -71,6 +72,19 @@ function startApp(rootEl) {
   const pageTitle = document.title;
 
   let uiControlColor = new ControlColor();
+
+  function getCurrentKeyMixer() {
+    return Number(Math.trunc(new Date().getTime() / 100000)).toString();
+  }
+
+  async function buildSocketKey(privateKey) {
+    return new Uint8Array(
+      await cipher.hmac512(
+        stream.buildBufferFromString(privateKey),
+        stream.buildBufferFromString(getCurrentKeyMixer())
+      )
+    ).slice(0, 16);
+  }
 
   new Vue({
     el: rootEl,
@@ -170,11 +184,20 @@ function startApp(rootEl) {
       isErrored() {
         return this.authErr.length > 0 || this.loadErr.length > 0;
       },
-      async getSocketAuthKey(privateKey, randomKey) {
-        const enc = new TextEncoder();
+      async getSocketAuthKey(privateKey) {
+        const enc = new TextEncoder(),
+          rTime = Number(Math.trunc(new Date().getTime() / 100000));
+
+        var finalKey = "";
+
+        if (privateKey.length <= 0) {
+          finalKey = "DEFAULT VERIFY KEY";
+        } else {
+          finalKey = privateKey;
+        }
 
         return new Uint8Array(
-          await cipher.hmac512(enc.encode(privateKey), enc.encode(randomKey))
+          await cipher.hmac512(enc.encode(finalKey), enc.encode(rTime))
         ).slice(0, 32);
       },
       buildBackendSocketURL() {
@@ -213,6 +236,40 @@ function startApp(rootEl) {
         );
         this.page = "app";
       },
+      async doAuth(privateKey) {
+        let result = await this.requestAuth(privateKey);
+
+        if (result.key) {
+          this.key = result.key;
+        }
+
+        return result;
+      },
+      async requestAuth(privateKey) {
+        let authKey =
+          !privateKey || !this.key
+            ? null
+            : await this.getSocketAuthKey(privateKey);
+
+        let h = await xhr.get(socksVerificationInterface, {
+          "X-Key": authKey
+            ? btoa(String.fromCharCode.apply(null, authKey))
+            : "",
+        });
+
+        let serverDate = h.getResponseHeader("Date");
+
+        return {
+          result: h.status,
+          key: h.getResponseHeader("X-Key"),
+          timeout: h.getResponseHeader("X-Timeout"),
+          heartbeat: h.getResponseHeader("X-Heartbeat"),
+          date: serverDate ? new Date(serverDate) : null,
+          data: h.responseText,
+          onlyAllowPresetRemotes:
+            h.getResponseHeader("X-OnlyAllowPresetRemotes") === "yes",
+        };
+      },
       async tryInitialAuth() {
         try {
           let result = await this.doAuth("");
@@ -235,17 +292,14 @@ function startApp(rootEl) {
           }
 
           let self = this;
-
           switch (result.result) {
             case 200:
               this.executeHomeApp(result, {
-                data: result.key,
+                data: await buildSocketKey(atob(result.key) + "+"),
                 async fetch() {
                   if (this.data) {
                     let dKey = this.data;
-
                     this.data = null;
-
                     return dKey;
                   }
 
@@ -259,7 +313,7 @@ function startApp(rootEl) {
                     );
                   }
 
-                  return result.key;
+                  return await buildSocketKey(atob(result.key) + "+");
                 },
               });
               break;
@@ -281,52 +335,37 @@ function startApp(rootEl) {
           this.loadErr = "Unable to initialize client application: " + e;
         }
       },
-      async doAuth(privateKey) {
-        let result = await this.requestAuth(privateKey);
-
-        if (result.key) {
-          this.key = result.key;
-        }
-
-        return result;
-      },
-      async requestAuth(privateKey) {
-        let authKey =
-          !privateKey || !this.key
-            ? null
-            : await this.getSocketAuthKey(privateKey, this.key);
-
-        let h = await xhr.get(socksVerificationInterface, {
-          "X-Key": authKey
-            ? btoa(String.fromCharCode.apply(null, authKey))
-            : "",
-        });
-
-        let serverDate = h.getResponseHeader("Date");
-
-        return {
-          result: h.status,
-          key: h.getResponseHeader("X-Key"),
-          timeout: h.getResponseHeader("X-Timeout"),
-          heartbeat: h.getResponseHeader("X-Heartbeat"),
-          date: serverDate ? new Date(serverDate) : null,
-          data: h.responseText,
-          onlyAllowPresetRemotes:
-            h.getResponseHeader("X-OnlyAllowPresetRemotes") === "yes",
-        };
-      },
       async submitAuth(passphrase) {
         this.authErr = "";
 
         try {
           let result = await this.doAuth(passphrase);
 
+          let self = this;
           switch (result.result) {
             case 200:
               this.executeHomeApp(result, {
-                data: passphrase,
-                fetch() {
-                  return this.data;
+                data: await buildSocketKey(atob(result.key) + "+" + passphrase),
+                async fetch() {
+                  if (this.data) {
+                    let dKey = this.data;
+                    this.data = null;
+                    return dKey;
+                  }
+
+                  let result = await self.doAuth(passphrase);
+
+                  if (result.result !== 200) {
+                    throw new Error(
+                      "Unable to fetch key from remote, unexpected " +
+                        "error code: " +
+                        result.result
+                    );
+                  }
+
+                  return await buildSocketKey(
+                    atob(result.key) + "+" + passphrase
+                  );
                 },
               });
               break;

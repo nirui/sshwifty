@@ -75,3 +75,35 @@ export function separateBuffer(buf, max) {
     start += remain;
   }
 }
+
+/**
+ * Create an Uint8Array out of given binary string
+ *
+ * @param {string} str binary string
+ *
+ * @returns {Uint8Array} Separated buffers
+ *
+ */
+export function buildBufferFromString(str) {
+  let r = [],
+    t = [];
+
+  for (let i in str) {
+    let c = str.charCodeAt(i);
+
+    while (c > 0xff) {
+      t.push(c & 0xff);
+      c >>= 8;
+    }
+
+    r.push(c);
+
+    for (let j = t.length; j > 0; j--) {
+      r.push(t[j]);
+    }
+
+    t = [];
+  }
+
+  return new Uint8Array(r);
+}

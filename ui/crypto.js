@@ -27,7 +27,7 @@ export async function hmac512(secret, data) {
     secret,
     {
       name: "HMAC",
-      hash: { name: "SHA-512" }
+      hash: { name: "SHA-512" },
     },
     false,
     ["sign", "verify"]
@@ -50,7 +50,7 @@ export function buildGCMKey(keyData) {
     keyData,
     {
       name: "AES-GCM",
-      length: GCMKeyBitLen
+      length: GCMKeyBitLen,
     },
     false,
     ["encrypt", "decrypt"]

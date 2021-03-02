@@ -81,6 +81,22 @@ func newSocketVerification(
 	}
 }
 
+func (s socketVerification) authKey(r *http.Request) []byte {
+	timeMixer := strconv.FormatInt(time.Now().Unix()/100, 10)
+
+	if len(s.commonCfg.SharedKey) > 0 {
+		return hashCombineSocketKeys(
+			timeMixer,
+			s.commonCfg.SharedKey,
+		)[:32]
+	}
+
+	return hashCombineSocketKeys(
+		timeMixer,
+		"DEFAULT VERIFY KEY",
+	)[:32]
+}
+
 func (s socketVerification) setServerConfigRespond(
 	hd *http.Header, w http.ResponseWriter) {
 	hd.Add("X-Heartbeat", s.heartbeat)
@@ -104,7 +120,7 @@ func (s socketVerification) Get(
 	key := r.Header.Get("X-Key")
 
 	if len(key) <= 0 {
-		hd.Add("X-Key", s.randomKey)
+		hd.Add("X-Key", base64.StdEncoding.EncodeToString(s.mixerKey(r)))
 
 		if len(s.commonCfg.SharedKey) <= 0 {
 			s.setServerConfigRespond(&hd, w)
@@ -129,11 +145,13 @@ func (s socketVerification) Get(
 		return NewError(http.StatusBadRequest, decodedKeyErr.Error())
 	}
 
-	if !hmac.Equal(s.authKey, decodedKey) {
+	authKey := s.authKey(r)
+
+	if !hmac.Equal(authKey, decodedKey) {
 		return ErrSocketAuthFailed
 	}
 
-	hd.Add("X-Key", s.randomKey)
+	hd.Add("X-Key", base64.StdEncoding.EncodeToString(s.mixerKey(r)))
 	s.setServerConfigRespond(&hd, w)
 
 	return nil

@@ -23,7 +23,6 @@ import (
 	"crypto/hmac"
 	"crypto/rand"
 	"crypto/sha512"
-	"encoding/base64"
 	"fmt"
 	"io"
 	"net/http"
@@ -66,32 +65,14 @@ type socket struct {
 
 	commonCfg configuration.Common
 	serverCfg configuration.Server
-	randomKey string
-	authKey   []byte
 	upgrader  websocket.Upgrader
 	commander command.Commander
 }
 
-func getNewSocketCtlRandomSharedKey() string {
-	b := [32]byte{}
+func hashCombineSocketKeys(addedKey string, privateKey string) []byte {
+	h := hmac.New(sha512.New, []byte(privateKey))
 
-	io.ReadFull(rand.Reader, b[:])
-
-	return base64.StdEncoding.EncodeToString(b[:])
-}
-
-func getSocketAuthKey(randomKey string, sharedKey string) []byte {
-	var k []byte
-
-	if len(sharedKey) > 0 {
-		k = []byte(sharedKey)
-	} else {
-		k = []byte(randomKey)
-	}
-
-	h := hmac.New(sha512.New, k)
-
-	h.Write([]byte(randomKey))
+	h.Write([]byte(addedKey))
 
 	return h.Sum(nil)
 }
@@ -101,13 +82,9 @@ func newSocketCtl(
 	cfg configuration.Server,
 	cmds command.Commands,
 ) socket {
-	randomKey := getNewSocketCtlRandomSharedKey()
-
 	return socket{
 		commonCfg: commonCfg,
 		serverCfg: cfg,
-		randomKey: randomKey,
-		authKey:   getSocketAuthKey(randomKey, commonCfg.SharedKey)[:32],
 		upgrader:  buildWebsocketUpgrader(cfg),
 		commander: command.New(cmds),
 	}
@@ -234,19 +211,18 @@ func (s socket) createCipher(key []byte) (cipher.AEAD, cipher.AEAD, error) {
 	return gcmRead, gcmWrite, nil
 }
 
-func (s socket) privateKey() string {
-	if len(s.commonCfg.SharedKey) > 0 {
-		return s.commonCfg.SharedKey
-	}
-
-	return s.randomKey
+func (s socket) mixerKey(r *http.Request) []byte {
+	return hashCombineSocketKeys(
+		r.UserAgent(), s.commonCfg.SharedKey+"+"+s.commonCfg.HostName)
 }
 
-func (s socket) buildCipherKey() [16]byte {
+func (s socket) buildCipherKey(r *http.Request) [16]byte {
 	key := [16]byte{}
-	now := strconv.FormatInt(time.Now().Unix()/100, 10)
 
-	copy(key[:], getSocketAuthKey(now, s.privateKey()))
+	copy(key[:], hashCombineSocketKeys(
+		strconv.FormatInt(time.Now().Unix()/100, 10),
+		string(s.mixerKey(r))+"+"+s.commonCfg.SharedKey,
+	))
 
 	return key
 }
@@ -300,7 +276,7 @@ func (s socket) Get(
 			"Unable to send server nonce to client: %s", nonceSendErr.Error()))
 	}
 
-	cipherKey := s.buildCipherKey()
+	cipherKey := s.buildCipherKey(r)
 
 	readCipher, writeCipher, cipherCreationErr := s.createCipher(cipherKey[:])
 
