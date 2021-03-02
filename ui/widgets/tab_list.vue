@@ -1,7 +1,7 @@
 <!--
 // Sshwifty - A Web SSH client
 //
-// Copyright (C) 2019-2020 Rui NI <nirui@gmx.com>
+// Copyright (C) 2019-2021 Ni Rui <nirui@gmx.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -27,13 +27,11 @@
         error:
           tabInfo.indicator.message.length > 0 &&
           tabInfo.indicator.level === 'error',
-        updated: tabInfo.indicator.updated && tab !== idx
+        updated: tabInfo.indicator.updated && tab !== idx,
       }"
       :style="
         'background: ' +
-          (tab === idx
-            ? tabInfo.control.activeColor()
-            : tabInfo.control.color())
+        (tab === idx ? tabInfo.control.activeColor() : tabInfo.control.color())
       "
       @click.self="switchTab(idx)"
     >
@@ -58,20 +56,20 @@ export default {
   props: {
     id: {
       type: String,
-      default: ""
+      default: "",
     },
     tab: {
       type: Number,
-      default: -1
+      default: -1,
     },
     tabs: {
       type: Array,
-      default: () => []
+      default: () => [],
     },
     tabsClass: {
       type: String,
-      default: ""
-    }
+      default: "",
+    },
   },
   watch: {
     tab(newVal) {
@@ -83,7 +81,7 @@ export default {
       }
 
       this.switchTabTo(newVal.length - 1);
-    }
+    },
   },
   methods: {
     switchTabTo(index) {
@@ -112,7 +110,7 @@ export default {
     },
     closeAt(index) {
       this.$emit("close", index);
-    }
-  }
+    },
+  },
 };
 </script>

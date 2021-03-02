@@ -1,7 +1,7 @@
 <!--
 // Sshwifty - A Web SSH client
 //
-// Copyright (C) 2019-2020 Rui NI <nirui@gmx.com>
+// Copyright (C) 2019-2021 Ni Rui <nirui@gmx.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -44,34 +44,34 @@ import TabList from "./tab_list.vue";
 
 export default {
   components: {
-    "tab-list": TabList
+    "tab-list": TabList,
   },
   props: {
     id: {
       type: String,
-      default: ""
+      default: "",
     },
     tab: {
       type: Number,
-      default: -1
+      default: -1,
     },
     tabs: {
       type: Array,
-      default: () => []
+      default: () => [],
     },
     tabsClass: {
       type: String,
-      default: ""
+      default: "",
     },
     listTriggerClass: {
       type: String,
-      default: ""
-    }
+      default: "",
+    },
   },
   methods: {
     showList() {
       this.$emit("list", this.tabs);
-    }
-  }
+    },
+  },
 };
 </script>

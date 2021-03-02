@@ -1,7 +1,7 @@
 <!--
 // Sshwifty - A Web SSH client
 //
-// Copyright (C) 2019-2020 Rui NI <nirui@gmx.com>
+// Copyright (C) 2019-2021 Ni Rui <nirui@gmx.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -21,9 +21,7 @@
   <div id="app-loading">
     <div id="app-loading-frame">
       <div v-if="error.length <= 0" id="app-loading-icon"></div>
-      <div v-else id="app-loading-error">
-        &times;
-      </div>
+      <div v-else id="app-loading-error">&times;</div>
 
       <h1 v-if="error.length <= 0" id="app-loading-title">
         Preparing client application
@@ -40,8 +38,8 @@ export default {
   props: {
     error: {
       type: String,
-      default: ""
-    }
-  }
+      default: "",
+    },
+  },
 };
 </script>

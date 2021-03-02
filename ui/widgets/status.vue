@@ -1,7 +1,7 @@
 <!--
 // Sshwifty - A Web SSH client
 //
-// Copyright (C) 2019-2020 Rui NI <nirui@gmx.com>
+// Copyright (C) 2019-2021 Ni Rui <nirui@gmx.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -154,7 +154,7 @@ import Chart from "./chart.vue";
 export default {
   components: {
     window: Window,
-    chart: Chart
+    chart: Chart,
   },
   filters: {
     bytePerSecondString(n) {
@@ -204,12 +204,12 @@ export default {
         nUnit +
         "</span>"
       );
-    }
+    },
   },
   props: {
     display: {
       type: Boolean,
-      default: false
+      default: false,
     },
     status: {
       type: Object,
@@ -221,16 +221,16 @@ export default {
           inbound: 0,
           inboundHistory: [],
           outbound: 0,
-          outboundHistory: []
+          outboundHistory: [],
         };
-      }
-    }
+      },
+    },
   },
   data() {
     return {
       inoutBoundMax: 0,
       inboundMax: 0,
-      outboundMax: 0
+      outboundMax: 0,
     };
   },
   methods: {
@@ -245,7 +245,7 @@ export default {
 
       this.inoutBoundMax =
         this.inboundMax > this.outboundMax ? this.inboundMax : this.outboundMax;
-    }
-  }
+    },
+  },
 };
 </script>

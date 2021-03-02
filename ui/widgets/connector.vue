@@ -1,7 +1,7 @@
 <!--
 // Sshwifty - A Web SSH client
 //
-// Copyright (C) 2019-2020 Rui NI <nirui@gmx.com>
+// Copyright (C) 2019-2021 Ni Rui <nirui@gmx.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -157,7 +157,7 @@
           autocomplete="off"
           :name="field.field.name"
           :placeholder="field.field.example"
-          style="display: none;"
+          style="display: none"
           @input="changed(key, field, false)"
           @change="changed(key, field, true)"
         />

@@ -1,7 +1,7 @@
 <!--
 // Sshwifty - A Web SSH client
 //
-// Copyright (C) 2019-2020 Rui NI <nirui@gmx.com>
+// Copyright (C) 2019-2021 Ni Rui <nirui@gmx.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -23,14 +23,12 @@
       class="console-console"
       :style="'font-family: ' + typeface + ', inherit'"
     >
-      <h2 style="display: none;">Console</h2>
+      <h2 style="display: none">Console</h2>
 
       <div class="console-loading">
         <div class="console-loading-frame">
           <div class="console-loading-icon"></div>
-          <div class="console-loading-message">
-            Initializing console ...
-          </div>
+          <div class="console-loading-message">Initializing console ...</div>
         </div>
       </div>
     </div>
@@ -46,7 +44,7 @@
       class="console-toolbar"
       :style="'background-color: ' + control.activeColor() + 'ee'"
     >
-      <h2 style="display: none;">Tool bar</h2>
+      <h2 style="display: none">Tool bar</h2>
 
       <div class="console-toolbar-group console-toolbar-group-left">
         <div class="console-toolbar-item">
