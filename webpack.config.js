@@ -18,16 +18,20 @@
 const webpack = require("webpack"),
   { spawn } = require("child_process"),
   path = require("path"),
+  os = require("os"),
   HtmlWebpackPlugin = require("html-webpack-plugin"),
   MiniCssExtractPlugin = require("mini-css-extract-plugin"),
-  OptimizeCssAssetsPlugin = require("optimize-css-assets-webpack-plugin"),
-  VueLoaderPlugin = require("vue-loader/lib/plugin"),
+  CssMinimizerPlugin = require("css-minimizer-webpack-plugin"),
+  ImageMinimizerPlugin = require("image-minimizer-webpack-plugin"),
+  { VueLoaderPlugin } = require("vue-loader"),
   FaviconsWebpackPlugin = require("favicons-webpack-plugin"),
-  ManifestPlugin = require("webpack-manifest-plugin"),
-  ImageminPlugin = require("imagemin-webpack-plugin").default,
   CopyPlugin = require("copy-webpack-plugin"),
   TerserPlugin = require("terser-webpack-plugin"),
   { CleanWebpackPlugin } = require("clean-webpack-plugin");
+
+const inDevMode = process.env.NODE_ENV === "development";
+
+process.traceDeprecation = true;
 
 let appSpawnProc = null,
   appBuildProc = null;
@@ -182,12 +186,11 @@ module.exports = {
   entry: {
     app: path.join(__dirname, "ui", "app.js"),
   },
-  devtool:
-    process.env.NODE_ENV === "development" ? "inline-source-map" : "source-map",
+  devtool: inDevMode ? "inline-source-map" : "source-map",
   output: {
     publicPath: "/sshwifty/assets/",
     path: path.join(__dirname, ".tmp", "dist"),
-    filename: process.env.NODE_ENV === "development" ? "[id].js" : "[hash].js",
+    filename: "[contenthash].js",
   },
   resolve: {
     alias: {
@@ -200,80 +203,60 @@ module.exports = {
     runtimeChunk: true,
     mergeDuplicateChunks: true,
     flagIncludedChunks: true,
-    occurrenceOrder: true,
     providedExports: true,
     usedExports: true,
-    splitChunks:
-      process.env.NODE_ENV === "development"
-        ? {}
-        : {
-            chunks: "all",
-            minSize: 102400,
-            maxSize: 244000,
-            automaticNameDelimiter: ".",
-            automaticNameMaxLength: 8,
-            maxAsyncRequests: 8,
-            maxInitialRequests: 8,
-            name: true,
-          },
-    minimize: process.env.NODE_ENV !== "development",
-    minimizer:
-      process.env.NODE_ENV === "development"
-        ? []
-        : [
-            new TerserPlugin({
-              test: /\.js(\?.*)?$/i,
-              terserOptions: {
-                warnings: false,
-                parse: {},
-                compress: {},
-                mangle: true,
-                module: false,
-                passes: 2,
-                output: {
-                  beautify: false,
-                  comments: false,
-                },
-                toplevel: false,
-                nameCache: null,
-                ie8: false,
-                keep_classnames: false,
-                keep_fnames: false,
-                safari10: false,
-                extractComments: /^\**!|@preserve|@license|@cc_on/i,
-              },
-            }),
-          ],
+    splitChunks: inDevMode
+      ? false
+      : {
+          chunks: "all",
+          minSize: 102400,
+          maxSize: 244000,
+          maxAsyncRequests: 6,
+          maxInitialRequests: 6,
+          name: false,
+        },
+    minimize: !inDevMode,
+    minimizer: inDevMode
+      ? []
+      : [
+          new CssMinimizerPlugin(),
+          new TerserPlugin({
+            test: /\.js(\?.*)?$/i,
+            terserOptions: {
+              ecma: undefined,
+              parse: {},
+              compress: {},
+              mangle: true,
+              module: false,
+            },
+            extractComments: /^\**!|@preserve|@license|@cc_on/i,
+          }),
+        ],
   },
   module: {
     rules: [
       {
-        test: /\.css$/,
-        use: ["vue-style-loader", MiniCssExtractPlugin.loader, "css-loader"],
-      },
-      {
-        test: /\.html/,
-        use: "html-loader",
-      },
-      {
         test: /\.vue$/,
-        loader: "vue-loader",
+        use: "vue-loader",
+      },
+      {
+        test: /\.css$/,
+        use: [
+          inDevMode ? "vue-style-loader" : MiniCssExtractPlugin.loader,
+          "css-loader",
+        ],
+      },
+      {
+        test: /\.html$/,
+        use: "html-loader",
       },
       {
         test: /\.(woff(2)?|ttf|eot)(\?v=\d+\.\d+\.\d+)?$/,
         use: "file-loader",
       },
       {
-        test: /\.(gif|png|jpe?g|svg)$/i,
-        use: [
-          {
-            loader: "file-loader",
-            options: {
-              name: "[contenthash].[ext]",
-              esModule: false,
-            },
-          },
-        ],
+        test: /\.(jpe?g|png|gif|svg)$/i,
+        type: "asset",
       },
       {
         test: /\.js$/,
@@ -322,13 +305,13 @@ module.exports = {
       {
         apply(compiler) {
           compiler.hooks.afterEmit.tapAsync(
-            "AfterEmitPlugin",
-            (_param, callback) => {
+            "AfterEmittedPlugin",
+            (_params, callback) => {
               killSpawnProc(appBuildProc, () => {
                 startBuildSpawnProc(() => {
                   callback();
 
-                  if (process.env.NODE_ENV !== "development") {
+                  if (!inDevMode) {
                     return;
                   }
 
@@ -349,7 +332,7 @@ module.exports = {
         favicons: {
           appName: "Sshwifty SSH Client",
           appDescription: "Web SSH Client",
-          developerName: "Rui NI",
+          developerName: "Rui Ni",
           developerURL: "https://vaguly.com",
           background: "#333",
           theme_color: "#333",
@@ -382,7 +365,7 @@ module.exports = {
         title: "Sshwifty Web SSH Client",
         minify: {
           html5: true,
-          collapseWhitespace: process.env.NODE_ENV !== "development",
+          collapseWhitespace: !inDevMode,
           caseSensitive: true,
           removeComments: true,
           removeEmptyElements: false,
@@ -402,40 +385,47 @@ module.exports = {
         lang: "en-US",
         minify: {
           html5: true,
-          collapseWhitespace: process.env.NODE_ENV !== "development",
+          collapseWhitespace: !inDevMode,
           caseSensitive: true,
           removeComments: true,
           removeEmptyElements: false,
         },
       }),
-      new ImageminPlugin({
-        disable: process.env.NODE_ENV === "development",
-        pngquant: {
-          speed: 3,
-          strip: true,
-          quality: "0-3",
-        },
-      }),
       new MiniCssExtractPlugin({
-        filename:
-          process.env.NODE_ENV === "development" ? "[id].css" : "[hash].css",
-        chunkFilename:
-          process.env.NODE_ENV === "development"
-            ? "[id].css"
-            : "[chunkhash].css",
+        filename: inDevMode ? "[id].css" : "[contenthash].css",
+        chunkFilename: inDevMode ? "[id].css" : "[contenthash].css",
       }),
-      new OptimizeCssAssetsPlugin({
-        assetNameRegExp: /\.css$/,
-        cssProcessor: require("cssnano"),
-        cssProcessorPluginOptions: {
-          preset: ["default", { discardComments: { removeAll: true } }],
-        },
-        canPrint: true,
-      }),
-      new ManifestPlugin(),
     ];
 
-    if (process.env.NODE_ENV !== "development") {
+    if (!inDevMode) {
+      plugins.push(
+        new ImageMinimizerPlugin({
+          severityError: "warning",
+          deleteOriginalAssets: true,
+          maxConcurrency: os.cpus().length,
+          minimizerOptions: {
+            plugins: [
+              ["gifsicle", { interlaced: true }],
+              ["mozjpeg", { progressive: true }],
+              ["pngquant", { quality: [0.0, 0.03] }],
+              [
+                "svgo",
+                {
+                  multipass: true,
+                  datauri: "enc",
+                  indent: 0,
+                  plugins: [
+                    {
+                      sortAttrs: true,
+                      inlineStyle: true,
+                    },
+                  ],
+                },
+              ],
+            ],
+          },
+        })
+      );
       plugins.push(new CleanWebpackPlugin());
     }
 
