@@ -27,7 +27,6 @@ jobs:
           export DOCKER_CUSTOM_COMMAND='echo "GitHub Action Build"'
 
           sudo apt-get update -qq -y
-          sudo apt-get upgrade -qq -y
           sudo apt-get install -qq -y qemu qemu-user-static binfmt-support
           sudo systemctl restart docker
 
