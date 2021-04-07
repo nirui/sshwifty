@@ -68,7 +68,7 @@
       @updated="tabUpdated"
     >
       <div id="home-content-wrap">
-        <h1>Hi, this is Sshwifty</h1>
+        <h1>Hi, this is sshwifty</h1>
 
         <p>
           An Open Source Web SSH Client that enables you to connect to SSH
