@@ -20,7 +20,7 @@
 <template>
   <div id="home">
     <header id="home-header">
-      <h1 id="home-hd-title">Sshwifty</h1>
+      <h1 id="home-hd-title">sshwifty</h1>
 
       <a id="home-hd-delay" href="javascript:;" @click="showDelayWindow">
         <span
