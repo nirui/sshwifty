@@ -200,25 +200,29 @@ function startApp(rootEl) {
           await cipher.hmac512(enc.encode(finalKey), enc.encode(rTime))
         ).slice(0, 32);
       },
-      buildBackendSocketURL() {
-        let r = "";
+      buildBackendSocketURLs() {
+        let r = {
+          webSocket: "",
+          keepAlive: "",
+        };
 
         switch (location.protocol) {
           case "https:":
-            r = "wss://";
+            r.webSocket = "wss://";
             break;
 
           default:
-            r = "ws://";
+            r.webSocket = "ws://";
         }
 
-        r += location.host + socksInterface;
+        r.webSocket += location.host + socksInterface;
+        r.keepAlive = location.protocol + "//" + location.host + socksInterface;
 
         return r;
       },
       buildSocket(key, dialTimeout, heartbeatInterval) {
         return new Socket(
-          this.buildBackendSocketURL(),
+          this.buildBackendSocketURLs(),
           key,
           dialTimeout * 1000,
           heartbeatInterval * 1000

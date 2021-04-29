@@ -19,6 +19,7 @@ import * as crypt from "./crypto.js";
 import * as reader from "./stream/reader.js";
 import * as sender from "./stream/sender.js";
 import * as streams from "./stream/streams.js";
+import * as xhr from "./xhr.js";
 
 export const ECHO_FAILED = streams.ECHO_FAILED;
 
@@ -39,19 +40,22 @@ class Dial {
     this.address = address;
     this.timeout = timeout;
     this.privateKey = privateKey;
+    this.keepAliveTicker = null;
   }
 
   /**
    * Connect to the remote server
    *
+   * @param {string} address Target URL address
    * @param {number} timeout Connect timeout
    *
    * @returns {Promise<WebSocket>} When connection is established
    *
    */
-  connect(timeout) {
+  connect(address, timeout) {
+    const self = this;
     return new Promise((resolve, reject) => {
-      let ws = new WebSocket(this.address),
+      let ws = new WebSocket(address.webSocket),
         promised = false,
         timeoutTimer = setTimeout(() => {
           ws.close();
@@ -77,6 +81,12 @@ class Dial {
           return reject(e);
         };
 
+      if (!self.keepAliveTicker) {
+        self.keepAliveTicker = setInterval(() => {
+          xhr.options(address.keepAlive, {});
+        }, self.timeout);
+      }
+
       ws.addEventListener("open", (_event) => {
         myRes(ws);
       });
@@ -87,10 +97,14 @@ class Dial {
         };
 
         myRej(event);
+        clearInterval(self.keepAliveTicker);
+        self.keepAliveTicker = null;
       });
 
       ws.addEventListener("error", (_event) => {
         ws.close();
+        clearInterval(self.keepAliveTicker);
+        self.keepAliveTicker = null;
       });
     });
   }
@@ -123,7 +137,7 @@ class Dial {
    *
    */
   async dial(callbacks) {
-    let ws = await this.connect(this.timeout);
+    let ws = await this.connect(this.address, this.timeout);
 
     try {
       let rd = new reader.Reader(new reader.Multiple(() => {}), (data) => {

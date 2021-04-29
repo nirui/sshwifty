@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-export function get(url, headers) {
+function send(method, url, headers) {
   return new Promise((res, rej) => {
     let authReq = new XMLHttpRequest();
 
@@ -35,7 +35,7 @@ export function get(url, headers) {
       rej(e);
     });
 
-    authReq.open("GET", url, true);
+    authReq.open(method, url, true);
 
     for (let h in headers) {
       authReq.setRequestHeader(h, headers[h]);
@@ -43,4 +43,12 @@ export function get(url, headers) {
 
     authReq.send();
   });
+}
+
+export function get(url, headers) {
+  return send("GET", url, headers);
+}
+
+export function options(url, headers) {
+  return send("OPTIONS", url, headers);
 }

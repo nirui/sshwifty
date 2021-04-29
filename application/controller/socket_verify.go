@@ -156,3 +156,8 @@ func (s socketVerification) Get(
 
 	return nil
 }
+
+func (s socketVerification) Options(
+	w http.ResponseWriter, r *http.Request, l log.Logger) error {
+	return nil
+}
