@@ -1,6 +1,6 @@
 // Sshwifty - A Web SSH client
 //
-// Copyright (C) 2019-2021 Ni Rui <nirui@gmx.com>
+// Copyright (C) 2019-2021 NI Rui <ranqus@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -24,7 +24,7 @@ describe("Integer", () => {
     let i = new integer.Integer(127),
       marshalled = i.marshal();
 
-    let r = new reader.Reader(new reader.Multiple(() => {}), data => {
+    let r = new reader.Reader(new reader.Multiple(() => {}), (data) => {
       return data;
     });
 
@@ -43,7 +43,7 @@ describe("Integer", () => {
     let i = new integer.Integer(integer.MAX),
       marshalled = i.marshal();
 
-    let r = new reader.Reader(new reader.Multiple(() => {}), data => {
+    let r = new reader.Reader(new reader.Multiple(() => {}), (data) => {
       return data;
     });
 

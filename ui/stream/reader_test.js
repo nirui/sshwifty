@@ -1,6 +1,6 @@
 // Sshwifty - A Web SSH client
 //
-// Copyright (C) 2019-2021 Ni Rui <nirui@gmx.com>
+// Copyright (C) 2019-2021 NI Rui <ranqus@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -41,7 +41,7 @@ describe("Reader", () => {
   it("Reader", async () => {
     const maxTests = 3;
     let IntvCount = 0,
-      r = new reader.Reader(new reader.Multiple(() => {}), data => {
+      r = new reader.Reader(new reader.Multiple(() => {}), (data) => {
         return data;
       }),
       expected = [
@@ -68,7 +68,7 @@ describe("Reader", () => {
         4,
         5,
         6,
-        7
+        7,
       ],
       feedIntv = setInterval(() => {
         r.feed(Uint8Array.from(expected.slice(0, 8)));
@@ -92,7 +92,7 @@ describe("Reader", () => {
   });
 
   it("readOne", async () => {
-    let r = new reader.Reader(new reader.Multiple(() => {}), data => {
+    let r = new reader.Reader(new reader.Multiple(() => {}), (data) => {
       return data;
     });
 
@@ -110,7 +110,7 @@ describe("Reader", () => {
   });
 
   it("readN", async () => {
-    let r = new reader.Reader(new reader.Multiple(() => {}), data => {
+    let r = new reader.Reader(new reader.Multiple(() => {}), (data) => {
       return data;
     });
 
@@ -130,7 +130,7 @@ describe("Reader", () => {
   it("Limited", async () => {
     const maxTests = 3;
     let IntvCount = 0,
-      r = new reader.Reader(new reader.Multiple(() => {}), data => {
+      r = new reader.Reader(new reader.Multiple(() => {}), (data) => {
         return data;
       }),
       expected = [0, 1, 2, 3, 4, 5, 6, 7, 0, 1],
@@ -160,7 +160,7 @@ describe("Reader", () => {
   it("readCompletely", async () => {
     const maxTests = 3;
     let IntvCount = 0,
-      r = new reader.Reader(new reader.Multiple(() => {}), data => {
+      r = new reader.Reader(new reader.Multiple(() => {}), (data) => {
         return data;
       }),
       expected = [0, 1, 2, 3, 4, 5, 6, 7, 0, 1],
@@ -186,7 +186,7 @@ describe("Reader", () => {
   it("readUntil", async () => {
     const maxTests = 3;
     let IntvCount = 0,
-      r = new reader.Reader(new reader.Multiple(() => {}), data => {
+      r = new reader.Reader(new reader.Multiple(() => {}), (data) => {
         return data;
       }),
       sample = [0, 1, 2, 3, 4, 5, 6, 7, 0, 1],

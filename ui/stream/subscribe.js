@@ -1,6 +1,6 @@
 // Sshwifty - A Web SSH client
 //
-// Copyright (C) 2019-2021 Ni Rui <nirui@gmx.com>
+// Copyright (C) 2019-2021 NI Rui <ranqus@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -101,14 +101,14 @@ export class Subscribe {
     let self = this;
 
     return new Promise((resolve, reject) => {
-      self.res = d => {
+      self.res = (d) => {
         self.res = null;
         self.rej = null;
 
         resolve(d);
       };
 
-      self.rej = e => {
+      self.rej = (e) => {
         self.res = null;
         self.rej = null;
 

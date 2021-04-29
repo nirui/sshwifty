@@ -1,6 +1,6 @@
 // Sshwifty - A Web SSH client
 //
-// Copyright (C) 2019-2021 Ni Rui <nirui@gmx.com>
+// Copyright (C) 2019-2021 NI Rui <ranqus@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -41,7 +41,7 @@ const (
 const (
 	staticListHeader = `// Sshwifty - A Web SSH client
 //
-// Copyright (C) 2019-2021 Ni Rui <nirui@gmx.com>
+// Copyright (C) 2019-2021 NI Rui <ranqus@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -197,7 +197,7 @@ var (
 
 // This file is part of Sshwifty Project
 //
-// Copyright (C) {{ .Date.Year }} Rui NI (nirui@gmx.com)
+// Copyright (C) {{ .Date.Year }} NI Rui (ranqus@gmail.com)
 //
 // https://github.com/nirui/sshwifty
 //

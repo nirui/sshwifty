@@ -1,6 +1,6 @@
 // Sshwifty - A Web SSH client
 //
-// Copyright (C) 2019-2021 Ni Rui <nirui@gmx.com>
+// Copyright (C) 2019-2021 NI Rui <ranqus@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -131,11 +131,11 @@ describe("Common", () => {
         6,
         7,
         8,
-        9
+        9,
       ]),
       sepSeg = common.separateBuffer(expected, 16);
 
-    sepSeg.forEach(d => {
+    sepSeg.forEach((d) => {
       resultArr.push(...d);
     });
 

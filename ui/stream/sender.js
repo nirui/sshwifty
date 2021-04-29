@@ -1,6 +1,6 @@
 // Sshwifty - A Web SSH client
 //
-// Copyright (C) 2019-2021 Ni Rui <nirui@gmx.com>
+// Copyright (C) 2019-2021 NI Rui <ranqus@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -129,7 +129,7 @@ export class Sender {
 
       callbacks.push({
         resolve: fetched.resolve,
-        reject: fetched.reject
+        reject: fetched.reject,
       });
 
       // Add data to buffer and maybe flush when the buffer is full
@@ -199,7 +199,7 @@ export class Sender {
       self.subscribe.resolve({
         data: data,
         resolve: resolve,
-        reject: reject
+        reject: reject,
       });
 
       if (self.bufferedRequests >= self.maxBufferedRequests) {

@@ -1,6 +1,6 @@
 // Sshwifty - A Web SSH client
 //
-// Copyright (C) 2019-2021 Ni Rui <nirui@gmx.com>
+// Copyright (C) 2019-2021 NI Rui <ranqus@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -15,9 +15,9 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import Exception from "./exception.js";
 import * as reader from "../stream/reader.js";
 import * as common from "./common.js";
+import Exception from "./exception.js";
 
 export const LOOPBACK = 0x00;
 export const IPV4 = 0x01;
@@ -123,7 +123,7 @@ export class Address {
         return new Uint8Array([
           this.addrPort >> 8,
           this.addrPort & 0xff,
-          LOOPBACK << 6
+          LOOPBACK << 6,
         ]);
 
       case IPV4:
@@ -138,7 +138,7 @@ export class Address {
           this.addrData[0],
           this.addrData[1],
           this.addrData[2],
-          this.addrData[3]
+          this.addrData[3],
         ]);
 
       case IPV6:
@@ -165,7 +165,7 @@ export class Address {
           this.addrData[12],
           this.addrData[13],
           this.addrData[14],
-          this.addrData[15]
+          this.addrData[15],
         ]);
 
       case HOSTNAME:
@@ -223,6 +223,6 @@ export function parseHostPort(s, defaultPort) {
   return {
     type: t,
     address: d.addr,
-    port: d.port
+    port: d.port,
   };
 }

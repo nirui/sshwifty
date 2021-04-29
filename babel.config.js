@@ -1,6 +1,6 @@
 // Sshwifty - A Web SSH client
 //
-// Copyright (C) 2019-2021 Ni Rui <nirui@gmx.com>
+// Copyright (C) 2019-2021 NI Rui <ranqus@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -15,11 +15,11 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-module.exports = function(api) {
+module.exports = function (api) {
   api.cache(true);
 
   return {
     presets: ["@babel/preset-env"],
-    plugins: [["@babel/plugin-transform-runtime"]]
+    plugins: [["@babel/plugin-transform-runtime"]],
   };
 };

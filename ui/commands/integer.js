@@ -1,6 +1,6 @@
 // Sshwifty - A Web SSH client
 //
-// Copyright (C) 2019-2021 Ni Rui <nirui@gmx.com>
+// Copyright (C) 2019-2021 NI Rui <ranqus@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -15,8 +15,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import Exception from "./exception.js";
 import * as reader from "../stream/reader.js";
+import Exception from "./exception.js";
 
 export const MAX = 0x3fff;
 export const MAX_BYTES = 2;
@@ -54,7 +54,7 @@ export class Integer {
 
     return new Uint8Array([
       (this.num >> 7) | integerHasNextBit,
-      this.num & integerValueCutter
+      this.num & integerValueCutter,
     ]);
   }
 

@@ -1,6 +1,6 @@
 // Sshwifty - A Web SSH client
 //
-// Copyright (C) 2019-2021 Ni Rui <nirui@gmx.com>
+// Copyright (C) 2019-2021 NI Rui <ranqus@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -24,7 +24,7 @@ describe("Address", () => {
     let addr = new address.Address(address.LOOPBACK, null, 8080),
       buf = addr.buffer();
 
-    let r = new reader.Reader(new reader.Multiple(), data => {
+    let r = new reader.Reader(new reader.Multiple(), (data) => {
       return data;
     });
 
@@ -45,7 +45,7 @@ describe("Address", () => {
       ),
       buf = addr.buffer();
 
-    let r = new reader.Reader(new reader.Multiple(() => {}), data => {
+    let r = new reader.Reader(new reader.Multiple(() => {}), (data) => {
       return data;
     });
 
@@ -66,7 +66,7 @@ describe("Address", () => {
       ),
       buf = addr.buffer();
 
-    let r = new reader.Reader(new reader.Multiple(() => {}), data => {
+    let r = new reader.Reader(new reader.Multiple(() => {}), (data) => {
       return data;
     });
 
@@ -87,7 +87,7 @@ describe("Address", () => {
       ),
       buf = addr.buffer();
 
-    let r = new reader.Reader(new reader.Multiple(() => {}), data => {
+    let r = new reader.Reader(new reader.Multiple(() => {}), (data) => {
       return data;
     });
 

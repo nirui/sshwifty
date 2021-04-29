@@ -1,6 +1,6 @@
 // Sshwifty - A Web SSH client
 //
-// Copyright (C) 2019-2021 Ni Rui <nirui@gmx.com>
+// Copyright (C) 2019-2021 NI Rui <ranqus@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -16,11 +16,10 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import * as iconv from "iconv-lite";
-
-import * as subscribe from "../stream/subscribe.js";
-import * as reader from "../stream/reader.js";
 import * as color from "../commands/color.js";
 import * as common from "../commands/common.js";
+import * as reader from "../stream/reader.js";
+import * as subscribe from "../stream/subscribe.js";
 
 class Control {
   constructor(data, color) {
@@ -32,26 +31,26 @@ class Control {
     if (this.charset === "utf-8") {
       let enc = new TextEncoder();
 
-      this.charsetDecoder = d => {
+      this.charsetDecoder = (d) => {
         return d;
       };
 
-      this.charsetEncoder = dStr => {
+      this.charsetEncoder = (dStr) => {
         return enc.encode(dStr);
       };
     } else {
       let dec = new TextDecoder(this.charset),
         enc = new TextEncoder();
 
-      this.charsetDecoder = d => {
+      this.charsetDecoder = (d) => {
         return enc.encode(
           dec.decode(d, {
-            stream: true
+            stream: true,
           })
         );
       };
 
-      this.charsetEncoder = dStr => {
+      this.charsetEncoder = (dStr) => {
         return iconv.encode(dStr, this.charset);
       };
     }
@@ -64,7 +63,7 @@ class Control {
 
     let self = this;
 
-    data.events.place("stdout", async rd => {
+    data.events.place("stdout", async (rd) => {
       try {
         self.subs.resolve(self.charsetDecoder(await reader.readCompletely(rd)));
       } catch (e) {
@@ -72,7 +71,7 @@ class Control {
       }
     });
 
-    data.events.place("stderr", async rd => {
+    data.events.place("stderr", async (rd) => {
       try {
         self.subs.resolve(self.charsetDecoder(await reader.readCompletely(rd)));
       } catch (e) {

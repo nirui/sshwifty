@@ -1,6 +1,6 @@
 // Sshwifty - A Web SSH client
 //
-// Copyright (C) 2019-2021 Ni Rui <nirui@gmx.com>
+// Copyright (C) 2019-2021 NI Rui <ranqus@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -15,16 +15,16 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import * as strings from "./string.js";
-import * as reader from "../stream/reader.js";
 import assert from "assert";
+import * as reader from "../stream/reader.js";
+import * as strings from "./string.js";
 
 describe("String", () => {
   it("String 1", async () => {
     let s = new strings.String(new Uint8Array(["H", "E", "L", "L", "O"])),
       sBuf = s.buffer();
 
-    let r = new reader.Reader(new reader.Multiple(() => {}), data => {
+    let r = new reader.Reader(new reader.Multiple(() => {}), (data) => {
       return data;
     });
 
@@ -247,12 +247,12 @@ describe("String", () => {
           "O",
           "R",
           "L",
-          "D"
+          "D",
         ])
       ),
       sBuf = s.buffer();
 
-    let r = new reader.Reader(new reader.Multiple(() => {}), data => {
+    let r = new reader.Reader(new reader.Multiple(() => {}), (data) => {
       return data;
     });
 

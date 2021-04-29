@@ -1,6 +1,6 @@
 // Sshwifty - A Web SSH client
 //
-// Copyright (C) 2019-2021 Ni Rui <nirui@gmx.com>
+// Copyright (C) 2019-2021 NI Rui <ranqus@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -33,8 +33,8 @@ describe("Sender", () => {
     const maxSegSize = 64;
     let result = [];
     let sd = new sender.Sender(
-      rawData => {
-        return new Promise(resolve => {
+      (rawData) => {
+        return new Promise((resolve) => {
           setTimeout(() => {
             for (let i in rawData) {
               result.push(rawData[i]);
@@ -52,7 +52,7 @@ describe("Sender", () => {
 
     sd.send(expected);
 
-    let sendCompleted = new Promise(resolve => {
+    let sendCompleted = new Promise((resolve) => {
       let timer = setInterval(() => {
         if (result.length < expected.length) {
           return;
@@ -73,8 +73,8 @@ describe("Sender", () => {
     const maxSegSize = 64;
     let result = [];
     let sd = new sender.Sender(
-      rawData => {
-        return new Promise(resolve => {
+      (rawData) => {
+        return new Promise((resolve) => {
           setTimeout(() => {
             for (let i in rawData) {
               result.push(rawData[i]);
@@ -102,7 +102,7 @@ describe("Sender", () => {
       }, 100);
     }
 
-    let sendCompleted = new Promise(resolve => {
+    let sendCompleted = new Promise((resolve) => {
       let timer = setInterval(() => {
         if (result.length < expectedLen) {
           return;

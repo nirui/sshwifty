@@ -1,6 +1,6 @@
 // Sshwifty - A Web SSH client
 //
-// Copyright (C) 2019-2021 Ni Rui <nirui@gmx.com>
+// Copyright (C) 2019-2021 NI Rui <ranqus@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -16,12 +16,11 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import * as iconv from "iconv-lite";
-
-import * as subscribe from "../stream/subscribe.js";
-import * as reader from "../stream/reader.js";
 import * as color from "../commands/color.js";
 import * as common from "../commands/common.js";
 import Exception from "../commands/exception.js";
+import * as reader from "../stream/reader.js";
+import * as subscribe from "../stream/subscribe.js";
 
 // const maxReadBufSize = 1024;
 
@@ -56,7 +55,7 @@ const unknownTermTypeSendData = new Uint8Array([
   84,
   69,
   82,
-  77
+  77,
 ]);
 
 // Most of code of this class is directly from
@@ -71,7 +70,7 @@ class Parser {
     this.options = {
       echoEnabled: false,
       suppressGoAhead: false,
-      nawsAccpeted: false
+      nawsAccpeted: false,
     };
     this.current = 0;
   }
@@ -339,26 +338,26 @@ class Control {
     if (this.charset === "utf-8") {
       let enc = new TextEncoder();
 
-      this.charsetDecoder = d => {
+      this.charsetDecoder = (d) => {
         return d;
       };
 
-      this.charsetEncoder = dStr => {
+      this.charsetEncoder = (dStr) => {
         return enc.encode(dStr);
       };
     } else {
       let dec = new TextDecoder(this.charset),
         enc = new TextEncoder();
 
-      this.charsetDecoder = d => {
+      this.charsetDecoder = (d) => {
         return enc.encode(
           dec.decode(d, {
-            stream: true
+            stream: true,
           })
         );
       };
 
-      this.charsetEncoder = dStr => {
+      this.charsetEncoder = (dStr) => {
         return iconv.encode(dStr, this.charset);
       };
     }
@@ -371,14 +370,14 @@ class Control {
     this.enable = false;
     this.windowDim = {
       cols: 65535,
-      rows: 65535
+      rows: 65535,
     };
 
     let self = this;
 
     this.parser = new Parser(
       this.sender,
-      d => {
+      (d) => {
         self.subs.resolve(this.charsetDecoder(d));
       },
       {
@@ -387,13 +386,13 @@ class Control {
         },
         getWindowDim() {
           return self.windowDim;
-        }
+        },
       }
     );
 
     let runWait = this.parser.run();
 
-    data.events.place("inband", rd => {
+    data.events.place("inband", (rd) => {
       return new Promise((resolve, _reject) => {
         self.parser.feed(rd, () => {
           resolve(true);
