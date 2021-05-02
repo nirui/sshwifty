@@ -29,5 +29,5 @@ type home struct {
 }
 
 func (h home) Get(w http.ResponseWriter, r *http.Request, l log.Logger) error {
-	return serveStaticCachePage("index.html", w, r, l)
+	return serveStaticPage("index.html", http.StatusOK, w, r, l)
 }
