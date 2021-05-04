@@ -382,23 +382,6 @@ And if that's not enough, connect a physical keyboard through Bluetooth or OTA
 could be a better alternative. This way you can type as if you're using a
 computer console.
 
-There are many good Bluetooth keyboards out there, for example the HHKB HYBRID
-TYPE-S, FILCO Majestouch Convertible 2 and GANSS ALT71D which is more afforable
-than the previous two. And if you don't want go get that serious, then a $10 one
-would also do.
-
-If you use JD.COM, you can purchase aformentioned keyboards with my links. I
-will be rewarded base on your purchase.
-
-- [HHKB HYBRID TYPE-S], and [HHKB HYBRID TYPE-S (White)]
-- [FILCO Majestouch Convertible 2]
-- [GANSS ALT71D]
-
-[HHKB HYBRID TYPE-S]: https://union-click.jd.com/jdc?e=&p=AyIGZRtZFgsbBFAYXhUyFQRSGlkSAxEDVx9rUV1KWQorAlBHU0VeBUVNR0ZbSkdETlcNVQtHRVNSUVNLXANBRA1XB14DS10cQQVYD21XHgBWHFoXBRMEURlfJXdIY1FQMGl7cWwFW0EQVmlBFWEocXIeC2UeWxQDEQBcGVoSMhIGVBlSEgEWBVYraxUBIkY7EloVAhcEZRlaFAARD1QTWRAyEgBUE1sXChMDVB1bEzIVB1wrAEBsRHkmRi1hQ0paDE8HJTIVBFIaWRIDEQNXH2sWMiI3VStYJUB8BgAcCxFRQAcBS19HBxVVU0tdElUbU1FOWRQDEg5RHFwlABMGURI%3D
-[HHKB HYBRID TYPE-S (White)]: https://union-click.jd.com/jdc?e=&p=AyIGZRtZFgsbBFAYXhUyFQRSGlkSAxEDVxlrUV1KWQorAlBHU0VeBUVNR0ZbSkdETlcNVQtHRVNSUVNLXANBRA1XB14DS10cQQVYD21XHgBWHFoXBRMEURlZJX5LVQdGEG5hcVsNbyF8V09BIHkSdEQeC2UeWxQDEQBcGVoSMhIGVBlSEgEWBVYraxUBIkY7EloVAhcEZRlaFAARD1QTWRAyEgBUE1sXChMOVhJfFDIVB1wrAEBsRHkmRi1hQ0paDE8HJTIVBFIaWRIDEQNXGWsWMiI3VStYJUB8BgAcCxFRQAcBS19HBxVVU0tdElUbU1FOWRQDEg5RHFwlABMGURI%3D
-[FILCO Majestouch Convertible 2]: https://union-click.jd.com/jdc?e=&p=AyIGZRhfEQETBFEbXxMyFgdRGlgQCxYCVxprUV1KWQorAlBHU0VeBUVNR0ZbSkdETlcNVQtHRVNSUVNLXANBRA1XB14DS10cQQVYD21XHgNVH1oWBxsDUBlaJXV1UFdCE2ADcXMRHV8UZ2dDLEFeD0QeC2UeWxQDEQBcGVoSMhIGVBlSEgEWBVYraxUBIkY7G1oVChAGVhNrFwMTBVYTWh0AFzdVHFodAhAOUxNZFwoaN1IbUiVZR2kDZShIdGZGDUYCQV4iN1EbXxQBFw5RHlkUMhE3ZStbJQEiRTsdCBAKRQ9dEwgcUhECUx5dHFUTAgBMXhdSEgNWElkTAyIFVBpfHA%3D%3D
-[GANSS ALT71D]: https://union-click.jd.com/jdc?e=&p=AyIGZRteFAsRAFweWxEyFwFTG1scChAOXBlrUV1KWQorAlBHU0VeBUVNR0ZbSkdETlcNVQtHRVNSUVNLXANBRA1XB14DS10cQQVYD21XHgJTHVsVCxoFXBJZJWZ7ZF1%2FCGdrcmVSXBJxfHNnChsicFQeC2UeWxQDEQBcGVoSMhIGVBlSEgEWBVYraxUBIkY7ElgQARYCZRlaFAARD1QTWRAyEgBUE1sXCxsBUBpfETIVB1wrAEBsRHkmRi1hQ0paDE8HJTIXAVMbWxwKEA5cGWsWMiI3VStYJUB8DgUbWxcBFVVSGF5FBxYEAEhbRQMVAVAfXh0DGgVXHl8lABMGURI%3D
-
 ## License
 
 Code of this project is licensed under AGPL, see [LICENSE.md] for detail.
