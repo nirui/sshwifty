@@ -342,11 +342,12 @@ SSHWIFTY_WRITEELAY
 
 ### Why the software says "The time difference is beyond operational limit"?
 
-This software requires both the client and the server are running at the same
-date time.
+This usually happens when the clock on the client and/or the server is unsynced
+beyond tolerance.
 
-Please reload the page. If the error message won't go away, consider resync the
-time on both the client and the server with a trusted time server.
+Please make sure the clock time on both the client and the server are correct by
+resync them with a NTP server, and then reload the page. The problem should be
+gone afterwards.
 
 ### Why I got error "TypeError: Cannot read property 'importKey' of undefined"
 
