@@ -630,7 +630,7 @@ export const consoleScreenKeys = [
           altKey: false,
           charCode: 0,
           code: "KeyQ",
-          ctrlKey: false,
+          ctrlKey: true,
           key: "q",
           keyCode: 81,
           location: 0,
