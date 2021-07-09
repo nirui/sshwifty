@@ -26,10 +26,10 @@ describe("Header", () => {
 
     let n = new header.Header(h.value());
 
-    assert.equal(h.type(), n.type());
-    assert.equal(h.data(), n.data());
-    assert.equal(n.type(), header.CONTROL);
-    assert.equal(n.data(), 63);
+    assert.strictEqual(h.type(), n.type());
+    assert.strictEqual(h.data(), n.data());
+    assert.strictEqual(n.type(), header.CONTROL);
+    assert.strictEqual(n.data(), 63);
   });
 
   it("Stream", () => {
@@ -37,11 +37,11 @@ describe("Header", () => {
 
     h.set(header.STREAM_MAX_MARKER, header.STREAM_MAX_LENGTH);
 
-    assert.equal(h.marker(), header.STREAM_MAX_MARKER);
-    assert.equal(h.length(), header.STREAM_MAX_LENGTH);
+    assert.strictEqual(h.marker(), header.STREAM_MAX_MARKER);
+    assert.strictEqual(h.length(), header.STREAM_MAX_LENGTH);
 
-    assert.equal(h.headerByte1, 0xff);
-    assert.equal(h.headerByte2, 0xff);
+    assert.strictEqual(h.headerByte1, 0xff);
+    assert.strictEqual(h.headerByte2, 0xff);
   });
 
   it("InitialStream", () => {
@@ -49,8 +49,8 @@ describe("Header", () => {
 
     h.set(15, 128, true);
 
-    assert.equal(h.command(), 15);
-    assert.equal(h.data(), 128);
-    assert.equal(h.success(), true);
+    assert.strictEqual(h.command(), 15);
+    assert.strictEqual(h.data(), 128);
+    assert.strictEqual(h.success(), true);
   });
 });

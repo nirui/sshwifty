@@ -66,7 +66,7 @@ describe("Sender", () => {
 
     await sendCompleted;
 
-    assert.deepEqual(new Uint8Array(result), expected);
+    assert.deepStrictEqual(new Uint8Array(result), expected);
   });
 
   it("Send (Multiple calls)", async () => {
@@ -116,6 +116,6 @@ describe("Sender", () => {
 
     await sendCompleted;
 
-    assert.deepEqual(new Uint8Array(result), expected);
+    assert.deepStrictEqual(new Uint8Array(result), expected);
   });
 });

@@ -27,15 +27,15 @@ describe("Reader", () => {
 
     let ex = buf.export(1);
 
-    assert.equal(ex.length, 1);
-    assert.equal(ex[0], 0);
-    assert.equal(buf.remains(), 7);
+    assert.strictEqual(ex.length, 1);
+    assert.strictEqual(ex[0], 0);
+    assert.strictEqual(buf.remains(), 7);
 
     ex = await reader.readCompletely(buf);
 
-    assert.equal(ex.length, 7);
-    assert.deepEqual(ex, new Uint8Array([1, 2, 3, 4, 5, 6, 7]));
-    assert.equal(buf.remains(), 0);
+    assert.strictEqual(ex.length, 7);
+    assert.deepStrictEqual(ex, new Uint8Array([1, 2, 3, 4, 5, 6, 7]));
+    assert.strictEqual(buf.remains(), 0);
   });
 
   it("Reader", async () => {
@@ -45,30 +45,7 @@ describe("Reader", () => {
         return data;
       }),
       expected = [
-        0,
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        0,
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        0,
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
+        0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7,
       ],
       feedIntv = setInterval(() => {
         r.feed(Uint8Array.from(expected.slice(0, 8)));
@@ -88,7 +65,7 @@ describe("Reader", () => {
       result.push((await r.export(1))[0]);
     }
 
-    assert.deepEqual(result, expected);
+    assert.deepStrictEqual(result, expected);
   });
 
   it("readOne", async () => {
@@ -102,11 +79,11 @@ describe("Reader", () => {
 
     let rr = await reader.readOne(r);
 
-    assert.deepEqual(rr, Uint8Array.from([0]));
+    assert.deepStrictEqual(rr, Uint8Array.from([0]));
 
     rr = await reader.readOne(r);
 
-    assert.deepEqual(rr, Uint8Array.from([1]));
+    assert.deepStrictEqual(rr, Uint8Array.from([1]));
   });
 
   it("readN", async () => {
@@ -120,11 +97,11 @@ describe("Reader", () => {
 
     let rr = await reader.readN(r, 3);
 
-    assert.deepEqual(rr, Uint8Array.from([0, 1, 2]));
+    assert.deepStrictEqual(rr, Uint8Array.from([0, 1, 2]));
 
     rr = await reader.readN(r, 3);
 
-    assert.deepEqual(rr, Uint8Array.from([3, 4, 5]));
+    assert.deepStrictEqual(rr, Uint8Array.from([3, 4, 5]));
   });
 
   it("Limited", async () => {
@@ -153,8 +130,8 @@ describe("Reader", () => {
       result.push((await limited.export(1))[0]);
     }
 
-    assert.equal(limited.completed(), true);
-    assert.deepEqual(result, expected);
+    assert.strictEqual(limited.completed(), true);
+    assert.deepStrictEqual(result, expected);
   });
 
   it("readCompletely", async () => {
@@ -179,8 +156,8 @@ describe("Reader", () => {
 
     let result = await reader.readCompletely(limited);
 
-    assert.equal(limited.completed(), true);
-    assert.deepEqual(result, Uint8Array.from(expected));
+    assert.strictEqual(limited.completed(), true);
+    assert.deepStrictEqual(result, Uint8Array.from(expected));
   });
 
   it("readUntil", async () => {
@@ -207,14 +184,14 @@ describe("Reader", () => {
 
     let result = await reader.readUntil(limited, 7);
 
-    assert.equal(limited.completed(), false);
-    assert.deepEqual(result.data, expected1);
-    assert.deepEqual(result.found, true);
+    assert.strictEqual(limited.completed(), false);
+    assert.deepStrictEqual(result.data, expected1);
+    assert.deepStrictEqual(result.found, true);
 
     result = await reader.readUntil(limited, 7);
 
-    assert.equal(limited.completed(), true);
-    assert.deepEqual(result.data, expected2);
-    assert.deepEqual(result.found, false);
+    assert.strictEqual(limited.completed(), true);
+    assert.deepStrictEqual(result.data, expected2);
+    assert.deepStrictEqual(result.found, false);
   });
 });

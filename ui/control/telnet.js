@@ -259,22 +259,24 @@ class Parser {
           return;
         }
 
-        let dim = this.callbacks.getWindowDim(),
-          dimData = new DataView(new ArrayBuffer(4));
+        {
+          let dim = this.callbacks.getWindowDim(),
+            dimData = new DataView(new ArrayBuffer(4));
 
-        dimData.setUint16(0, dim.cols);
-        dimData.setUint16(2, dim.rows);
+          dimData.setUint16(0, dim.cols);
+          dimData.setUint16(2, dim.rows);
 
-        let dimBytes = new Uint8Array(dimData.buffer);
+          let dimBytes = new Uint8Array(dimData.buffer);
 
-        if (this.options.nawsAccpeted) {
-          this.sendSubNego(dimBytes, optNAWS);
+          if (this.options.nawsAccpeted) {
+            this.sendSubNego(dimBytes, optNAWS);
 
-          return;
+            return;
+          }
+
+          this.options.nawsAccpeted = true;
+          this.sendWillSubNego(cmdWill, dimBytes, optNAWS);
         }
-
-        this.options.nawsAccpeted = true;
-        this.sendWillSubNego(cmdWill, dimBytes, optNAWS);
         return;
 
       case optTerminalType:

@@ -32,9 +32,9 @@ describe("Address", () => {
 
     let addr2 = await address.Address.read(r);
 
-    assert.equal(addr2.type(), addr.type());
-    assert.deepEqual(addr2.address(), addr.address());
-    assert.equal(addr2.port(), addr.port());
+    assert.strictEqual(addr2.type(), addr.type());
+    assert.deepStrictEqual(addr2.address(), addr.address());
+    assert.strictEqual(addr2.port(), addr.port());
   });
 
   it("Address IPv4", async () => {
@@ -53,9 +53,9 @@ describe("Address", () => {
 
     let addr2 = await address.Address.read(r);
 
-    assert.equal(addr2.type(), addr.type());
-    assert.deepEqual(addr2.address(), addr.address());
-    assert.equal(addr2.port(), addr.port());
+    assert.strictEqual(addr2.type(), addr.type());
+    assert.deepStrictEqual(addr2.address(), addr.address());
+    assert.strictEqual(addr2.port(), addr.port());
   });
 
   it("Address IPv6", async () => {
@@ -74,9 +74,9 @@ describe("Address", () => {
 
     let addr2 = await address.Address.read(r);
 
-    assert.equal(addr2.type(), addr.type());
-    assert.deepEqual(addr2.address(), addr.address());
-    assert.equal(addr2.port(), addr.port());
+    assert.strictEqual(addr2.type(), addr.type());
+    assert.deepStrictEqual(addr2.address(), addr.address());
+    assert.strictEqual(addr2.port(), addr.port());
   });
 
   it("Address HostName", async () => {
@@ -95,8 +95,8 @@ describe("Address", () => {
 
     let addr2 = await address.Address.read(r);
 
-    assert.equal(addr2.type(), addr.type());
-    assert.deepEqual(addr2.address(), addr.address());
-    assert.equal(addr2.port(), addr.port());
+    assert.strictEqual(addr2.type(), addr.type());
+    assert.deepStrictEqual(addr2.address(), addr.address());
+    assert.strictEqual(addr2.port(), addr.port());
   });
 });

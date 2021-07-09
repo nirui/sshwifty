@@ -27,7 +27,8 @@ const webpack = require("webpack"),
   FaviconsWebpackPlugin = require("favicons-webpack-plugin"),
   CopyPlugin = require("copy-webpack-plugin"),
   TerserPlugin = require("terser-webpack-plugin"),
-  { CleanWebpackPlugin } = require("clean-webpack-plugin");
+  { CleanWebpackPlugin } = require("clean-webpack-plugin"),
+  ESLintPlugin = require("eslint-webpack-plugin");
 
 const inDevMode = process.env.NODE_ENV === "development";
 
@@ -281,6 +282,7 @@ module.exports = {
           handlebarsLoader: {},
         },
       }),
+      new ESLintPlugin({}),
       new CopyPlugin({
         patterns: [
           {

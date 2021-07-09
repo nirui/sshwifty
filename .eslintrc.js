@@ -1,6 +1,6 @@
 module.exports = {
   parserOptions: {
-    parser: "babel-eslint",
+    parser: "@babel/eslint-parser",
   },
   root: true,
   env: {
@@ -14,8 +14,9 @@ module.exports = {
   ],
   rules: {
     "vue/component-name-in-template-casing": ["error", "PascalCase"],
-    "no-console": process.env.NODE_ENV === "production" ? "error" : "off",
+    "no-console": process.env.NODE_ENV === "production" ? "warn" : "off",
     "no-debugger": process.env.NODE_ENV === "production" ? "error" : "off",
+    "no-unused-vars": process.env.NODE_ENV === "production" ? "warn" : "error",
   },
   globals: {
     $nuxt: true,

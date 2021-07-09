@@ -32,7 +32,7 @@ describe("String", () => {
 
     let s2 = await strings.String.read(r);
 
-    assert.deepEqual(s2.data(), s.data());
+    assert.deepStrictEqual(s2.data(), s.data());
   });
 
   it("String 2", async () => {
@@ -260,6 +260,6 @@ describe("String", () => {
 
     let s2 = await strings.String.read(r);
 
-    assert.deepEqual(s2.data(), s.data());
+    assert.deepStrictEqual(s2.data(), s.data());
   });
 });

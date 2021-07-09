@@ -173,16 +173,18 @@ export class Address {
           throw new Exception("Host name cannot longer than " + MAX_ADDR_LEN);
         }
 
-        let dataBuf = new Uint8Array(this.addrData.length + 3);
+        {
+          let dataBuf = new Uint8Array(this.addrData.length + 3);
 
-        dataBuf[0] = (this.addrPort >> 8) & 0xff;
-        dataBuf[1] = this.addrPort & 0xff;
-        dataBuf[2] = HOSTNAME << 6;
-        dataBuf[2] |= this.addrData.length;
+          dataBuf[0] = (this.addrPort >> 8) & 0xff;
+          dataBuf[1] = this.addrPort & 0xff;
+          dataBuf[2] = HOSTNAME << 6;
+          dataBuf[2] |= this.addrData.length;
 
-        dataBuf.set(this.addrData, 3);
+          dataBuf.set(this.addrData, 3);
 
-        return dataBuf;
+          return dataBuf;
+        }
 
       default:
         throw new Exception("Unknown address type");

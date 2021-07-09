@@ -28,7 +28,7 @@ describe("Integer", () => {
       return data;
     });
 
-    assert.equal(marshalled.length, 1);
+    assert.strictEqual(marshalled.length, 1);
 
     r.feed(marshalled);
 
@@ -36,7 +36,7 @@ describe("Integer", () => {
 
     await i2.unmarshal(r);
 
-    assert.equal(i.value(), i2.value());
+    assert.strictEqual(i.value(), i2.value());
   });
 
   it("Integer MAX", async () => {
@@ -47,7 +47,7 @@ describe("Integer", () => {
       return data;
     });
 
-    assert.equal(marshalled.length, 2);
+    assert.strictEqual(marshalled.length, 2);
 
     r.feed(marshalled);
 
@@ -55,6 +55,6 @@ describe("Integer", () => {
 
     await i2.unmarshal(r);
 
-    assert.equal(i.value(), i2.value());
+    assert.strictEqual(i.value(), i2.value());
   });
 });
