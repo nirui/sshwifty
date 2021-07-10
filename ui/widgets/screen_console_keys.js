@@ -640,6 +640,22 @@ export const consoleScreenKeys = [
           which: 81,
         },
       ],
+      [
+        "Ctrl+X",
+        {
+          altKey: false,
+          charCode: 0,
+          code: "KeyX",
+          ctrlKey: true,
+          key: "x",
+          keyCode: 88,
+          location: 0,
+          metaKey: false,
+          repeat: false,
+          shiftKey: false,
+          which: 88,
+        },
+      ],
     ],
   },
 ];

@@ -67,6 +67,7 @@ const mainTemplate = `
 
 const socksInterface = "/sshwifty/socket";
 const socksVerificationInterface = socksInterface + "/verify";
+const socksKeyTimeTruncater = 100 * 1000;
 
 function startApp(rootEl) {
   const pageTitle = document.title;
@@ -74,7 +75,9 @@ function startApp(rootEl) {
   let uiControlColor = new ControlColor();
 
   function getCurrentKeyMixer() {
-    return Number(Math.trunc(new Date().getTime() / 100000)).toString();
+    return Number(
+      Math.trunc(new Date().getTime() / socksKeyTimeTruncater)
+    ).toString();
   }
 
   async function buildSocketKey(privateKey) {
@@ -299,14 +302,7 @@ function startApp(rootEl) {
           switch (result.result) {
             case 200:
               this.executeHomeApp(result, {
-                data: await buildSocketKey(atob(result.key) + "+"),
                 async fetch() {
-                  if (this.data) {
-                    let dKey = this.data;
-                    this.data = null;
-                    return dKey;
-                  }
-
                   let result = await self.doAuth("");
 
                   if (result.result !== 200) {
@@ -349,14 +345,7 @@ function startApp(rootEl) {
           switch (result.result) {
             case 200:
               this.executeHomeApp(result, {
-                data: await buildSocketKey(atob(result.key) + "+" + passphrase),
                 async fetch() {
-                  if (this.data) {
-                    let dKey = this.data;
-                    this.data = null;
-                    return dKey;
-                  }
-
                   let result = await self.doAuth(passphrase);
 
                   if (result.result !== 200) {

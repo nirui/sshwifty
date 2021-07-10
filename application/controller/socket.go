@@ -216,11 +216,13 @@ func (s socket) mixerKey(r *http.Request) []byte {
 		r.UserAgent(), s.commonCfg.SharedKey+"+"+s.commonCfg.HostName)
 }
 
+const keyTimeTruncater = 100
+
 func (s socket) buildCipherKey(r *http.Request) [16]byte {
 	key := [16]byte{}
 
 	copy(key[:], hashCombineSocketKeys(
-		strconv.FormatInt(time.Now().Unix()/100, 10),
+		strconv.FormatInt(time.Now().Unix()/keyTimeTruncater, 10),
 		string(s.mixerKey(r))+"+"+s.commonCfg.SharedKey,
 	))
 
