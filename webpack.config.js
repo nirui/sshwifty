@@ -191,7 +191,12 @@ module.exports = {
   output: {
     publicPath: "/sshwifty/assets/",
     path: path.join(__dirname, ".tmp", "dist"),
-    filename: "[contenthash].js",
+    filename: "[name]-[contenthash:8].js",
+    chunkFormat: "array-push",
+    chunkFilename: "chunk[contenthash:8].js",
+    assetModuleFilename: "asset[contenthash:8][ext]",
+    clean: true,
+    charset: true,
   },
   resolve: {
     alias: {
@@ -201,20 +206,42 @@ module.exports = {
   optimization: {
     nodeEnv: process.env.NODE_ENV,
     concatenateModules: true,
-    runtimeChunk: true,
+    runtimeChunk: "single",
     mergeDuplicateChunks: true,
     flagIncludedChunks: true,
     providedExports: true,
     usedExports: true,
+    realContentHash: false,
+    innerGraph: true,
     splitChunks: inDevMode
       ? false
       : {
           chunks: "all",
-          minSize: 102400,
-          maxSize: 244000,
-          maxAsyncRequests: 6,
-          maxInitialRequests: 6,
-          name: false,
+          minSize: 56000,
+          maxSize: 110000,
+          minRemainingSize: 0,
+          minChunks: 1,
+          maxAsyncRequests: 8,
+          maxInitialRequests: 8,
+          name(module, chunks, cacheGroupKey) {
+            const moduleFileName = module
+              .identifier()
+              .split("/")
+              .reduceRight((item) => item);
+            const allChunksNames = chunks.map((item) => item.name).join("~");
+            return `${cacheGroupKey}~${allChunksNames}~${moduleFileName}`;
+          },
+          cacheGroups: {
+            vendors: {
+              test: /[\\/]node_modules[\\/]/,
+              priority: -10,
+              reuseExistingChunk: true,
+            },
+            default: {
+              priority: -20,
+              reuseExistingChunk: true,
+            },
+          },
         },
     minimize: !inDevMode,
     minimizer: inDevMode
@@ -252,11 +279,7 @@ module.exports = {
         use: "html-loader",
       },
       {
-        test: /\.(woff(2)?|ttf|eot)(\?v=\d+\.\d+\.\d+)?$/,
-        use: "file-loader",
-      },
-      {
-        test: /\.(jpe?g|png|gif|svg)$/i,
+        test: /\.(ico|jpe?g|png|gif|svg|woff2?)$/i,
         type: "asset",
       },
       {
@@ -268,8 +291,14 @@ module.exports = {
   },
   plugins: (function () {
     var plugins = [
+      new webpack.optimize.LimitChunkCountPlugin({
+        maxChunks: 7,
+      }),
+      new webpack.optimize.MinChunkSizePlugin({
+        minChunkSize: 56000,
+      }),
       new webpack.DefinePlugin(
-        process.env.NODE_ENV === "production"
+        !inDevMode
           ? {
               "process.env": {
                 NODE_ENV: JSON.stringify(process.env.NODE_ENV),
@@ -281,6 +310,13 @@ module.exports = {
         options: {
           handlebarsLoader: {},
         },
+      }),
+      new webpack.BannerPlugin({
+        banner:
+          "This file is a part of Sshwifty. Automatically " +
+          "generated at " +
+          new Date().toTimeString() +
+          ", DO NOT MODIFIY",
       }),
       new ESLintPlugin({}),
       new CopyPlugin({
@@ -334,8 +370,8 @@ module.exports = {
         favicons: {
           appName: "Sshwifty SSH Client",
           appDescription: "Web SSH Client",
-          developerName: "Rui Ni",
-          developerURL: "https://vaguly.com",
+          developerName: "Ni Rui",
+          developerURL: "https://nirui.org",
           background: "#333",
           theme_color: "#333",
           appleStatusBarStyle: "black",
@@ -394,36 +430,45 @@ module.exports = {
         },
       }),
       new MiniCssExtractPlugin({
-        filename: inDevMode ? "[id].css" : "[contenthash].css",
-        chunkFilename: inDevMode ? "[id].css" : "[contenthash].css",
+        filename: inDevMode ? "[name].css" : "[name]-[contenthash:8].css",
+        chunkFilename: inDevMode
+          ? "[name].css"
+          : "[name]-chunk[contenthash:8].css",
       }),
     ];
 
     if (!inDevMode) {
       plugins.push(
         new ImageMinimizerPlugin({
-          severityError: "warning",
-          deleteOriginalAssets: true,
           maxConcurrency: os.cpus().length,
           minimizerOptions: {
             plugins: [
-              ["gifsicle", { interlaced: true }],
-              ["mozjpeg", { progressive: true }],
-              ["pngquant", { quality: [0.0, 0.03] }],
               [
-                "svgo",
+                "webp",
                 {
-                  multipass: true,
-                  datauri: "enc",
-                  indent: 0,
-                  plugins: [
-                    {
-                      sortAttrs: true,
-                      inlineStyle: true,
-                    },
-                  ],
+                  quality: 50,
+                  method: 6,
+                  lossless: false,
+                  metadata: "none",
                 },
               ],
+              ["gifsicle", { interlaced: true }],
+              ["mozjpeg", { progressive: true }],
+              ["pngquant", { quality: [0.02, 0.2] }],
+              //[
+              //"svgo",
+              //{
+              //multipass: true,
+              //datauri: "enc",
+              //indent: 0,
+              //plugins: [
+              //{
+              //sortAttrs: true,
+              //inlineStyle: true,
+              //},
+              //],
+              //},
+              //],
             ],
           },
         })
