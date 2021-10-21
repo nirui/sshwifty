@@ -75,7 +75,7 @@
           :placeholder="field.field.example"
           :autofocus="field.autofocus"
           :tabindex="field.tabIndex"
-          :disabled="field.field.readonly"
+          :disabled="readonly(key, field, field.field.readonly)"
           @keydown="triggerSuggestions($event, key, field)"
           @focus="focus(key, field, true)"
           @blur="focus(key, field, false)"
@@ -93,7 +93,7 @@
           :placeholder="field.field.example"
           :autofocus="field.autofocus"
           :tabindex="field.tabIndex"
-          :disabled="field.field.readonly"
+          :disabled="readonly(key, field, field.field.readonly)"
           @focus="focus(key, field, true)"
           @blur="focus(key, field, false)"
           @input="changed(key, field, false)"
@@ -109,7 +109,7 @@
           :name="field.field.name"
           :autofocus="field.autofocus"
           :tabindex="field.tabIndex"
-          :disabled="field.field.readonly"
+          :disabled="readonly(key, field, field.field.readonly)"
           @focus="focus(key, field, true)"
           @blur="focus(key, field, false)"
           @input="changed(key, field, false)"
@@ -125,7 +125,7 @@
           :name="field.field.name"
           :autofocus="field.autofocus"
           :tabindex="field.tabIndex"
-          :disabled="field.field.readonly"
+          :disabled="readonly(key, field, field.field.readonly)"
           @keyup="expandTextarea($event)"
           @keydown="
             triggerSuggestions($event, key, field) || expandTextarea($event)
@@ -145,7 +145,7 @@
           :name="field.field.name + '-file'"
           :autofocus="field.autofocus"
           :tabindex="field.tabIndex"
-          :disabled="field.field.readonly"
+          :disabled="readonly(key, field, field.field.readonly)"
           @focus="focus(key, field, true)"
           @blur="focus(key, field, false)"
           @change="importFile($event.target, field)"
@@ -171,7 +171,7 @@
           :autofocus="field.autofocus"
           :value="field.field.value"
           :tabindex="field.tabIndex"
-          :disabled="field.field.readonly"
+          :disabled="readonly(key, field, field.field.readonly)"
           @focus="focus(key, field, true)"
           @blur="focus(key, field, false)"
           @input="changed(key, field, false)"
@@ -209,7 +209,7 @@
               :checked="field.field.value === option"
               :aria-checked="field.field.value === option"
               :tabindex="field.nextSubTabIndex(oKey)"
-              :disabled="field.field.readonly"
+              :disabled="readonly(key, field, field.field.readonly)"
               @focus="focus(key, field, true)"
               @blur="focus(key, field, false)"
               @input="changed(key, field, false)"
@@ -637,6 +637,10 @@ export default {
       }
 
       return verified;
+    },
+    readonly(key, field, readonly) {
+      this.verify(key, field, readonly);
+      return readonly;
     },
     focus(key, field, focused) {
       field.highlighted = false;
