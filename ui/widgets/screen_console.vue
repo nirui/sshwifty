@@ -54,7 +54,10 @@
             <li>
               <a class="tb-item" href="javascript:;" @click="fontSizeUp">
                 <span
-                  class="tb-key-icon tb-key-resize-icon icon icon-keyboardkey1 icon-iconed-bottom1"
+                  class="
+                    tb-key-icon tb-key-resize-icon
+                    icon icon-keyboardkey1 icon-iconed-bottom1
+                  "
                 >
                   <i>+</i>
                   Increase
@@ -64,7 +67,10 @@
             <li>
               <a class="tb-item" href="javascript:;" @click="fontSizeDown">
                 <span
-                  class="tb-key-icon tb-key-resize-icon icon icon-keyboardkey1 icon-iconed-bottom1"
+                  class="
+                    tb-key-icon tb-key-resize-icon
+                    icon icon-keyboardkey1 icon-iconed-bottom1
+                  "
                 >
                   <i>-</i>
                   Decrease
