@@ -8,6 +8,7 @@ BUILD_TARGETS="darwin/amd64 windows/386 windows/amd64 openbsd/386 openbsd/amd64 
 
 DOCKER_BUILD_TARGETS="linux/amd64,linux/arm/v7,linux/arm64"
 DOCKER_CLI_EXPERIMENTAL=enabled
+DOCKER_BUILDKIT=1
 
 SSHWIFTY_VERSION=$(git describe --always --dirty='*' --tag)
 SSHWIFTY_COMMIT=$(git describe --always)
@@ -112,9 +113,11 @@ if [ "$SSHWIFTY_DEPLOY" = 'yes' ]; then
     catch child \
         '
         docker login -u "$DOCKER_HUB_USER" -p "$DOCKER_HUB_PASSWORD" &&
+        docker run --rm --privileged multiarch/qemu-user-static --reset -p yes &&
         docker buildx create --use --driver docker-container --name buildx-instance &&
+        docker buildx inspect --bootstrap &&
         docker buildx ls &&
-        docker buildx build --tag "$SSHWIFTY_DOCKER_IMAGE_PUSH_TAG" --tag "$SSHWIFTY_DOCKER_IMAGE_PUSH_TAG_LATEST" --platform "$DOCKER_BUILD_TARGETS" --build-arg GOMIPS=softfloat --build-arg CUSTOM_COMMAND="$DOCKER_CUSTOM_COMMAND" --progress plain --push .
+        docker buildx build --tag "$SSHWIFTY_DOCKER_IMAGE_PUSH_TAG" --tag "$SSHWIFTY_DOCKER_IMAGE_PUSH_TAG_LATEST" --platform "$DOCKER_BUILD_TARGETS" --builder buildx-instance --build-arg GOMIPS=softfloat --build-arg CUSTOM_COMMAND="$DOCKER_CUSTOM_COMMAND" --progress plain --push .
         ' \
         '
         mkdir -p ./.tmp/generated ./.tmp/release &&
