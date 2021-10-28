@@ -639,10 +639,6 @@ export default {
 
       return verified;
     },
-    readonly(key, field, readonly) {
-     // this.verify(key, field, readonly);
-      return readonly;
-    },
     focus(key, field, focused) {
       field.highlighted = false;
 
