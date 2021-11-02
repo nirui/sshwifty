@@ -242,14 +242,13 @@ export function parseIPv4(d) {
  *
  * @param {string} d IP address
  *
- * @returns {Uint16Array} Parsed IPv6 Address
+ * @returns {Uint8Array} Parsed IPv6 Address
  *
  * @throws {Exception} When the given ip address was not an IPv6 addr
  *
  */
 export function parseIPv6(d) {
   const addrSeg = 8;
-
   let s = d.split(":");
 
   if (s.length > addrSeg || s.length <= 1) {
@@ -258,41 +257,33 @@ export function parseIPv6(d) {
 
   if (s[0].charAt(0) === "[") {
     s[0] = s[0].substring(1, s[0].length);
-
     let end = s.length - 1;
-
     if (s[end].charAt(s[end].length - 1) !== "]") {
       throw new Exception("Invalid address");
     }
-
     s[end] = s[end].substring(0, s[end].length - 1);
   }
 
-  let r = new Uint16Array(addrSeg),
+  let r = new Uint8Array(addrSeg * 2),
     rIndexShift = 0;
-
   for (let i = 0; i < s.length; i++) {
     if (s[i].length <= 0) {
       rIndexShift = addrSeg - s.length;
-
       continue;
     }
-
     if (!isHex(s[i])) {
       throw new Exception("Invalid address");
     }
-
     let ii = parseInt(s[i], 16); // Only support hex
-
     if (isNaN(ii)) {
       throw new Exception("Invalid address");
     }
-
     if (ii > 0xffff) {
       throw new Exception("Invalid address");
     }
-
-    r[rIndexShift + i] = ii;
+    let j = (rIndexShift + i) * 2;
+    r[j] = ii >> 8;
+    r[j + 1] = ii & 0xff;
   }
 
   return r;
