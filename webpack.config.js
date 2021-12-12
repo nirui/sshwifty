@@ -217,12 +217,11 @@ module.exports = {
       ? false
       : {
           chunks: "all",
-          minSize: 56000,
-          maxSize: 110000,
+          minSize: 20000,
+          maxSize: 90000,
           minRemainingSize: 0,
           minChunks: 1,
-          maxAsyncRequests: 8,
-          maxInitialRequests: 8,
+          enforceSizeThreshold: 50000,
           name(module, chunks, cacheGroupKey) {
             const moduleFileName = module
               .identifier()
@@ -440,36 +439,37 @@ module.exports = {
     if (!inDevMode) {
       plugins.push(
         new ImageMinimizerPlugin({
-          maxConcurrency: os.cpus().length,
-          minimizerOptions: {
-            plugins: [
-              [
-                "webp",
-                {
+          concurrency: os.cpus().length,
+          minimizer: {
+            implementation: ImageMinimizerPlugin.imageminMinify,
+            options: {
+              plugins: [
+                "imagemin-gifsicle",
+                "imagemin-mozjpeg",
+                "imagemin-pngquant",
+                "imagemin-svgo",
+              ],
+              encodeOptions: {
+                webp: {
                   quality: 50,
                   method: 6,
                   lossless: false,
                   metadata: "none",
                 },
-              ],
-              ["gifsicle", { interlaced: true }],
-              ["mozjpeg", { progressive: true }],
-              ["pngquant", { quality: [0.02, 0.2] }],
-              //[
-              //"svgo",
-              //{
-              //multipass: true,
-              //datauri: "enc",
-              //indent: 0,
-              //plugins: [
-              //{
-              //sortAttrs: true,
-              //inlineStyle: true,
-              //},
-              //],
-              //},
-              //],
-            ],
+                gifsicle: {
+                  interlaced: true,
+                },
+                mozjpeg: {
+                  progressive: true,
+                },
+                pngquant: {
+                  quality: [0.02, 0.2],
+                },
+                svgo: {
+                  plugins: ["preset-default"],
+                },
+              },
+            },
           },
         })
       );
