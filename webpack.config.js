@@ -444,31 +444,11 @@ module.exports = {
             implementation: ImageMinimizerPlugin.imageminMinify,
             options: {
               plugins: [
-                "imagemin-gifsicle",
-                "imagemin-mozjpeg",
-                "imagemin-pngquant",
-                "imagemin-svgo",
+                ["imagemin-gifsicle", { interlaced: true, }],
+                ["imagemin-mozjpeg", { progressive: true, }],
+                ["imagemin-pngquant", { quality: [0.02, 0.2], }],
+                // ["imagemin-svgo", { plugins: ["preset-default"], }],
               ],
-              encodeOptions: {
-                webp: {
-                  quality: 50,
-                  method: 6,
-                  lossless: false,
-                  metadata: "none",
-                },
-                gifsicle: {
-                  interlaced: true,
-                },
-                mozjpeg: {
-                  progressive: true,
-                },
-                pngquant: {
-                  quality: [0.02, 0.2],
-                },
-                svgo: {
-                  plugins: ["preset-default"],
-                },
-              },
             },
           },
         })
