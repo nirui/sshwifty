@@ -72,7 +72,7 @@
 
         <p>
           An Open Source Web SSH Client that enables you to connect to SSH
-          servers without download any additional software.
+          servers without downloading any additional software.
         </p>
 
         <p>
@@ -93,13 +93,13 @@
             href="https://en.wikipedia.org/wiki/996_working_hour_system"
             target="blank"
             >implicitly forced overtime work</a
-          >. Sshwifty wouldn't exist if it's author must work such extreme
-          hours. If you're benefiting from hobbyist project like this one,
-          please consider to
+          >. Sshwifty wouldn't exist if its author must work such extreme
+          hours. If you're benefiting from hobbyist projects like this one,
+          please consider
           <a
             href="https://github.com/996icu/996.ICU/#what-can-i-do"
             target="blank"
-            >support the action</a
+            >supporting the action</a
           >.
         </p>
       </div>
