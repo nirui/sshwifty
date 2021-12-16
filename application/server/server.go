@@ -19,6 +19,7 @@ package server
 
 import (
 	"context"
+	"crypto/tls"
 	"errors"
 	goLog "log"
 	"net"
@@ -85,14 +86,17 @@ func (s Server) Serve(
 	handlerBuilder HandlerBuilder,
 ) *Serving {
 	ssCfg := serverCfg.WithDefault()
-
 	l := s.logger.Context(
 		"Server (%s:%d)", ssCfg.ListenInterface, ssCfg.ListenPort)
-
+	cipherSuites := tls.CipherSuites() // only return secure ciphers
+	selectedCipherSuites := make([]uint16, 0, len(cipherSuites))
+	for _, s := range cipherSuites {
+		selectedCipherSuites = append(selectedCipherSuites, s.ID)
+	}
 	ss := &Serving{
 		server: http.Server{
 			Handler:           handlerBuilder(commonCfg, ssCfg, l),
-			TLSConfig:         nil,
+			TLSConfig:         &tls.Config{CipherSuites: selectedCipherSuites},
 			ReadTimeout:       ssCfg.ReadTimeout,
 			ReadHeaderTimeout: ssCfg.InitialTimeout,
 			WriteTimeout:      ssCfg.WriteTimeout,
@@ -102,11 +106,8 @@ func (s Server) Serve(
 		},
 		shutdownWait: s.shutdownWait,
 	}
-
 	s.shutdownWait.Add(1)
-
 	go ss.run(l, ssCfg, closeCallback)
-
 	return ss
 }
 
@@ -122,26 +123,19 @@ func (s *Serving) buildListener(
 	writeTimeout time.Duration,
 ) (listener, error) {
 	ipAddr := net.ParseIP(ip)
-
 	if ipAddr == nil {
 		return listener{}, ErrInvalidIPAddress
 	}
-
 	ipPort := net.JoinHostPort(
 		ipAddr.String(), strconv.FormatInt(int64(port), 10))
-
 	addr, addrErr := net.ResolveTCPAddr("tcp", ipPort)
-
 	if addrErr != nil {
 		return listener{}, addrErr
 	}
-
 	ll, llErr := net.ListenTCP("tcp", addr)
-
 	if llErr != nil {
 		return listener{}, llErr
 	}
-
 	return listener{
 		TCPListener:  ll,
 		readTimeout:  readTimeout,
@@ -156,53 +150,33 @@ func (s *Serving) run(
 	closeCallback CloseCallback,
 ) error {
 	var err error
-
 	defer func() {
 		if err == nil || err == http.ErrServerClosed {
 			logger.Info("Closed")
 		} else {
 			logger.Warning("Failed to serve due to error: %s", err)
 		}
-
 		s.shutdownWait.Done()
-
 		closeCallback(err)
 	}()
-
 	ls, err := s.buildListener(
 		cfg.ListenInterface,
 		cfg.ListenPort,
 		cfg.ReadTimeout,
 		cfg.WriteTimeout,
 	)
-
 	if err != nil {
 		return err
 	}
-
 	defer ls.Close()
-
 	if !cfg.IsTLS() {
 		logger.Info("Serving")
-
 		err = s.server.Serve(ls)
-
-		if err == nil {
-			return nil
-		}
-
-		return err
+	} else {
+		logger.Info("Serving TLS")
+		err = s.server.ServeTLS(
+			ls, cfg.TLSCertificateFile, cfg.TLSCertificateKeyFile)
 	}
-
-	logger.Info("Serving TLS")
-
-	err = s.server.ServeTLS(
-		ls, cfg.TLSCertificateFile, cfg.TLSCertificateKeyFile)
-
-	if err == nil {
-		return nil
-	}
-
 	return err
 }
 
