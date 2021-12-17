@@ -16,6 +16,9 @@ RUN set -ex && \
     ([ -z "$HTTPS_PROXY" ] || (git config --global https.proxy "$HTTPS_PROXY" && npm config set https-proxy "$HTTPS_PROXY")) && \
     export PATH=$PATH:"$(go env GOPATH)/bin" && \
     ([ -z "$CUSTOM_COMMAND" ] || (echo "Running custom command: $CUSTOM_COMMAND" && $CUSTOM_COMMAND)) && \
+    git version && \
+    go version && \
+    npm version && \
     echo '#!/bin/sh' > /install.sh && echo "npm install -g npm || (npm cache clean -f && false)" >> /install.sh && chmod +x /install.sh && /try.sh /install.sh && rm /install.sh
 
 # Build the base environment for application libraries
