@@ -383,6 +383,10 @@ And if that's not enough, connect a physical keyboard through Bluetooth or OTA
 could be a better alternative. This way you can type as if you're using a
 computer console.
 
+## Credits
+
+- Thanks to [Ryan Fortner](https://github.com/ryanfortner) for the grammar fix
+
 ## License
 
 Code of this project is licensed under AGPL, see [LICENSE.md] for detail.
