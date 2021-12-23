@@ -88,15 +88,10 @@ func (s Server) Serve(
 	ssCfg := serverCfg.WithDefault()
 	l := s.logger.Context(
 		"Server (%s:%d)", ssCfg.ListenInterface, ssCfg.ListenPort)
-	cipherSuites := tls.CipherSuites() // only return secure ciphers
-	selectedCipherSuites := make([]uint16, 0, len(cipherSuites))
-	for _, s := range cipherSuites {
-		selectedCipherSuites = append(selectedCipherSuites, s.ID)
-	}
 	ss := &Serving{
 		server: http.Server{
 			Handler:           handlerBuilder(commonCfg, ssCfg, l),
-			TLSConfig:         &tls.Config{CipherSuites: selectedCipherSuites},
+			TLSConfig:         &tls.Config{MinVersion: tls.VersionTLS12},
 			ReadTimeout:       ssCfg.ReadTimeout,
 			ReadHeaderTimeout: ssCfg.InitialTimeout,
 			WriteTimeout:      ssCfg.WriteTimeout,
