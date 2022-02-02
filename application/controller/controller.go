@@ -63,7 +63,7 @@ func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		if h.commonCfg.HostName != hostPort &&
 			!strings.HasPrefix(hostPort, h.hostNameChecker) {
-			clientLogger.Warning("Request invalid host \"%s\", deined",
+			clientLogger.Warning("Requested invalid host \"%s\", denied access",
 				r.Host)
 
 			serveFailure(
