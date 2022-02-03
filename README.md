@@ -386,6 +386,7 @@ computer console.
 ## Credits
 
 - Thanks to [Ryan Fortner](https://github.com/ryanfortner) for the grammar fix
+- Thanks to [Tweak](https://github.com/Tweak4141) for the grammer fix too
 
 ## License
 
