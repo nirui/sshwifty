@@ -1,6 +1,6 @@
 // Sshwifty - A Web SSH client
 //
-// Copyright (C) 2019-2021 NI Rui <ranqus@gmail.com>
+// Copyright (C) 2019-2022 Ni Rui <ranqus@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -21,7 +21,7 @@ package application
 const (
 	Name     = "Sshwifty"
 	FullName = "Sshwifty Web SSH Client"
-	Author   = "NI Rui <ranqus@gmail.com>"
+	Author   = "Ni Rui <ranqus@gmail.com>"
 	URL      = "https://github.com/nirui/sshwifty"
 )
 
