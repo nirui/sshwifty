@@ -80,7 +80,7 @@ func (h *handlerSender) signal(hd Header, d []byte, buf []byte) error {
 	dLen := len(d)
 
 	if bufLen < dLen+1 {
-		panic(fmt.Sprintln("Sending signal %s:%d requires %d bytes of buffer, "+
+		panic(fmt.Sprintf("Sending signal %s:%d requires %d bytes of buffer, "+
 			"but only %d bytes is available", hd, d, dLen+1, bufLen))
 	}
 
