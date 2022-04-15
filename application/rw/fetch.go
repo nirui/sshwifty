@@ -22,7 +22,7 @@ import "errors"
 // Errors
 var (
 	ErrFetchReaderNotEnoughBuffer = errors.New(
-		"Not enough buffer")
+		"not enough buffer")
 )
 
 // FetchReaderFetcher generates data for SourceReader

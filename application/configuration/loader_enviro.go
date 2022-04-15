@@ -42,16 +42,6 @@ func parseEnv(name string) string {
 	return os.Getenv(v[21:])
 }
 
-func parseEnvDef(name string, def string) string {
-	v := parseEnv(name)
-
-	if len(v) > 0 {
-		return v
-	}
-
-	return def
-}
-
 // Enviro creates an environment variable based configuration loader
 func Enviro() Loader {
 	return func(log log.Logger) (string, Configuration, error) {
@@ -75,7 +65,7 @@ func Enviro() Loader {
 
 		if cfgErr != nil {
 			return enviroTypeName, Configuration{}, fmt.Errorf(
-				"Failed to build the configuration: %s", cfgErr)
+				"failed to build the configuration: %s", cfgErr)
 		}
 
 		listenIface := parseEnv("SSHWIFTY_LISTENINTERFACE")
@@ -122,7 +112,7 @@ func Enviro() Loader {
 
 			if jErr != nil {
 				return enviroTypeName, Configuration{}, fmt.Errorf(
-					"Invalid \"SSHWIFTY_PRESETS\": %s", jErr)
+					"invalid \"SSHWIFTY_PRESETS\": %s", jErr)
 			}
 		}
 
@@ -130,7 +120,7 @@ func Enviro() Loader {
 
 		if err != nil {
 			return enviroTypeName, Configuration{}, fmt.Errorf(
-				"Unable to parse Preset data: %s", err)
+				"unable to parse Preset data: %s", err)
 		}
 
 		return enviroTypeName, Configuration{

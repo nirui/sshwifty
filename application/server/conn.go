@@ -24,10 +24,6 @@ import (
 	"github.com/nirui/sshwifty/application/network"
 )
 
-var (
-	emptyTime = time.Time{}
-)
-
 type listener struct {
 	*net.TCPListener
 

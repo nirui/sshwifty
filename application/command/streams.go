@@ -28,16 +28,16 @@ import (
 // Errors
 var (
 	ErrStreamsInvalidStreamID = errors.New(
-		"Stream ID is invalid")
+		"stream ID is invalid")
 
 	ErrStreamsStreamOperateInactiveStream = errors.New(
-		"Specified stream was inactive for operation")
+		"specified stream was inactive for operation")
 
 	ErrStreamsStreamClosingInactiveStream = errors.New(
-		"Closing an inactive stream is not allowed")
+		"closing an inactive stream is not allowed")
 
 	ErrStreamsStreamReleasingInactiveStream = errors.New(
-		"Releasing an inactive stream is not allowed")
+		"releasing an inactive stream is not allowed")
 )
 
 // StreamError Stream Error signal

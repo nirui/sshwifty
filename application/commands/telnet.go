@@ -33,7 +33,7 @@ import (
 // Errors
 var (
 	ErrTelnetUnableToReceiveRemoteConn = errors.New(
-		"Unable to acquire remote connection handle")
+		"unable to acquire remote connection handle")
 )
 
 // Error codes

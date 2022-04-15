@@ -42,7 +42,7 @@ func (d dumpWrite) Write(b []byte) (int, error) {
 // Errors
 var (
 	ErrInvalidIPAddress = errors.New(
-		"Invalid IP address")
+		"invalid IP address")
 )
 
 // HandlerBuilder builds a HTTP handler
@@ -60,7 +60,6 @@ type CloseCallback func(error)
 // Server represents a server
 type Server struct {
 	logger       log.Logger
-	cfg          configuration.Common
 	shutdownWait *sync.WaitGroup
 }
 

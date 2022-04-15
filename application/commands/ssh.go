@@ -74,34 +74,34 @@ type sshAuthMethodBuilder func(b []byte) []ssh.AuthMethod
 // Errors
 var (
 	ErrSSHAuthCancelled = errors.New(
-		"Authentication has been cancelled")
+		"authentication has been cancelled")
 
 	ErrSSHInvalidAuthMethod = errors.New(
-		"Invalid auth method")
+		"invalid auth method")
 
 	ErrSSHInvalidAddress = errors.New(
-		"Invalid address")
+		"invalid address")
 
 	ErrSSHRemoteFingerprintVerificationCancelled = errors.New(
-		"Server Fingerprint verification process has been cancelled")
+		"server Fingerprint verification process has been cancelled")
 
 	ErrSSHRemoteFingerprintRefused = errors.New(
-		"Server Fingerprint has been refused")
+		"server Fingerprint has been refused")
 
 	ErrSSHRemoteConnUnavailable = errors.New(
-		"Remote SSH connection is unavailable")
+		"remote SSH connection is unavailable")
 
 	ErrSSHUnexpectedFingerprintVerificationRespond = errors.New(
-		"Unexpected fingerprint verification respond")
+		"unexpected fingerprint verification respond")
 
 	ErrSSHUnexpectedCredentialDataRespond = errors.New(
-		"Unexpected credential data respond")
+		"unexpected credential data respond")
 
 	ErrSSHCredentialDataTooLarge = errors.New(
-		"Credential was too large")
+		"credential was too large")
 
 	ErrSSHUnknownClientSignal = errors.New(
-		"Unknown client signal")
+		"unknown client signal")
 )
 
 var (

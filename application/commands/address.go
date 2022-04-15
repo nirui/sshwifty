@@ -28,22 +28,22 @@ import (
 //Errors
 var (
 	ErrAddressParseBufferTooSmallForHeader = errors.New(
-		"Buffer space was too small to parse the address header")
+		"buffer space was too small to parse the address header")
 
 	ErrAddressParseBufferTooSmallForIPv4 = errors.New(
-		"Buffer space was too small to parse the IPv4 address")
+		"buffer space was too small to parse the IPv4 address")
 
 	ErrAddressParseBufferTooSmallForIPv6 = errors.New(
-		"Buffer space was too small to parse the IPv6 address")
+		"buffer space was too small to parse the IPv6 address")
 
 	ErrAddressParseBufferTooSmallForHostName = errors.New(
-		"Buffer space was too small to parse the hostname address")
+		"buffer space was too small to parse the hostname address")
 
 	ErrAddressMarshalBufferTooSmall = errors.New(
-		"Buffer space was too small to marshal the address")
+		"buffer space was too small to marshal the address")
 
 	ErrAddressInvalidAddressType = errors.New(
-		"Invalid address type")
+		"invalid address type")
 )
 
 // AddressType Type of the address

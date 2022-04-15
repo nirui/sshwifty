@@ -26,10 +26,10 @@ import (
 // Errors
 var (
 	ErrIntegerMarshalNotEnoughBuffer = errors.New(
-		"Not enough buffer to marshal the integer")
+		"not enough buffer to marshal the integer")
 
 	ErrIntegerMarshalTooLarge = errors.New(
-		"Integer cannot be marshalled, because the vaule was too large")
+		"integer cannot be marshalled, because the vaule was too large")
 )
 
 // Integer is a 16bit unsigned integer data

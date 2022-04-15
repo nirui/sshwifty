@@ -33,7 +33,7 @@ const (
 // Errors
 var (
 	ErrCommandRunUndefinedCommand = errors.New(
-		"Undefined Command")
+		"undefined Command")
 )
 
 // Command represents a command handler machine builder

@@ -47,6 +47,6 @@ func Redundant(loaders ...Loader) Loader {
 		}
 
 		return redundantTypeName, Configuration{}, fmt.Errorf(
-			"All existing redundant loader has failed")
+			"all existing redundant loader has failed")
 	}
 }

@@ -108,7 +108,7 @@ func (s Server) IsTLS() bool {
 // Verify verifies current configuration
 func (s Server) Verify() error {
 	if net.ParseIP(s.ListenInterface) == nil {
-		return fmt.Errorf("Invalid IP address \"%s\"", s.ListenInterface)
+		return fmt.Errorf("invalid IP address \"%s\"", s.ListenInterface)
 	}
 
 	if (len(s.TLSCertificateFile) > 0 && len(s.TLSCertificateKeyFile) <= 0) ||
@@ -132,7 +132,7 @@ func (m Meta) Concretize() (map[string]string, error) {
 		result, err := v.Parse()
 
 		if err != nil {
-			return nil, fmt.Errorf("Unable to parse Meta \"%s\": %s", k, err)
+			return nil, fmt.Errorf("unable to parse Meta \"%s\": %s", k, err)
 		}
 
 		mm[k] = result
@@ -175,7 +175,7 @@ type Common struct {
 // Verify verifies current setting
 func (c Configuration) Verify() error {
 	if len(c.Servers) <= 0 {
-		return errors.New("Must specify at least one server")
+		return errors.New("must specify at least one server")
 	}
 
 	for i, c := range c.Servers {
@@ -185,7 +185,7 @@ func (c Configuration) Verify() error {
 			continue
 		}
 
-		return fmt.Errorf("Invalid setting for server %d: %s", i, vErr)
+		return fmt.Errorf("invalid setting for server %d: %s", i, vErr)
 	}
 
 	return nil

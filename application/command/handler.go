@@ -31,13 +31,13 @@ import (
 // Errors
 var (
 	ErrHandlerUnknownHeaderType = errors.New(
-		"Unknown command header type")
+		"unknown command header type")
 
 	ErrHandlerControlMessageTooLong = errors.New(
-		"Control message was too long")
+		"control message was too long")
 
 	ErrHandlerInvalidControlMessage = errors.New(
-		"Invalid control message")
+		"invalid control message")
 )
 
 // HandlerCancelSignal signals the cancel of the entire handling proccess
@@ -111,11 +111,6 @@ type streamHandlerSender struct {
 	*handlerSender
 
 	sendDelay time.Duration
-}
-
-// signal sends handler signal
-func (h streamHandlerSender) signal(hd Header, d []byte, buf []byte) error {
-	return h.handlerSender.signal(hd, d, buf)
 }
 
 // Write sends data

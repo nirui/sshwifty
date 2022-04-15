@@ -25,7 +25,7 @@ import (
 // Errors
 var (
 	ErrReadUntilCompletedBufferFull = errors.New(
-		"Cannot read more, not enough data buffer")
+		"cannot read more, not enough data buffer")
 )
 
 // LimitedReader reads only n bytes of data

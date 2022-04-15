@@ -26,10 +26,10 @@ import (
 // Errors
 var (
 	ErrStringParseBufferTooSmall = errors.New(
-		"Not enough buffer space to parse given string")
+		"not enough buffer space to parse given string")
 
 	ErrStringMarshalBufferTooSmall = errors.New(
-		"Not enough buffer space to marshal given string")
+		"not enough buffer space to marshal given string")
 )
 
 // String data
