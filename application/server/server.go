@@ -96,7 +96,7 @@ func (s Server) Serve(
 			ReadHeaderTimeout: ssCfg.InitialTimeout,
 			WriteTimeout:      ssCfg.WriteTimeout,
 			IdleTimeout:       ssCfg.ReadTimeout,
-			MaxHeaderBytes:    4096,
+			MaxHeaderBytes:    http.DefaultMaxHeaderBytes,
 			ErrorLog:          goLog.New(dumpWrite{}, "", 0),
 		},
 		shutdownWait: s.shutdownWait,
