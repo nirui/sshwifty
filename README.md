@@ -120,7 +120,8 @@ Here is all the options of a configuration file:
   // specified host is allowed to access
   "HostName": "localhost",
 
-  // Web interface access password. Set to empty to allow public access
+  // Web interface access password. Set to empty to allow public access to the
+  // web interface (By pass the Authenticate page)
   "SharedKey": "WEB_ACCESS_PASSWORD",
 
   // Remote dial timeout. This limits how long of time the backend can spend
@@ -351,8 +352,9 @@ gone afterwards.
 
 ### Why I got error "TypeError: Cannot read property 'importKey' of undefined"
 
-It's usually because your web browser does not support WebCrypt API, or the
-support has been disabled.
+It's usually because your web browser does not support WebCrypt API (such as
+`window.crypto.subtle` or anything under `window.crypto`), or the support has
+been disabled.
 
 If you're using Google Chrome, please connect Sshwifty with HTTPS. Chrome will
 disable WebCrypt and many other APIs when the connection is not safe.
