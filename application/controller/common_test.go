@@ -16,32 +16,3 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 package controller
-
-import (
-	"net/http"
-	"testing"
-)
-
-func TestClientContentEtagIsValid(t *testing.T) {
-	test := func(id int, hd []string, etag string, expected bool) {
-		r := http.Request{
-			Header: http.Header{
-				"If-None-Match": hd,
-			},
-		}
-		rr := clientContentEtagIsValid(&r, etag)
-
-		if rr != expected {
-			t.Errorf("Test: %d: Expecting the result to be %v, got %v instead",
-				id, expected, rr)
-
-			return
-		}
-	}
-
-	test(0, []string{""}, "test", false)
-	test(1, []string{"*"}, "test", true)
-	test(2, []string{"W/\"67ab43\", \"54ed21\", \"7892dd\""}, "54ed21", true)
-	test(3, []string{"\"bfc13a64729c4290ef5b2c2730249c88ca92d82d\""},
-		"bfc13a64729c4290ef5b2c2730249c88ca92d82d", true)
-}

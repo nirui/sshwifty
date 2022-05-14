@@ -44,11 +44,9 @@ func (s staticData) hasCompressed() bool {
 
 func staticFileExt(fileName string) string {
 	extIdx := strings.LastIndex(fileName, ".")
-
 	if extIdx < 0 {
 		return ""
 	}
-
 	return strings.ToLower(fileName[extIdx:])
 }
 
@@ -62,7 +60,6 @@ func serveStaticCacheData(
 	if fileExt == ".html" || fileExt == ".htm" {
 		return ErrNotFound
 	}
-
 	return serveStaticCachePage(dataName, w, r, l)
 }
 
@@ -73,56 +70,26 @@ func serveStaticCachePage(
 	l log.Logger,
 ) error {
 	d, dFound := staticPages[dataName]
-
 	if !dFound {
 		return ErrNotFound
 	}
-
 	selectedData := d.data
-	selectedDataHash := d.dataHash
 	selectedLength := len(d.data)
 	compressEnabled := false
-
 	if clientSupportGZIP(r) && d.hasCompressed() {
 		selectedData = d.compressd
-		selectedDataHash = d.compressdHash
 		selectedLength = len(d.compressd)
-
 		compressEnabled = true
-
 		w.Header().Add("Vary", "Accept-Encoding")
 	}
-
-	canUseCache := true
-
-	if !clientContentEtagIsValid(r, selectedDataHash) {
-		canUseCache = false
-	}
-
-	if clientContentModifiedSince(r, d.created) {
-		canUseCache = false
-	}
-
-	if canUseCache {
-		w.WriteHeader(http.StatusNotModified)
-
-		return nil
-	}
-
-	w.Header().Add("Cache-Control", "public, max-age=31536000")
-	w.Header().Add("ETag", "\""+selectedDataHash+"\"")
-
+	w.Header().Add("Cache-Control", "public, max-age=5184000")
 	w.Header().Add("Content-Type", d.contentType)
-
 	if compressEnabled {
 		w.Header().Add("Content-Encoding", "gzip")
 	}
-
 	w.Header().Add("Content-Length",
 		strconv.FormatInt(int64(selectedLength), 10))
-
 	_, wErr := w.Write(selectedData)
-
 	return wErr
 }
 
@@ -134,36 +101,25 @@ func serveStaticPage(
 	l log.Logger,
 ) error {
 	d, dFound := staticPages[dataName]
-
 	if !dFound {
 		return ErrNotFound
 	}
-
 	selectedData := d.data
 	selectedLength := len(d.data)
 	compressEnabled := false
-
 	if clientSupportGZIP(r) && d.hasCompressed() {
 		selectedData = d.compressd
 		selectedLength = len(d.compressd)
-
 		compressEnabled = true
-
 		w.Header().Add("Vary", "Accept-Encoding")
 	}
-
 	w.Header().Add("Content-Type", d.contentType)
-
 	if compressEnabled {
 		w.Header().Add("Content-Encoding", "gzip")
 	}
-
 	w.Header().Add("Content-Length",
 		strconv.FormatInt(int64(selectedLength), 10))
-
 	w.WriteHeader(code)
-
 	_, wErr := w.Write(selectedData)
-
 	return wErr
 }

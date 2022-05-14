@@ -20,56 +20,9 @@ package controller
 import (
 	"net/http"
 	"strings"
-	"time"
 )
 
 func clientSupportGZIP(r *http.Request) bool {
 	// Should be good enough
 	return strings.Contains(r.Header.Get("Accept-Encoding"), "gzip")
-}
-
-func clientContentEtagIsValid(r *http.Request, eTag string) bool {
-	d := r.Header.Get("If-None-Match")
-
-	if len(d) < 0 {
-		return false
-	}
-
-	dStart := 0
-	qETag := "\"" + eTag + "\""
-
-	for {
-		dIdx := strings.Index(d[dStart:], ",")
-
-		if dIdx < 0 {
-			return strings.Contains(d[dStart:], qETag) ||
-				strings.Contains(d[dStart:], "*")
-		}
-
-		if strings.Contains(d[dStart:dStart+dIdx], qETag) {
-			return true
-		}
-
-		if strings.Contains(d[dStart:dStart+dIdx], "*") {
-			return true
-		}
-
-		dStart += dIdx + 1
-	}
-}
-
-func clientContentModifiedSince(r *http.Request, mod time.Time) bool {
-	d := r.Header.Get("If-Modified-Since")
-
-	if len(d) < 0 {
-		return false
-	}
-
-	dt, dtErr := time.Parse(time.RFC1123, d)
-
-	if dtErr != nil {
-		return false
-	}
-
-	return !mod.Before(dt)
 }
