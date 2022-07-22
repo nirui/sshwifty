@@ -109,7 +109,7 @@
 import FontFaceObserver from "fontfaceobserver";
 import { Terminal } from "xterm";
 import { WebLinksAddon } from "xterm-addon-web-links";
-import { WebglAddon } from "xterm-addon-webgl";
+// import { WebglAddon } from "xterm-addon-webgl";
 import { FitAddon } from "xterm-addon-fit";
 import { isNumber } from "../commands/common.js";
 import { consoleScreenKeys } from "./screen_console_keys.js";
@@ -144,12 +144,11 @@ class Term {
       fontFamily: termTypeFace + ", " + termFallbackTypeFace,
       fontSize: this.fontSize,
       logLevel: process.env.NODE_ENV === "development" ? "info" : "off",
+      theme: {
+        background: this.control.activeColor(),
+      },
     });
     this.fit = new FitAddon();
-
-    this.term.options.theme = {
-      background: this.control.activeColor(),
-    };
 
     this.term.onData((data) => {
       if (this.closed) {
@@ -365,7 +364,7 @@ class Term {
       return;
     }
 
-    this.term.setOption("fontFamily", value);
+    this.term.options.fontFamily = value;
     this.refit();
   }
 
@@ -379,7 +378,7 @@ class Term {
     }
 
     this.fontSize += 2;
-    this.term.setOption("fontSize", this.fontSize);
+    this.term.options.fontSize = this.fontSize;
     this.refit();
   }
 
@@ -393,7 +392,7 @@ class Term {
     }
 
     this.fontSize -= 2;
-    this.term.setOption("fontSize", this.fontSize);
+    this.term.options.fontSize = this.fontSize;
     this.refit();
   }
 
