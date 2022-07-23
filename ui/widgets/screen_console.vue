@@ -281,7 +281,7 @@ class Term {
     });
   }
 
-  init(root, callbacks) {
+  init(root) {
     if (this.closed) {
       return;
     }
@@ -302,9 +302,6 @@ class Term {
     // }) {
     //   this.term.loadAddon(new WebglAddon());
     // }
-
-    this.term.textarea.addEventListener("focus", callbacks.focus);
-    this.term.textarea.addEventListener("blur", callbacks.blur);
 
     this.refit();
   }
@@ -568,7 +565,7 @@ export default {
 
         root.innerHTML = "";
 
-        self.term.init(root, callbacks);
+        self.term.init(root);
 
         return;
       } catch (e) {
@@ -584,7 +581,7 @@ export default {
       callbacks.warn(termTypeFaceLoadError, false);
 
       self.term.setFont(termFallbackTypeFace);
-      self.term.init(root, callbacks);
+      self.term.init(root);
 
       self.retryLoadRemoteFont(termTypeFace, termTypeFaceLoadTimeout, () => {
         if (self.term.destroyed()) {
@@ -602,22 +599,9 @@ export default {
     async init() {
       let self = this;
 
-      self.eventHandlers = {
-        keyup: (e) => self.localKeypress(e),
-        keydown: (e) => self.localKeypress(e),
-      };
-
       await self.openTerm(
         self.$el.getElementsByClassName("console-console")[0],
         {
-          focus(e) {
-            document.addEventListener("keyup", self.eventHandlers.keyup);
-            document.addEventListener("keydown", self.eventHandlers.keydown);
-          },
-          blur(e) {
-            document.removeEventListener("keyup", self.eventHandlers.keyup);
-            document.removeEventListener("keydown", self.eventHandlers.keydown);
-          },
           warn(msg, toDismiss) {
             self.$emit("warning", {
               text: msg,
@@ -647,13 +631,6 @@ export default {
     },
     fit() {
       this.term.refit();
-    },
-    localKeypress(e) {
-      if (!e.altKey && !e.shiftKey && !e.ctrlKey) {
-        return;
-      }
-
-      e.preventDefault();
     },
     activate() {
       this.term.focus();
