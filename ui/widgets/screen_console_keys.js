@@ -529,7 +529,7 @@ export const consoleScreenKeys = [
         },
       ],
       [
-        "Ctrl+T",
+        "Ctrl+A",
         {
           altKey: false,
           charCode: 0,
