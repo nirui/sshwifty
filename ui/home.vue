@@ -253,20 +253,32 @@ export default {
         this.$emit("navigate-to", "");
       });
     }
+
+    window.addEventListener("beforeunload", this.onBrowserClose);
   },
   beforeDestroy() {
+    window.removeEventListener("beforeunload", this.onBrowserClose);
+
     if (this.ticker === null) {
       clearInterval(this.ticker);
       this.ticker = null;
     }
   },
   methods: {
+    onBrowserClose(e) {
+      if (this.tab.current < 0) {
+        return undefined;
+      }
+      const msg = "Some tabs are still open, are you sure you want to exit?";
+      (e || window.event).returnValue = msg;
+      return msg;
+    },
     tick() {
       let now = new Date();
 
       this.socket.update(now, this);
     },
-    closeAllWindow() {
+    closeAllWindow(e) {
       for (let i in this.windows) {
         this.windows[i] = false;
       }
