@@ -1,5 +1,5 @@
 # Build the build base environment
-FROM ubuntu:devel AS base
+FROM golang:bullseye AS base
 RUN set -ex && \
     cd / && \
     echo '#!/bin/sh' > /try.sh && echo 'res=0; for i in $(seq 0 36); do $@; res=$?; [ $res -eq 0 ] && exit $res || sleep 10; done; exit $res' >> /try.sh && chmod +x /try.sh && \
@@ -9,12 +9,11 @@ RUN set -ex && \
     ([ -z "$HTTP_PROXY" ] || (echo "Acquire::http::Proxy \"$HTTP_PROXY\";" >> /etc/apt/apt.conf)) && \
     ([ -z "$HTTPS_PROXY" ] || (echo "Acquire::https::Proxy \"$HTTPS_PROXY\";" >> /etc/apt/apt.conf)) && \
     (echo "Acquire::Retries \"8\";" >> /etc/apt/apt.conf) && \
-    echo '#!/bin/sh' > /install.sh && echo 'apt-get update && apt-get --fix-broken install autoconf automake libtool build-essential ca-certificates curl git npm golang-go libvips libvips-dev -y' >> /install.sh && chmod +x /install.sh && \
+    echo '#!/bin/sh' > /install.sh && echo 'apt-get update && apt-get --fix-broken install autoconf automake libtool build-essential ca-certificates curl git npm libvips libvips-dev -y' >> /install.sh && chmod +x /install.sh && \
     /try.sh /install.sh && rm /install.sh && \
     /try.sh update-ca-certificates -f && c_rehash && \
     ([ -z "$HTTP_PROXY" ] || (git config --global http.proxy "$HTTP_PROXY" && npm config set proxy "$HTTP_PROXY")) && \
     ([ -z "$HTTPS_PROXY" ] || (git config --global https.proxy "$HTTPS_PROXY" && npm config set https-proxy "$HTTPS_PROXY")) && \
-    export PATH=$PATH:"$(go env GOPATH)/bin" && \
     ([ -z "$CUSTOM_COMMAND" ] || (echo "Running custom command: $CUSTOM_COMMAND" && $CUSTOM_COMMAND)) && \
     git version && \
     go version && \
