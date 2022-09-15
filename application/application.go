@@ -100,8 +100,18 @@ func (a Application) run(
 	}
 
 	closeNotify := closeSigBuilder()
+	closeNotifyDisableLock := sync.Mutex{}
 	signal.Notify(closeNotify, os.Kill, os.Interrupt, syscall.SIGHUP)
-	defer signal.Stop(closeNotify)
+	defer func() {
+		closeNotifyDisableLock.Lock()
+		defer closeNotifyDisableLock.Unlock()
+		if closeNotify == nil {
+			return
+		}
+		signal.Stop(closeNotify)
+		close(closeNotify)
+		closeNotify = nil
+	}()
 
 	servers := make([]*server.Serving, 0, len(c.Servers))
 	s := server.New(a.logger)
@@ -110,47 +120,37 @@ func (a Application) run(
 		for i := len(servers); i > 0; i-- {
 			servers[i-1].Close()
 		}
-
 		s.Wait()
 	}()
-
-	closeNotifyDisableLock := sync.Mutex{}
 
 	for _, ss := range c.Servers {
 		newServer := s.Serve(c.Common(), ss, func(e error) {
 			closeNotifyDisableLock.Lock()
 			defer closeNotifyDisableLock.Unlock()
-
 			if closeNotify == nil {
 				return
 			}
-
 			err = e
-
+			signal.Stop(closeNotify)
 			close(closeNotify)
 			closeNotify = nil
 		}, handlerBuilder(commands))
-
 		servers = append(servers, newServer)
 	}
 
 	switch <-closeNotify {
 	case syscall.SIGHUP:
 		return true, nil
-
 	case syscall.SIGTERM:
 		fallthrough
 	case os.Kill:
 		fallthrough
 	case os.Interrupt:
 		a.screen.Write(screenLineWipper)
-
 		return false, nil
-
 	default:
 		closeNotifyDisableLock.Lock()
 		defer closeNotifyDisableLock.Unlock()
-
 		return false, err
 	}
 }
