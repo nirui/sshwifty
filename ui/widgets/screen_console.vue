@@ -117,7 +117,7 @@ import { consoleScreenKeys } from "./screen_console_keys.js";
 import "./screen_console.css";
 import "xterm/css/xterm.css";
 
-const termTypeFace = "Hack";
+const termTypeFace = "PureNerdFont";
 const termFallbackTypeFace = "monospace";
 const termTypeFaceLoadTimeout = 3000;
 const termTypeFaceLoadError =
@@ -200,46 +200,48 @@ class Term {
       }
     });
 
-    this.term.attachCustomKeyEventHandler(async (ev) => {
-      if (this.closed) {
-        return true;
-      }
+    // It seems Xtermjs now handles copy paste by itself, following code is no
+    // longer useful
+    // this.term.attachCustomKeyEventHandler(async (ev) => {
+    //   if (this.closed) {
+    //     return true;
+    //   }
 
-      if (
-        ev.type == "keyup" &&
-        ((ev.key.toLowerCase() === "v" && ev.shiftKey && ev.ctrlKey) ||
-          (ev.key === "Insert" && ev.shiftKey))
-      ) {
-        try {
-          let text = await window.navigator.clipboard.readText();
+    //   if (
+    //     ev.type == "keyup" &&
+    //     ((ev.key.toLowerCase() === "v" && ev.shiftKey && ev.ctrlKey) ||
+    //       (ev.key === "Insert" && ev.shiftKey))
+    //   ) {
+    //     try {
+    //       let text = await window.navigator.clipboard.readText();
 
-          this.writeEchoStr(text);
-        } catch (e) {
-          alert(
-            "Unable to paste: " +
-              e +
-              ". Please try again without using the Control+Shift+V / " +
-              "Shift+Insert hot key"
-          );
-        }
-        return false;
-      }
+    //       this.writeEchoStr(text);
+    //     } catch (e) {
+    //       alert(
+    //         "Unable to paste: " +
+    //           e +
+    //           ". Please try again without using the Control+Shift+V / " +
+    //           "Shift+Insert hot key"
+    //       );
+    //     }
+    //     return false;
+    //   }
 
-      if (
-        ev.type == "keyup" &&
-        ((ev.key.toLowerCase() === "c" && ev.shiftKey && ev.ctrlKey) ||
-          (ev.key === "Insert" && ev.ctrlKey))
-      ) {
-        try {
-          window.navigator.clipboard.writeText(this.term.getSelection());
-        } catch (e) {
-          alert("Unable to copy: " + e);
-        }
-        return false;
-      }
+    //   if (
+    //     ev.type == "keyup" &&
+    //     ((ev.key.toLowerCase() === "c" && ev.shiftKey && ev.ctrlKey) ||
+    //       (ev.key === "Insert" && ev.ctrlKey))
+    //   ) {
+    //     try {
+    //       window.navigator.clipboard.writeText(this.term.getSelection());
+    //     } catch (e) {
+    //       alert("Unable to copy: " + e);
+    //     }
+    //     return false;
+    //   }
 
-      return true;
-    });
+    //   return true;
+    // });
 
     let resizeDelay = null,
       oldRows = 0,

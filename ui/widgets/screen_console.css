@@ -20,18 +20,19 @@
 @charset "utf-8";
 
 @import "~hack-font/build/web/hack.css";
+@import "~@azurity/pure-nerd-font/pure-nerd-font.css";
 
 #connector-resource-preload-control-console {
-  font-family: Hack;
+  font-family: PureNerdFont;
 }
 #connector-resource-preload-control-console::after {
   content: " ";
-  font-family: Hack;
+  font-family: PureNerdFont;
   font-weight: bold;
 }
 #connector-resource-preload-control-console::before {
   content: " ";
-  font-family: Hack;
+  font-family: PureNerdFont;
   font-style: italic;
 }
 

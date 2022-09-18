@@ -17,8 +17,20 @@ Major dependencies includes:
   Packaged by [Christian Hoffmeister](https://github.com/choffmeister/roboto-fontface-bower), Licensed under Apache 2.0
 - [iconv-lite](https://github.com/ashtuchkin/iconv-lite), Licensed under MIT license
 - [buffer](https://github.com/feross/buffer), Licensed under MIT license
-- [Hack font](https://github.com/source-foundry/Hack), [View license](https://github.com/source-foundry/Hack/blob/master/LICENSE.md)
 - [fontfaceobserver](https://github.com/bramstein/fontfaceobserver), [View license](https://github.com/bramstein/fontfaceobserver/blob/master/LICENSE)
+- [Nerd Font](https://www.nerdfonts.com/), packaged by [@azurity/pure-nerd-font](http://github.com/azurity/pure-nerd-font)
+  includes icons from following fonts:
+  - [Powerline Extra Symbols](https://github.com/ryanoasis/powerline-extra-symbols), Licensed under MIT license
+  - [Font Awesome](https://github.com/FortAwesome/Font-Awesome), [View license](https://github.com/FortAwesome/Font-Awesome/blob/6.x/LICENSE.txt)
+  - [Font Awesome Extension](https://github.com/AndreLZGava/font-awesome-extension), Licensed under MIT license
+  - [Material Design Icons](https://github.com/Templarian/MaterialDesign), [View license](https://github.com/Templarian/MaterialDesign/blob/master/LICENSE)
+  - [Weather Icons](https://github.com/erikflowers/weather-icons), Licensed under SIL OFL 1.1
+  - [Devicons](https://github.com/vorillaz/devicons), Licensed under MIT license
+  - [Octicons](https://github.com/primer/octicons), Licensed under MIT license
+  - [Codicons](https://github.com/microsoft/vscode-codicons), Licensed under MIT License
+  - [Font Logos (Formerly Font Linux)](https://github.com/Lukas-W/font-logos), Licensed under Unlicense license 
+  - [Pomicons](https://github.com/gabrielelana/pomicons), Licensed under OFL-1.1 license
+  - ... and more, see [full list](https://github.com/ryanoasis/nerd-fonts/tree/master/src/glyphs)
 
 ## For back-end application
 
