@@ -25,7 +25,7 @@
   left: 159px;
   display: none;
   background: #333;
-  width: 500px;
+  width: 700px;
 }
 
 #connect-frame {
@@ -43,7 +43,7 @@
   background: #333;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   #connect {
     left: 20px;
     right: 20px;
@@ -51,7 +51,7 @@
   }
 
   #connect:before {
-    left: 149px;
+    left: 169px;
   }
 }
 
@@ -84,7 +84,7 @@
 }
 
 #connect-warning {
-  padding: 10px;
+  padding: 20px;
   font-size: 0.85em;
   background: #b44;
   color: #fff;
@@ -93,7 +93,7 @@
 #connect-warning-icon {
   float: left;
   display: block;
-  margin: 5px 10px 5px 0;
+  margin: 5px 20px 5px 0;
 }
 
 #connect-warning-icon::after {

@@ -93,7 +93,7 @@
   position: relative;
 }
 
-@media (max-width: 480px) {
+@media (max-width: 768px) {
   #connect-known-list-list li {
     width: 100%;
   }
@@ -132,7 +132,7 @@
   z-index: 2;
 }
 
-@media (max-width: 480px) {
+@media (max-width: 768px) {
   #connect-known-list-list li > .labels > .opt {
     display: inline-block;
   }
@@ -141,10 +141,6 @@
 #connect-known-list-list li > .labels > .opt.link {
   background: #287;
   color: #fff;
-}
-
-#connect-known-list-list li > .labels > .opt.link:after {
-  content: "\02936";
 }
 
 #connect-known-list-list li > .labels > .opt.del {
@@ -203,7 +199,7 @@
   opacity: 0.5;
 }
 
-@media (max-width: 480px) {
+@media (max-width: 768px) {
   #connect-known-list-presets li {
     width: 100%;
   }
