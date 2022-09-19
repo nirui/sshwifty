@@ -55,6 +55,12 @@
   }
 }
 
+@media (max-width: 768px) {
+  #connect:before {
+    left: 149px;
+  }
+}
+
 #connect.display {
   display: block;
 }
