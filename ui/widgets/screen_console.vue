@@ -138,6 +138,7 @@ class Term {
     this.closed = false;
     this.fontSize = termDefaultFontSize;
     this.term = new Terminal({
+      allowProposedApi: true,
       allowTransparency: false,
       cursorBlink: true,
       cursorStyle: "block",
@@ -154,7 +155,6 @@ class Term {
       if (this.closed) {
         return;
       }
-
       this.control.send(data);
     });
 
@@ -162,7 +162,6 @@ class Term {
       if (this.closed) {
         return;
       }
-
       this.control.sendBinary(data);
     });
 
@@ -170,28 +169,23 @@ class Term {
       if (this.closed) {
         return;
       }
-
       if (!this.control.echo()) {
         return;
       }
-
       const printable =
         !ev.domEvent.altKey &&
         !ev.domEvent.altGraphKey &&
         !ev.domEvent.ctrlKey &&
         !ev.domEvent.metaKey;
-
       switch (ev.domEvent.key) {
         case "Enter":
           ev.domEvent.preventDefault();
           this.writeStr("\r\n");
           break;
-
         case "Backspace":
           ev.domEvent.preventDefault();
           this.writeStr("\b \b");
           break;
-
         default:
           if (printable) {
             ev.domEvent.preventDefault();
@@ -199,49 +193,6 @@ class Term {
           }
       }
     });
-
-    // It seems Xtermjs now handles copy paste by itself, following code is no
-    // longer useful
-    // this.term.attachCustomKeyEventHandler(async (ev) => {
-    //   if (this.closed) {
-    //     return true;
-    //   }
-
-    //   if (
-    //     ev.type == "keyup" &&
-    //     ((ev.key.toLowerCase() === "v" && ev.shiftKey && ev.ctrlKey) ||
-    //       (ev.key === "Insert" && ev.shiftKey))
-    //   ) {
-    //     try {
-    //       let text = await window.navigator.clipboard.readText();
-
-    //       this.writeEchoStr(text);
-    //     } catch (e) {
-    //       alert(
-    //         "Unable to paste: " +
-    //           e +
-    //           ". Please try again without using the Control+Shift+V / " +
-    //           "Shift+Insert hot key"
-    //       );
-    //     }
-    //     return false;
-    //   }
-
-    //   if (
-    //     ev.type == "keyup" &&
-    //     ((ev.key.toLowerCase() === "c" && ev.shiftKey && ev.ctrlKey) ||
-    //       (ev.key === "Insert" && ev.ctrlKey))
-    //   ) {
-    //     try {
-    //       window.navigator.clipboard.writeText(this.term.getSelection());
-    //     } catch (e) {
-    //       alert("Unable to copy: " + e);
-    //     }
-    //     return false;
-    //   }
-
-    //   return true;
-    // });
 
     let resizeDelay = null,
       oldRows = 0,
@@ -251,30 +202,23 @@ class Term {
       if (this.closed) {
         return;
       }
-
       if (dim.cols === oldCols && dim.rows === oldRows) {
         return;
       }
-
       oldRows = dim.rows;
       oldCols = dim.cols;
-
       if (resizeDelay !== null) {
         clearTimeout(resizeDelay);
         resizeDelay = null;
       }
-
       resizeDelay = setTimeout(() => {
         resizeDelay = null;
-
         if (!isNumber(dim.cols) || !isNumber(dim.rows)) {
           return;
         }
-
         if (!dim.cols || !dim.rows) {
           return;
         }
-
         this.control.resize({
           rows: dim.rows,
           cols: dim.cols,
@@ -287,7 +231,6 @@ class Term {
     if (this.closed) {
       return;
     }
-
     this.term.open(root);
     this.term.loadAddon(this.fit);
     this.term.loadAddon(new WebLinksAddon());
@@ -304,7 +247,6 @@ class Term {
     // }) {
     //   this.term.loadAddon(new WebglAddon());
     // }
-
     this.refit();
   }
 
@@ -312,7 +254,6 @@ class Term {
     if (this.closed) {
       return;
     }
-
     try {
       this.term.textarea.dispatchEvent(event);
     } catch (e) {
@@ -324,13 +265,10 @@ class Term {
     if (this.closed) {
       return;
     }
-
     this.control.send(d);
-
     if (!this.control.echo()) {
       return;
     }
-
     this.writeStr(d);
   }
 
@@ -338,7 +276,6 @@ class Term {
     if (this.closed) {
       return;
     }
-
     try {
       this.term.write(d);
     } catch (e) {
@@ -350,7 +287,6 @@ class Term {
     if (this.closed) {
       return;
     }
-
     try {
       this.term.write(d);
     } catch (e) {
@@ -362,7 +298,6 @@ class Term {
     if (this.closed) {
       return;
     }
-
     this.term.options.fontFamily = value;
     this.refit();
   }
@@ -371,11 +306,9 @@ class Term {
     if (this.closed) {
       return;
     }
-
     if (this.fontSize >= termMaxFontSize) {
       return;
     }
-
     this.fontSize += 2;
     this.term.options.fontSize = this.fontSize;
     this.refit();
@@ -385,11 +318,9 @@ class Term {
     if (this.closed) {
       return;
     }
-
     if (this.fontSize <= termMinFontSize) {
       return;
     }
-
     this.fontSize -= 2;
     this.term.options.fontSize = this.fontSize;
     this.refit();
@@ -399,7 +330,6 @@ class Term {
     if (this.closed) {
       return;
     }
-
     try {
       this.term.focus();
       this.refit();
@@ -412,7 +342,6 @@ class Term {
     if (this.closed) {
       return;
     }
-
     try {
       this.term.blur();
     } catch (e) {
@@ -424,7 +353,6 @@ class Term {
     if (this.closed) {
       return;
     }
-
     try {
       this.fit.fit();
     } catch (e) {
@@ -440,9 +368,7 @@ class Term {
     if (this.closed) {
       return;
     }
-
     this.closed = true;
-
     try {
       this.term.dispose();
     } catch (e) {
