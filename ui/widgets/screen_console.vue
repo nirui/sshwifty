@@ -21,7 +21,7 @@
   <div class="screen-console">
     <div
       class="console-console"
-      :style="'font-family: ' + typeface + ', inherit'"
+      :style="'font-family: ' + typefaces + ', inherit'"
     >
       <h2 style="display: none">Console</h2>
 
@@ -117,15 +117,15 @@ import { consoleScreenKeys } from "./screen_console_keys.js";
 import "./screen_console.css";
 import "xterm/css/xterm.css";
 
-const termTypeFace = "PureNerdFont";
-const termFallbackTypeFace = "monospace";
+const termTypeFaces = "PureNerdFont, Hack";
+const termFallbackTypeFace = "\"Cascadia Code\" , monospace";
 const termTypeFaceLoadTimeout = 3000;
 const termTypeFaceLoadError =
-  'Remote font "' +
-  termTypeFace +
-  '" is unavailable, using "' +
+  'Remote font ' +
+  termTypeFaces +
+  ' is unavailable, using ' +
   termFallbackTypeFace +
-  '" instead until the remote font is loaded';
+  ' instead until the remote font is loaded';
 const termDefaultFontSize = 16;
 const termMinFontSize = 8;
 const termMaxFontSize = 36;
@@ -142,7 +142,7 @@ class Term {
       allowTransparency: false,
       cursorBlink: true,
       cursorStyle: "block",
-      fontFamily: termTypeFace + ", " + termFallbackTypeFace,
+      fontFamily: termTypeFaces + ", " + termFallbackTypeFace,
       fontSize: this.fontSize,
       logLevel: process.env.NODE_ENV === "development" ? "info" : "off",
       theme: {
@@ -416,7 +416,7 @@ export default {
     return {
       screenKeys: consoleScreenKeys,
       term: new Term(this.control),
-      typeface: termTypeFace,
+      typefaces: termTypeFaces,
       runner: null,
       eventHandlers: {
         keydown: null,
@@ -456,25 +456,22 @@ export default {
     this.deinit();
   },
   methods: {
-    loadRemoteFont(typeface, timeout) {
-      return Promise.all([
-        new FontFaceObserver(typeface).load(null, timeout),
-        new FontFaceObserver(typeface, {
+    loadRemoteFont(typefaces, timeout) {
+      const tfs = typefaces.split(",");
+      let observers = [];
+      for (let v in tfs) {
+        observers.push(new FontFaceObserver(tfs[v].trim()).load(null, timeout))
+        observers.push(new FontFaceObserver(tfs[v].trim(), {
           weight: "bold",
-        }).load(null, timeout),
-      ]);
+        }).load(null, timeout))
+      }
+      return Promise.all(observers);
     },
-    async retryLoadRemoteFont(typeface, timeout, onSuccess) {
+    async retryLoadRemoteFont(typefaces, timeout, onSuccess) {
       const self = this;
-
       for (;;) {
-        if (self.term.destroyed()) {
-          return;
-        }
-
         try {
-          onSuccess(await self.loadRemoteFont(typeface, timeout));
-
+          onSuccess(await self.loadRemoteFont(typefaces, timeout));
           return;
         } catch (e) {
           // Retry
@@ -483,41 +480,29 @@ export default {
     },
     async openTerm(root, callbacks) {
       const self = this;
-
       try {
-        await self.loadRemoteFont(termTypeFace, termTypeFaceLoadTimeout);
-
+        await self.loadRemoteFont(termTypeFaces, termTypeFaceLoadTimeout);
         if (self.term.destroyed()) {
           return;
         }
-
         root.innerHTML = "";
-
         self.term.init(root);
-
         return;
       } catch (e) {
         // Ignore
       }
-
       if (self.term.destroyed()) {
         return;
       }
-
       root.innerHTML = "";
-
       callbacks.warn(termTypeFaceLoadError, false);
-
       self.term.setFont(termFallbackTypeFace);
       self.term.init(root);
-
-      self.retryLoadRemoteFont(termTypeFace, termTypeFaceLoadTimeout, () => {
+      self.retryLoadRemoteFont(termTypeFaces, termTypeFaceLoadTimeout, () => {
         if (self.term.destroyed()) {
           return;
         }
-
-        self.term.setFont(termTypeFace);
-
+        self.term.setFont(termTypeFaces);
         callbacks.warn(termTypeFaceLoadError, true);
       });
     },

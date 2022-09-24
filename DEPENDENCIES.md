@@ -18,7 +18,8 @@ Major dependencies includes:
 - [iconv-lite](https://github.com/ashtuchkin/iconv-lite), Licensed under MIT license
 - [buffer](https://github.com/feross/buffer), Licensed under MIT license
 - [fontfaceobserver](https://github.com/bramstein/fontfaceobserver), [View license](https://github.com/bramstein/fontfaceobserver/blob/master/LICENSE)
-- [Nerd Font](https://www.nerdfonts.com/), packaged by [@azurity/pure-nerd-font](http://github.com/azurity/pure-nerd-font)
+- [Hack Font](https://github.com/source-foundry/Hack), [View license](https://github.com/source-foundry/Hack/blob/master/LICENSE.md)
+- [Nerd Fonts](https://www.nerdfonts.com/), packaged by [@azurity/pure-nerd-font](http://github.com/azurity/pure-nerd-font)
   includes icons from following fonts:
   - [Powerline Extra Symbols](https://github.com/ryanoasis/powerline-extra-symbols), Licensed under MIT license
   - [Font Awesome](https://github.com/FortAwesome/Font-Awesome), [View license](https://github.com/FortAwesome/Font-Awesome/blob/6.x/LICENSE.txt)
