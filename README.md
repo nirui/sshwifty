@@ -403,11 +403,10 @@ project and read their copyright statements.
 
 ## Contribute
 
-This is a hobbyist project, meaning I don't have too many time to put into it.
-Sorry.
+This is a hobbyist project, meaning I don't have a lot of time to put into it, Sorry.
 
 Upon release (Which is then you're able to read this file), this project will
-enter _maintaining_ state, which includes doing bug fix and security updates.
+enter the _maintaining_ state, which includes bug fixes and security updates.
 _Adding new features however, is not a part of the state_.
 
 Please do not send any pull requests. If you need new feature, fork it, add it by
