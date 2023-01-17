@@ -403,19 +403,16 @@ project and read their copyright statements.
 
 ## Contribute
 
-This is a hobbyist project, meaning I don't have too many time to put into it.
-Sorry.
+This is a hobbyist project, meaning I don't have that much time to put into it, Sorry.
 
 Upon release (Which is then you're able to read this file), this project will
-enter _maintaining_ state, which includes doing bug fix and security updates.
+enter the _maintaining_ state, which includes doing some bug fixes and security updates.
 _Adding new features however, is not a part of the state_.
 
 Please do not send any pull requests. If you need new feature, fork it, add it by
-yourself, and maintain it like one of your own project.
+yourself, then maintain it like one of your own project. It's not that hard with some Github features.
 
-(Notice: Typo, grammar error or invalid use of language in the source code and
+(Notice: Typos, grammar errors or invalid use of language in the source code and
 document is categorized as bug, please report them if you found any. Thank you!)
 
-Appreciate your help!
-
-Enjoy!
+Appreciate your help, Enjoy!
