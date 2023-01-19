@@ -1,6 +1,6 @@
 // Sshwifty - A Web SSH client
 //
-// Copyright (C) 2019-2022 Ni Rui <ranqus@gmail.com>
+// Copyright (C) 2019-2023 Ni Rui <ranqus@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -25,7 +25,7 @@ import (
 	"github.com/nirui/sshwifty/application/rw"
 )
 
-//Errors
+// Errors
 var (
 	ErrAddressParseBufferTooSmallForHeader = errors.New(
 		"buffer space was too small to parse the address header")
@@ -78,8 +78,7 @@ type Address struct {
 //   - IPv4Addr:        01 IPv4 Address, carries 4 bytes of Address data
 //   - IPv6Addr:        10 IPv6 Address, carries 16 bytes Address data
 //   - HostnameAddr:    11 Host name string, length of Address data is indicated
-//                         by the remainer of the byte (11-- ----). maxlen = 63
-//
+//     by the remainer of the byte (11-- ----). maxlen = 63
 func ParseAddress(reader rw.ReaderFunc, buf []byte) (Address, error) {
 	if len(buf) < 3 {
 		return Address{}, ErrAddressParseBufferTooSmallForHeader

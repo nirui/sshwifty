@@ -1,6 +1,6 @@
 // Sshwifty - A Web SSH client
 //
-// Copyright (C) 2019-2022 Ni Rui <ranqus@gmail.com>
+// Copyright (C) 2019-2023 Ni Rui <ranqus@gmail.com>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as
@@ -77,8 +77,8 @@ func (r *FetchReader) Remain() int {
 //
 // Params:
 //   - n: Exact amount of bytes to fetch (0 to n, n included). If number n is
-//        unreachable, an error will be returned, and no internal status will
-//        be changed
+//     unreachable, an error will be returned, and no internal status will
+//     be changed
 //
 // Returns:
 //   - Fetched data
