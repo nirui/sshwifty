@@ -78,8 +78,8 @@ SSHWIFTY_LAST_TAG_NAME=HEAD~1
 if [ "$SSHWIFTY_DEPLOY" = 'yes' ]; then
     echo 'Downloading compile & deploy tools ...'
 
-    [ "$(which ghr)" != '' ] || catch retry go get -v github.com/tcnksm/ghr
-    [ "$(which gox)" != '' ] || catch retry go get -v github.com/mitchellh/gox
+    [ "$(which ghr)" != '' ] || catch retry go install -v github.com/tcnksm/ghr@latest
+    [ "$(which gox)" != '' ] || catch retry go install -v github.com/mitchellh/gox@latest
 
     echo 'Fetching extra references from the repository ...'
 
