@@ -78,22 +78,6 @@ working directory.
 Notice: `Dockerfile` contains the entire build procedure of this software.
 Please refer to it when you encounter any compile/build related issue.
 
-### Deploy on the cloud
-
-To deploy this project onto the cloud, Google App Engine or Heroku for example,
-you need to first download the source code, then generate it locally before
-deploying it.
-
-`npm run generate` command will generate all static files and automatically
-call `go generate ./...` to bind those static files directly into program source
-code. And you need those generated source code to get the software to function.
-
-Trying to deploy ungenerated code directly to cloud will lead to failure, as
-required source code is missing.
-
-Also keep in mind, if the cloud deployment process is `git` based, you may have
-to modify `.gitignore` file in order to allow all required files to be uploaded.
-
 ## Configure
 
 Sshwifty can be configured through either file or environment variables. By
