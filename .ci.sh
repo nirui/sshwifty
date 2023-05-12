@@ -22,54 +22,38 @@ child() {
     cpid=""
     ret=0
     i=0
-
     echo "+ Spawning $# childs ..."
-
     for c in "$@"; do
         ( (((((eval "$c"; echo $? >&3) | sed "s/^/\|------ ($i) /" >&4) 2>&1 | sed "s/^/\|------ ($i)!/" >&2) 3>&1) | (read xs; exit $xs)) 4>&1) & ppid=$!
-
         cpid="$cpid $ppid"
-
         echo "+ Child $i (PID $ppid): $c ..."
-
         i=$((i+1))
     done
-
     for c in $cpid; do
         wait $c
-
         cret=$?
         [ $cret -eq 0 ] && continue
-
         echo "* Child PID $c has failed." >&2
-
         ret=$cret
     done
-
     return $ret
 }
 
 retry() {
     res=0
-
     for i in $(seq 0 36); do
         $@
         res=$?
-
         [ $res -eq 0 ] && return $res || sleep 10
     done
-
     return $res
 }
 
 catch() {
     (eval '"$@"')
     res=$?
-
     [ $res -eq 0 ] && return $res
-
     echo "Command \"$@\" has failed. Exit code: $res"
-
     exit $res
 }
 
@@ -77,28 +61,23 @@ SSHWIFTY_LAST_TAG_NAME=HEAD~1
 
 if [ "$SSHWIFTY_DEPLOY" = 'yes' ]; then
     echo 'Downloading compile & deploy tools ...'
-
     [ "$(which ghr)" != '' ] || catch retry go install -v github.com/tcnksm/ghr@latest
     [ "$(which gox)" != '' ] || catch retry go install -v github.com/mitchellh/gox@latest
-
     echo 'Fetching extra references from the repository ...'
-
     GIT_TAG_FETCH_PARAM=
-
     if [ "$(git rev-parse --is-shallow-repository)" ]; then
         echo 'Shallow clone detected, will unshallow ...'
-
         GIT_TAG_FETCH_PARAM='--unshallow'
     fi
-
     catch retry git fetch --tags "$GIT_TAG_FETCH_PARAM"
-
     SSHWIFTY_LAST_TAG_NAME=$(git describe --tags --abbrev=0 --always HEAD~1)
 fi
 
 echo "Version: $SSHWIFTY_VERSION"
 echo "Files: $(pwd)" && ls -la
-export
+echo "Golang: $(go version)"
+echo "NPM: $(npm version)"
+export | grep -i "SSHWIFTY"
 git status --short
 git log --pretty=format:"- %h %s - (%an) %GK %G?" "$SSHWIFTY_LAST_TAG_NAME"..HEAD
 

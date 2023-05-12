@@ -1,5 +1,5 @@
 # Build the build base environment
-FROM ubuntu:devel AS base
+FROM ubuntu:rolling AS base
 RUN set -ex && \
     cd / && \
     echo '#!/bin/sh' > /try.sh && echo 'res=1; for i in $(seq 0 36); do $@; res=$?; [ $res -eq 0 ] && exit $res || sleep 10; done; exit $res' >> /try.sh && chmod +x /try.sh && \
