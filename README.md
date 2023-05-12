@@ -270,7 +270,7 @@ Here is all the options of a configuration file:
   // NOTICE: You can only configure OnlyAllowPresetRemotes through a config
   //         file. This option is not supported when you are configuring with
   //         environment variables
-  OnlyAllowPresetRemotes: false
+  "OnlyAllowPresetRemotes": false
 }
 ```
 
