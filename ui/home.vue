@@ -84,24 +84,6 @@
           ></span>
           icon near the top left corner.
         </p>
-
-        <hr />
-
-        <p class="secondary">
-          Programmers in China launched an online campaign against
-          <a
-            href="https://en.wikipedia.org/wiki/996_working_hour_system"
-            target="blank"
-            >implicitly forced overtime work</a
-          >. Sshwifty wouldn't exist if its author must work such extreme
-          hours. If you're benefiting from hobbyist projects like this one,
-          please consider
-          <a
-            href="https://github.com/996icu/996.ICU/#what-can-i-do"
-            target="blank"
-            >supporting the action</a
-          >.
-        </p>
       </div>
     </screens>
 
