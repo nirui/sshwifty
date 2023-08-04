@@ -22,6 +22,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"html"
 	"net/http"
 	"strconv"
 	"time"
@@ -45,9 +46,16 @@ type socketRemotePreset struct {
 	Meta  map[string]string `json:"meta"`
 }
 
-func buildAccessConfigRespondBody(remotes []configuration.Preset) []byte {
-	presets := make([]socketRemotePreset, len(remotes))
+type socketAccessConfiguration struct {
+	Presets       []socketRemotePreset `json:"presets"`
+	ServerMessage string               `json:"server_message"`
+}
 
+func newSocketAccessConfiguration(
+	remotes []configuration.Preset,
+	serverMessage string,
+) socketAccessConfiguration {
+	presets := make([]socketRemotePreset, len(remotes))
 	for i := range presets {
 		presets[i] = socketRemotePreset{
 			Title: remotes[i].Title,
@@ -56,13 +64,17 @@ func buildAccessConfigRespondBody(remotes []configuration.Preset) []byte {
 			Meta:  remotes[i].Meta,
 		}
 	}
-
-	mData, mErr := json.Marshal(presets)
-
-	if mErr != nil {
-		panic(fmt.Errorf("Unable to marshal remote data: %s", mErr))
+	return socketAccessConfiguration{
+		Presets:       presets,
+		ServerMessage: parseServerMessage(html.EscapeString(serverMessage)),
 	}
+}
 
+func buildAccessConfigRespondBody(accessCfg socketAccessConfiguration) []byte {
+	mData, mErr := json.Marshal(accessCfg)
+	if mErr != nil {
+		panic(fmt.Errorf("unable to marshal remote data: %s", mErr))
+	}
 	return mData
 }
 
@@ -77,7 +89,12 @@ func newSocketVerification(
 			srvCfg.HeartbeatTimeout.Seconds(), 'g', 2, 64),
 		timeout: strconv.FormatFloat(
 			srvCfg.ReadTimeout.Seconds(), 'g', 2, 64),
-		configRspBody: buildAccessConfigRespondBody(commCfg.Presets),
+		configRspBody: buildAccessConfigRespondBody(
+			newSocketAccessConfiguration(
+				commCfg.Presets,
+				srvCfg.ServerMessage,
+			),
+		),
 	}
 }
 

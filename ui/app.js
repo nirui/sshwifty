@@ -49,6 +49,7 @@ const mainTemplate = `
   :connection="socket"
   :controls="controls"
   :commands="commands"
+  :server-message="serverMessage"
   :preset-data="presetData.presets"
   :restricted-to-presets="presetData.restricted"
   :view-port="viewPort"
@@ -110,6 +111,7 @@ function startApp(rootEl) {
             : "",
         page: "loading",
         key: "",
+        serverMessage: "",
         presetData: {
           presets: new Presets([]),
           restricted: false,
@@ -232,8 +234,12 @@ function startApp(rootEl) {
         );
       },
       executeHomeApp(authResult, key) {
+        let authData = JSON.parse(authResult.data);
+        this.serverMessage = authData.server_message
+          ? authData.server_message
+          : "";
         this.presetData = {
-          presets: new Presets(JSON.parse(authResult.data)),
+          presets: new Presets(authData.presets ? authData.presets : []),
           restricted: authResult.onlyAllowPresetRemotes,
         };
         this.socket = this.buildSocket(

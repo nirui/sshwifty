@@ -16,3 +16,39 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 package controller
+
+import (
+	"html"
+	"testing"
+)
+
+func TestParseServerMessage(t *testing.T) {
+	for _, test := range [][]string{
+		{
+			"<b>This is a [测试](http://nirui.org) " +
+				"[for link support](http://nirui.org)</b>.",
+			"&lt;b&gt;This is a " +
+				"<a href=\"http://nirui.org\" target=\"_blank\">测试</a> " +
+				"<a href=\"http://nirui.org\" target=\"_blank\">for link support</a>" +
+				"&lt;/b&gt;.",
+		},
+		{
+			"[测试](http://nirui.org)",
+			"<a href=\"http://nirui.org\" target=\"_blank\">测试</a>",
+		},
+		{
+			"[测试](http://nirui.org).",
+			"<a href=\"http://nirui.org\" target=\"_blank\">测试</a>.",
+		},
+		{
+			".[测试](http://nirui.org)",
+			".<a href=\"http://nirui.org\" target=\"_blank\">测试</a>",
+		},
+	} {
+		result := parseServerMessage(html.EscapeString(test[0]))
+		if result != test[1] {
+			t.Errorf("Expecting %v, got %v instead", test[1], result)
+			return
+		}
+	}
+}

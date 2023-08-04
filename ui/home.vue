@@ -84,6 +84,11 @@
           ></span>
           icon near the top left corner.
         </p>
+
+        <div v-if="serverMessage.length > 0">
+          <hr />
+          <p class="secondary" v-html="serverMessage"></p>
+        </div>
       </div>
     </screens>
 
@@ -179,6 +184,10 @@ export default {
     commands: {
       type: Object,
       default: () => null,
+    },
+    serverMessage: {
+      type: String,
+      default: "",
     },
     presetData: {
       type: Object,

@@ -38,6 +38,7 @@ type Server struct {
 	WriteDelay            time.Duration
 	TLSCertificateFile    string
 	TLSCertificateKeyFile string
+	ServerMessage         string
 }
 
 func (s Server) defaultListenInterface() string {
@@ -97,6 +98,7 @@ func (s Server) WithDefault() Server {
 		WriteDelay:            s.WriteDelay,
 		TLSCertificateFile:    s.TLSCertificateFile,
 		TLSCertificateKeyFile: s.TLSCertificateKeyFile,
+		ServerMessage:         s.ServerMessage,
 	}
 }
 

@@ -45,6 +45,7 @@ type fileCfgServer struct {
 	WriteDelay            int    // Write delay, in millisecond
 	TLSCertificateFile    string // Location of TLS certificate file
 	TLSCertificateKeyFile string // Location of TLS certificate key
+	ServerMessage         string // Server message displayed on the Home page
 }
 
 func (f *fileCfgServer) build() Server {
@@ -71,6 +72,7 @@ func (f *fileCfgServer) build() Server {
 			durationAtLeast(f.WriteDelay, 0)) * time.Millisecond,
 		TLSCertificateFile:    f.TLSCertificateFile,
 		TLSCertificateKeyFile: f.TLSCertificateKeyFile,
+		ServerMessage:         f.ServerMessage,
 	}
 }
 

@@ -16,7 +16,8 @@
       "ReadDelay": 10,
       "WriteDelay": 10,
       "TLSCertificateFile": "",
-      "TLSCertificateKeyFile": ""
+      "TLSCertificateKeyFile": "",
+      "ServerMessage": "Programmers in China launched an online campaign against [implicitly forced overtime work](https://en.wikipedia.org/wiki/996_working_hour_system) in pursuit of balanced work-life relationship. Sshwifty wouldn't exist if its author must work such extreme hours. If you're benefiting from hobbyist projects like this one, please consider to support the action."
     }
   ],
   "Presets": [

@@ -102,6 +102,7 @@ func Enviro() Loader {
 			WriteDelay:            int(writeDelay),
 			TLSCertificateFile:    parseEnv("SSHWIFTY_TLSCERTIFICATEFILE"),
 			TLSCertificateKeyFile: parseEnv("SSHWIFTY_TLSCERTIFICATEKEYFILE"),
+			ServerMessage:         parseEnv("SSHWIFTY_SERVERMESSAGE"),
 		}
 
 		presets := make(fileCfgPresets, 0, 16)

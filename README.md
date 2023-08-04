@@ -167,6 +167,10 @@ Here is all the options of a configuration file:
 
       // Path to TLS certificate key file. Set empty to use HTTP
       "TLSCertificateKeyFile": ""
+      
+      // Display a short text message on the Home page. Link is supported 
+      // through `[Title text](https://link.example.com)` format
+      "ServerMessage": ""
     },
     {
       "ListenInterface": "0.0.0.0",
@@ -297,6 +301,7 @@ SSHWIFTY_WRITEELAY
 SSHWIFTY_LISTENINTERFACE
 SSHWIFTY_TLSCERTIFICATEFILE
 SSHWIFTY_TLSCERTIFICATEKEYFILE
+SSHWIFTY_SERVERMESSAGE
 SSHWIFTY_PRESETS
 SSHWIFTY_ONLYALLOWPRESETREMOTES
 ```
