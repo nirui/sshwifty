@@ -479,7 +479,7 @@ export class Limited {
   searchBuffer(byteData, maxLen) {
     return this.reader.searchBuffer(
       byteData,
-      maxLen > this.remain ? this.remain : maxLen
+      maxLen > this.remain ? this.remain : maxLen,
     );
   }
 

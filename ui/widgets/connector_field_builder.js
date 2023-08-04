@@ -197,7 +197,7 @@ export function build(tabIndex, i, field) {
 
       this.suggestion.reload(
         this.field.value,
-        this.field.suggestions(this.field.value)
+        this.field.suggestions(this.field.value),
       );
     },
     resetSuggestions(force) {

@@ -328,7 +328,7 @@ export default {
         () => {
           this.connector.busy = false;
           this.connector.acquired = false;
-        }
+        },
       );
     },
     connectNew(connector) {
@@ -346,7 +346,7 @@ export default {
             presets.emptyPreset(),
             null,
             false,
-            () => {}
+            () => {},
           ),
         };
 
@@ -368,7 +368,7 @@ export default {
             preset.preset,
             null,
             [],
-            () => {}
+            () => {},
           ),
         };
 
@@ -415,7 +415,7 @@ export default {
             known.keptSessions,
             () => {
               self.connector.knowns = self.connector.historyRec.all();
-            }
+            },
           ),
         };
 
@@ -465,7 +465,7 @@ export default {
               self.connector.knowns = self.connector.historyRec.all();
 
               done(n.data().success);
-            }
+            },
           ),
         };
 
@@ -529,7 +529,7 @@ export default {
           status: {
             closing: false,
           },
-        }) - 1
+        }) - 1,
       );
     },
     removeFromTab(index) {

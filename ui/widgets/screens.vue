@@ -77,7 +77,7 @@ export default {
     },
     viewPort: {
       type: Object,
-      default: () => [],
+      default: () => {},
     },
   },
   methods: {

@@ -238,7 +238,7 @@ class Parser {
                 this.callbacks.setEcho(true);
                 break;
             }
-          }
+          },
         );
 
       case optSuppressGoAhead:
@@ -248,7 +248,7 @@ class Parser {
           this.options.suppressGoAhead,
           (d, _action) => {
             this.options.suppressGoAhead = d;
-          }
+          },
         );
 
       case optNAWS:
@@ -355,7 +355,7 @@ class Control {
         return enc.encode(
           dec.decode(d, {
             stream: true,
-          })
+          }),
         );
       };
 
@@ -389,7 +389,7 @@ class Control {
         getWindowDim() {
           return self.windowDim;
         },
-      }
+      },
     );
 
     let runWait = this.parser.run();

@@ -276,14 +276,14 @@ export default {
         el = document.createElement("a");
         el.setAttribute(
           "href",
-          "data:text/plain;charset=utf-8," + btoa(dataStr)
+          "data:text/plain;charset=utf-8," + btoa(dataStr),
         );
         el.setAttribute("target", "_blank");
         el.setAttribute("download", "sshwifty.known-remotes.txt");
         el.setAttribute(
           "style",
           "overflow: hidden; opacity: 0; width: 1px; height: 1px; top: -1px;" +
-            "left: -1px; position: absolute;"
+            "left: -1px; position: absolute;",
         );
 
         document.body.appendChild(el);
@@ -310,7 +310,7 @@ export default {
         el.setAttribute(
           "style",
           "overflow: hidden; opacity: 0; width: 1px; height: 1px; top: -1px;" +
-            "left: -1px; position: absolute;"
+            "left: -1px; position: absolute;",
         );
         el.addEventListener("change", (ev) => {
           const t = ev.target;

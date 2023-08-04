@@ -173,7 +173,7 @@ export function field(def, f) {
         typeof n[i] +
         '", got "' +
         typeof f[i] +
-        '" instead'
+        '" instead',
     );
   }
 
@@ -228,7 +228,7 @@ export function fieldsWithPreset(
   definitions,
   fieldsData,
   presetData,
-  presetApplied
+  presetApplied,
 ) {
   let newFields = fields(definitions, fieldsData);
 
@@ -711,10 +711,10 @@ class Builder {
         streams,
         subs,
         controls,
-        history
+        history,
       ),
       subs,
-      done
+      done,
     );
   }
 
@@ -744,10 +744,10 @@ class Builder {
         streams,
         subs,
         controls,
-        history
+        history,
       ),
       subs,
-      done
+      done,
     );
   }
 
@@ -773,10 +773,10 @@ class Builder {
         streams,
         subs,
         controls,
-        history
+        history,
       ),
       subs,
-      done
+      done,
     );
   }
 
@@ -870,7 +870,7 @@ export class Commands {
 
       for (let j = 0; j < fetched.length; j++) {
         pp.push(
-          new Preset(this.commands[i].represet(fetched[j]), this.commands[i])
+          new Preset(this.commands[i].represet(fetched[j]), this.commands[i]),
         );
       }
     }

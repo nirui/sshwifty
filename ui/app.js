@@ -77,7 +77,7 @@ function startApp(rootEl) {
 
   function getCurrentKeyMixer() {
     return Number(
-      Math.trunc(new Date().getTime() / socksKeyTimeTruncater)
+      Math.trunc(new Date().getTime() / socksKeyTimeTruncater),
     ).toString();
   }
 
@@ -85,8 +85,8 @@ function startApp(rootEl) {
     return new Uint8Array(
       await cipher.hmac512(
         stream.buildBufferFromString(privateKey),
-        stream.buildBufferFromString(getCurrentKeyMixer())
-      )
+        stream.buildBufferFromString(getCurrentKeyMixer()),
+      ),
     ).slice(0, 16);
   }
 
@@ -166,7 +166,7 @@ function startApp(rootEl) {
         self.$nextTick(() => {
           self.viewPort.dim.renew(
             self.viewPortUpdaters.width,
-            self.viewPortUpdaters.height
+            self.viewPortUpdaters.height,
           );
         });
       };
@@ -202,7 +202,7 @@ function startApp(rootEl) {
         }
 
         return new Uint8Array(
-          await cipher.hmac512(enc.encode(finalKey), enc.encode(rTime))
+          await cipher.hmac512(enc.encode(finalKey), enc.encode(rTime)),
         ).slice(0, 32);
       },
       buildBackendSocketURLs() {
@@ -230,7 +230,7 @@ function startApp(rootEl) {
           this.buildBackendSocketURLs(),
           key,
           dialTimeout * 1000,
-          heartbeatInterval * 1000
+          heartbeatInterval * 1000,
         );
       },
       executeHomeApp(authResult, key) {
@@ -245,7 +245,7 @@ function startApp(rootEl) {
         this.socket = this.buildSocket(
           key,
           authResult.timeout,
-          authResult.heartbeat
+          authResult.heartbeat,
         );
         this.page = "app";
       },
@@ -315,7 +315,7 @@ function startApp(rootEl) {
                     throw new Error(
                       "Unable to fetch key from remote, unexpected " +
                         "error code: " +
-                        result.result
+                        result.result,
                     );
                   }
 
@@ -358,12 +358,12 @@ function startApp(rootEl) {
                     throw new Error(
                       "Unable to fetch key from remote, unexpected " +
                         "error code: " +
-                        result.result
+                        result.result,
                     );
                   }
 
                   return await buildSocketKey(
-                    atob(result.key) + "+" + passphrase
+                    atob(result.key) + "+" + passphrase,
                   );
                 },
               });

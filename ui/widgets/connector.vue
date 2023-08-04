@@ -409,7 +409,7 @@ export default {
             for (let i = 0; i < fields.length; i++) {
               const f = fieldBuilder.build(tabIndex, i, fields[i]);
               if (f.field.readonly) {
-                this.verify(i, f, true)
+                this.verify(i, f, true);
               }
               this.current.fields.push(f);
               tabIndex = f.nextTabIndex();
@@ -515,9 +515,8 @@ export default {
       let mod = {};
 
       for (let i = 0; i < this.current.fields.length; i++) {
-        mod[this.current.fields[i].field.name] = this.current.fields[
-          i
-        ].field.value;
+        mod[this.current.fields[i].field.name] =
+          this.current.fields[i].field.value;
       }
 
       return mod;
@@ -650,7 +649,7 @@ export default {
           this.clickInputSuggestion(
             key,
             field,
-            field.selectedSuggestionIndex()
+            field.selectedSuggestionIndex(),
           );
         }
 
@@ -720,7 +719,7 @@ export default {
             key,
             field,
             true,
-            field.curentSuggestion()
+            field.curentSuggestion(),
           );
           break;
 
@@ -732,7 +731,7 @@ export default {
             key,
             field,
             true,
-            field.curentSuggestion()
+            field.curentSuggestion(),
           );
           break;
 
@@ -762,7 +761,7 @@ export default {
           this.clickInputSuggestion(
             key,
             field,
-            field.selectedSuggestionIndex()
+            field.selectedSuggestionIndex(),
           );
           break;
       }
@@ -777,7 +776,7 @@ export default {
           key,
           field,
           true,
-          field.curentSuggestion()
+          field.curentSuggestion(),
         )
       ) {
         field.disableSuggestionsForInput(field.field.value);

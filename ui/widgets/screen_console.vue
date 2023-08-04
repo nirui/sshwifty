@@ -54,10 +54,7 @@
             <li>
               <a class="tb-item" href="javascript:;" @click="fontSizeUp">
                 <span
-                  class="
-                    tb-key-icon tb-key-resize-icon
-                    icon icon-keyboardkey1 icon-iconed-bottom1
-                  "
+                  class="tb-key-icon tb-key-resize-icon icon icon-keyboardkey1 icon-iconed-bottom1"
                 >
                   <i>+</i>
                   Increase
@@ -67,10 +64,7 @@
             <li>
               <a class="tb-item" href="javascript:;" @click="fontSizeDown">
                 <span
-                  class="
-                    tb-key-icon tb-key-resize-icon
-                    icon icon-keyboardkey1 icon-iconed-bottom1
-                  "
+                  class="tb-key-icon tb-key-resize-icon icon icon-keyboardkey1 icon-iconed-bottom1"
                 >
                   <i>-</i>
                   Decrease
@@ -118,14 +112,14 @@ import "./screen_console.css";
 import "xterm/css/xterm.css";
 
 const termTypeFaces = "PureNerdFont, Hack";
-const termFallbackTypeFace = "\"Cascadia Code\" , monospace";
+const termFallbackTypeFace = '"Cascadia Code" , monospace';
 const termTypeFaceLoadTimeout = 3000;
 const termTypeFaceLoadError =
-  'Remote font ' +
+  "Remote font " +
   termTypeFaces +
-  ' is unavailable, using ' +
+  " is unavailable, using " +
   termFallbackTypeFace +
-  ' instead until the remote font is loaded';
+  " instead until the remote font is loaded";
 const termDefaultFontSize = 16;
 const termMinFontSize = 8;
 const termMaxFontSize = 36;
@@ -239,7 +233,7 @@ class Term {
     //       revisit.
     // if (() => {
     //   try {
-    //     return !!window.WebGLRenderingContext && 
+    //     return !!window.WebGLRenderingContext &&
     //       document.createElement('canvas').getContext('webgl');
     //   } catch(e) {
     //      return false;
@@ -460,10 +454,12 @@ export default {
       const tfs = typefaces.split(",");
       let observers = [];
       for (let v in tfs) {
-        observers.push(new FontFaceObserver(tfs[v].trim()).load(null, timeout))
-        observers.push(new FontFaceObserver(tfs[v].trim(), {
-          weight: "bold",
-        }).load(null, timeout))
+        observers.push(new FontFaceObserver(tfs[v].trim()).load(null, timeout));
+        observers.push(
+          new FontFaceObserver(tfs[v].trim(), {
+            weight: "bold",
+          }).load(null, timeout),
+        );
       }
       return Promise.all(observers);
     },
@@ -527,7 +523,7 @@ export default {
               toDismiss: toDismiss,
             });
           },
-        }
+        },
       );
 
       if (self.term.destroyed()) {

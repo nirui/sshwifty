@@ -45,7 +45,7 @@ function verifyPresetItemMeta(preset) {
         i +
         '" was "' +
         typeof preset.meta[i] +
-        '" instead of expected "string"'
+        '" instead of expected "string"',
     );
   }
 }
@@ -81,7 +81,7 @@ function parsePresetItem(item) {
         typeof presetItem[i] +
         '", given "' +
         typeof item[i] +
-        '" instead'
+        '" instead',
     );
   }
 

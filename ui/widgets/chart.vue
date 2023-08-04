@@ -182,7 +182,7 @@ class Chart {
       "0 0 " +
         parseInt(this.dim.width, 10) +
         " " +
-        parseInt(this.dim.height, 10)
+        parseInt(this.dim.height, 10),
     );
 
     this.el.setAttribute("preserveAspectRatio", "xMidYMid meet");
@@ -294,7 +294,7 @@ export default {
       this.$el,
       this.width,
       this.height,
-      buildDrawer(this.type)
+      buildDrawer(this.type),
     );
   },
   beforeDestroy() {

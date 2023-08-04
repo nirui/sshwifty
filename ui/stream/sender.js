@@ -137,7 +137,7 @@ export class Sender {
 
       while (fetched.data.length > currentSendDataLen) {
         const sentLen = this.appendBuffer(
-          fetched.data.slice(currentSendDataLen, fetched.data.length)
+          fetched.data.slice(currentSendDataLen, fetched.data.length),
         );
 
         // Buffer not full, wait for the force flush

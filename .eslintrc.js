@@ -14,6 +14,7 @@ module.exports = {
   ],
   rules: {
     "vue/component-name-in-template-casing": ["error", "PascalCase"],
+    "vue/multi-word-component-names": process.env.NODE_ENV === "production" ? "warn" : "off",
     "no-console": process.env.NODE_ENV === "production" ? "warn" : "off",
     "no-debugger": process.env.NODE_ENV === "production" ? "error" : "off",
     "no-unused-vars": process.env.NODE_ENV === "production" ? "off" : "warn",
