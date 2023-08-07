@@ -1,5 +1,5 @@
 # Build the build base environment
-FROM ubuntu:rolling AS base
+FROM ubuntu:rolling AS devel
 RUN set -ex && \
     cd / && \
     echo '#!/bin/sh' > /try.sh && echo 'res=1; for i in $(seq 0 36); do $@; res=$?; [ $res -eq 0 ] && exit $res || sleep 10; done; exit $res' >> /try.sh && chmod +x /try.sh && \
@@ -65,6 +65,7 @@ ENV SSHWIFTY_HOSTNAME= \
     SSHWIFTY_DOCKER_TLSCERT= \
     SSHWIFTY_DOCKER_TLSCERTKEY= \
     SSHWIFTY_PRESETS= \
+    SSHWIFTY_SERVERMESSAGE= \
     SSHWIFTY_ONLYALLOWPRESETREMOTES=
 COPY --from=builder /sshwifty /
 COPY . /sshwifty-src
