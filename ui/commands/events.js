@@ -38,7 +38,7 @@ export class Events {
             events[i] +
             '". Expecting "function" got "' +
             typeof callbacks[events[i]] +
-            '" instead.',
+            '" instead.'
         );
       }
 
@@ -66,7 +66,7 @@ export class Events {
         'Event type "' +
           type +
           '" cannot be appended. It maybe ' +
-          "unregistered or already been acquired",
+          "unregistered or already been acquired"
       );
     }
 
@@ -76,7 +76,7 @@ export class Events {
           type +
           '". Expecting "function" got "' +
           typeof callback +
-          '" instead.',
+          '" instead.'
       );
     }
 

@@ -30,7 +30,7 @@ export async function hmac512(secret, data) {
       hash: { name: "SHA-512" },
     },
     false,
-    ["sign", "verify"],
+    ["sign", "verify"]
   );
 
   return window.crypto.subtle.sign(key.algorithm, key, data);
@@ -53,7 +53,7 @@ export function buildGCMKey(keyData) {
       length: GCMKeyBitLen,
     },
     false,
-    ["encrypt", "decrypt"],
+    ["encrypt", "decrypt"]
   );
 }
 
@@ -68,7 +68,7 @@ export function encryptGCM(key, iv, plaintext) {
   return window.crypto.subtle.encrypt(
     { name: "AES-GCM", iv: iv, tagLength: GCMKeyBitLen },
     key,
-    plaintext,
+    plaintext
   );
 }
 
@@ -83,7 +83,7 @@ export function decryptGCM(key, iv, cipherText) {
   return window.crypto.subtle.decrypt(
     { name: "AES-GCM", iv: iv, tagLength: GCMKeyBitLen },
     key,
-    cipherText,
+    cipherText
   );
 }
 

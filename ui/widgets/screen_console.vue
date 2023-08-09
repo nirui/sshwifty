@@ -458,7 +458,7 @@ export default {
         observers.push(
           new FontFaceObserver(tfs[v].trim(), {
             weight: "bold",
-          }).load(null, timeout),
+          }).load(null, timeout)
         );
       }
       return Promise.all(observers);
@@ -523,7 +523,7 @@ export default {
               toDismiss: toDismiss,
             });
           },
-        },
+        }
       );
 
       if (self.term.destroyed()) {

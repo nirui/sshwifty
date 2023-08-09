@@ -41,7 +41,7 @@ describe("Address", () => {
     let addr = new address.Address(
         address.IPV4,
         new Uint8Array([127, 0, 0, 1]),
-        8080,
+        8080
       ),
       buf = addr.buffer();
 
@@ -62,7 +62,7 @@ describe("Address", () => {
     let addr = new address.Address(
         address.IPV6,
         new Uint8Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]),
-        8080,
+        8080
       ),
       buf = addr.buffer();
 
@@ -83,7 +83,7 @@ describe("Address", () => {
     let addr = new address.Address(
         address.HOSTNAME,
         new Uint8Array(["v", "a", "g", "u", "l", "1", "2", "3"]),
-        8080,
+        8080
       ),
       buf = addr.buffer();
 

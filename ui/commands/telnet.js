@@ -62,7 +62,7 @@ class Telnet {
         "close",
         "@completed",
       ],
-      callbacks,
+      callbacks
     );
   }
 
@@ -76,7 +76,7 @@ class Telnet {
     let addr = new address.Address(
         this.config.host.type,
         this.config.host.address,
-        this.config.host.port,
+        this.config.host.port
       ),
       addrBuf = addr.buffer();
 
@@ -205,7 +205,7 @@ const initialFieldDef = {
 
       if (addr.addr.length > address.MAX_ADDR_LEN) {
         throw new Error(
-          "Can no longer than " + address.MAX_ADDR_LEN + " bytes",
+          "Can no longer than " + address.MAX_ADDR_LEN + " bytes"
         );
       }
 
@@ -262,7 +262,7 @@ class Wizard {
     streams,
     subs,
     controls,
-    history,
+    history
   ) {
     this.info = info;
     this.preset = preset;
@@ -291,8 +291,8 @@ class Wizard {
     this.step.resolve(
       this.stepErrorDone(
         "Action cancelled",
-        "Action has been cancelled without reach any success",
-      ),
+        "Action has been cancelled without reach any success"
+      )
     );
   }
 
@@ -305,21 +305,21 @@ class Wizard {
       true,
       data,
       "Success!",
-      "We have connected to the remote",
+      "We have connected to the remote"
     );
   }
 
   stepWaitForAcceptWait() {
     return command.wait(
       "Requesting",
-      "Waiting for the request to be accepted by the backend",
+      "Waiting for the request to be accepted by the backend"
     );
   }
 
   stepWaitForEstablishWait(host) {
     return command.wait(
       "Connecting to " + host,
-      "Establishing connection with the remote host, may take a while",
+      "Establishing connection with the remote host, may take a while"
     );
   }
 
@@ -346,7 +346,7 @@ class Wizard {
         switch (streamInitialHeader.data()) {
           case SERVER_INITIAL_ERROR_BAD_ADDRESS:
             self.step.resolve(
-              self.stepErrorDone("Request rejected", "Invalid address"),
+              self.stepErrorDone("Request rejected", "Invalid address")
             );
 
             return;
@@ -355,8 +355,8 @@ class Wizard {
         self.step.resolve(
           self.stepErrorDone(
             "Request rejected",
-            "Unknown error code: " + streamInitialHeader.data(),
-          ),
+            "Unknown error code: " + streamInitialHeader.data()
+          )
         );
       },
       initialized(streamInitialHeader) {
@@ -378,9 +378,9 @@ class Wizard {
                 },
                 events: commandHandler.events,
               }),
-              self.controls.ui(),
-            ),
-          ),
+              self.controls.ui()
+            )
+          )
         );
 
         self.history.save(
@@ -390,7 +390,7 @@ class Wizard {
           self.info,
           configInput,
           sessionData,
-          keptSessions,
+          keptSessions
         );
       },
       async "connect.failed"(rd) {
@@ -422,7 +422,7 @@ class Wizard {
               host: r.host,
               charset: r.encoding,
             },
-            self.session,
+            self.session
           );
         });
 
@@ -439,7 +439,7 @@ class Wizard {
                 "Telnet",
                 "host",
                 input,
-                HostMaxSearchResults,
+                HostMaxSearchResults
               );
 
               let sugg = [];
@@ -460,8 +460,8 @@ class Wizard {
           { name: "Encoding" },
         ],
         self.preset,
-        (r) => {},
-      ),
+        (r) => {}
+      )
     );
   }
 }
@@ -488,7 +488,7 @@ class Executor extends Wizard {
     streams,
     subs,
     controls,
-    history,
+    history
   ) {
     super(
       info,
@@ -498,7 +498,7 @@ class Executor extends Wizard {
       streams,
       subs,
       controls,
-      history,
+      history
     );
 
     this.config = config;
@@ -516,7 +516,7 @@ class Executor extends Wizard {
           host: self.config.host,
           charset: self.config.charset ? self.config.charset : "utf-8",
         },
-        self.session,
+        self.session
       );
     });
 
@@ -551,7 +551,7 @@ export class Command {
     streams,
     subs,
     controls,
-    history,
+    history
   ) {
     return new Wizard(
       info,
@@ -561,7 +561,7 @@ export class Command {
       streams,
       subs,
       controls,
-      history,
+      history
     );
   }
 
@@ -573,7 +573,7 @@ export class Command {
     streams,
     subs,
     controls,
-    history,
+    history
   ) {
     return new Executor(
       info,
@@ -583,7 +583,7 @@ export class Command {
       streams,
       subs,
       controls,
-      history,
+      history
     );
   }
 
@@ -598,7 +598,7 @@ export class Command {
       initialFieldDef["Host"].verify(d[0]);
     } catch (e) {
       throw new Exception(
-        'Given launcher "' + launcher + '" was invalid: ' + e,
+        'Given launcher "' + launcher + '" was invalid: ' + e
       );
     }
 
@@ -612,7 +612,7 @@ export class Command {
         charset = d[1];
       } catch (e) {
         throw new Exception(
-          'Given launcher "' + launcher + '" was invalid: ' + e,
+          'Given launcher "' + launcher + '" was invalid: ' + e
         );
       }
     }
@@ -628,7 +628,7 @@ export class Command {
       streams,
       subs,
       controls,
-      history,
+      history
     );
   }
 

@@ -136,7 +136,7 @@ export class History {
     if (this.records.length > this.maxItems) {
       this.records = this.records.slice(
         this.records.length - this.maxItems,
-        this.records.length,
+        this.records.length
       );
     }
 
@@ -235,7 +235,7 @@ export class History {
         data: this.records[i].data,
         session: extractSelectedData(
           this.records[i].keptSessions,
-          this.records[i].session,
+          this.records[i].session
         ),
         keptSessions: this.records[i].keptSessions,
       });
@@ -265,7 +265,7 @@ export class History {
         data: records[i].data,
         session: extractSelectedData(
           records[i].keptSessions,
-          records[i].session,
+          records[i].session
         ),
         keptSessions: records[i].keptSessions,
       });

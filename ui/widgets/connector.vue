@@ -649,7 +649,7 @@ export default {
           this.clickInputSuggestion(
             key,
             field,
-            field.selectedSuggestionIndex(),
+            field.selectedSuggestionIndex()
           );
         }
 
@@ -719,7 +719,7 @@ export default {
             key,
             field,
             true,
-            field.curentSuggestion(),
+            field.curentSuggestion()
           );
           break;
 
@@ -731,7 +731,7 @@ export default {
             key,
             field,
             true,
-            field.curentSuggestion(),
+            field.curentSuggestion()
           );
           break;
 
@@ -761,7 +761,7 @@ export default {
           this.clickInputSuggestion(
             key,
             field,
-            field.selectedSuggestionIndex(),
+            field.selectedSuggestionIndex()
           );
           break;
       }
@@ -776,7 +776,7 @@ export default {
           key,
           field,
           true,
-          field.curentSuggestion(),
+          field.curentSuggestion()
         )
       ) {
         field.disableSuggestionsForInput(field.field.value);

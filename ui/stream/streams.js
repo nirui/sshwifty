@@ -163,7 +163,7 @@ export class Streams {
     pauseHeader.set(1);
 
     return this.sender.send(
-      new Uint8Array([pauseHeader.value(), header.CONTROL_PAUSESTREAM]),
+      new Uint8Array([pauseHeader.value(), header.CONTROL_PAUSESTREAM])
     );
   }
 
@@ -177,7 +177,7 @@ export class Streams {
     pauseHeader.set(1);
 
     return this.sender.send(
-      new Uint8Array([pauseHeader.value(), header.CONTROL_RESUMESTREAM]),
+      new Uint8Array([pauseHeader.value(), header.CONTROL_RESUMESTREAM])
     );
   }
 
@@ -199,7 +199,7 @@ export class Streams {
 
         return new Requested(
           this.streams[i],
-          this.streams[i].run(commandID, commandBuilder, this.sender),
+          this.streams[i].run(commandID, commandBuilder, this.sender)
         );
       }
 
@@ -313,7 +313,7 @@ export class Streams {
         'Remote is requesting for stream "' +
           hd.data() +
           '" which is not running',
-        false,
+        false
       );
     }
 
@@ -324,7 +324,7 @@ export class Streams {
     if (stream.initializing()) {
       let streamHeader = new header.InitialStream(
         initialHeaderBytes[0],
-        initialHeaderBytes[1],
+        initialHeaderBytes[1]
       );
 
       return stream.initialize(streamHeader);
@@ -332,7 +332,7 @@ export class Streams {
 
     let streamHeader = new header.Stream(
         initialHeaderBytes[0],
-        initialHeaderBytes[1],
+        initialHeaderBytes[1]
       ),
       streamReader = new reader.Limited(rd, streamHeader.length());
 
@@ -365,7 +365,7 @@ export class Streams {
         'Remote is requesting for stream "' +
           hd.data() +
           '" to be closed, but the stream is not running',
-        false,
+        false
       );
     }
 
@@ -400,7 +400,7 @@ export class Streams {
         'Remote is requesting for stream "' +
           hd.data() +
           '" to be completed, but the stream is not running',
-        false,
+        false
       );
     }
 

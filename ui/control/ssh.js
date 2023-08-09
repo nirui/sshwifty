@@ -46,7 +46,7 @@ class Control {
         return enc.encode(
           dec.decode(d, {
             stream: true,
-          }),
+          })
         );
       };
 

@@ -22,7 +22,7 @@ describe("Reader", () => {
   it("Buffer", async () => {
     let buf = new reader.Buffer(
       new Uint8Array([0, 1, 2, 3, 4, 5, 6, 7]),
-      () => {},
+      () => {}
     );
 
     let ex = buf.export(1);
