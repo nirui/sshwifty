@@ -47,25 +47,25 @@ import TabList from "./tab_list.vue";
 export default {
   components: {
     window: Window,
-    "tab-list": TabList,
+    "tab-list": TabList
   },
   props: {
     display: {
       type: Boolean,
-      default: false,
+      default: false
     },
     tab: {
       type: Number,
-      default: -1,
+      default: -1
     },
     tabs: {
       type: Array,
-      default: () => [],
+      default: () => []
     },
     tabsClass: {
       type: String,
-      default: "",
-    },
+      default: ""
+    }
   },
   watch: {
     tabs(newV) {
@@ -74,7 +74,7 @@ export default {
       }
 
       this.$emit("display", false);
-    },
-  },
+    }
+  }
 };
 </script>

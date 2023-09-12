@@ -78,8 +78,8 @@ export const consoleScreenKeys = [
           metaKey: false,
           repeat: false,
           shiftKey: false,
-          which: 112,
-        },
+          which: 112
+        }
       ],
       [
         "F2",
@@ -94,8 +94,8 @@ export const consoleScreenKeys = [
           metaKey: false,
           repeat: false,
           shiftKey: false,
-          which: 113,
-        },
+          which: 113
+        }
       ],
       [
         "F3",
@@ -110,8 +110,8 @@ export const consoleScreenKeys = [
           metaKey: false,
           repeat: false,
           shiftKey: false,
-          which: 114,
-        },
+          which: 114
+        }
       ],
       [
         "F4",
@@ -126,8 +126,8 @@ export const consoleScreenKeys = [
           metaKey: false,
           repeat: false,
           shiftKey: false,
-          which: 115,
-        },
+          which: 115
+        }
       ],
       [
         "F5",
@@ -142,8 +142,8 @@ export const consoleScreenKeys = [
           metaKey: false,
           repeat: false,
           shiftKey: false,
-          which: 116,
-        },
+          which: 116
+        }
       ],
       [
         "F6",
@@ -158,8 +158,8 @@ export const consoleScreenKeys = [
           metaKey: false,
           repeat: false,
           shiftKey: false,
-          which: 117,
-        },
+          which: 117
+        }
       ],
       [
         "F7",
@@ -174,8 +174,8 @@ export const consoleScreenKeys = [
           metaKey: false,
           repeat: false,
           shiftKey: false,
-          which: 118,
-        },
+          which: 118
+        }
       ],
       [
         "F8",
@@ -190,8 +190,8 @@ export const consoleScreenKeys = [
           metaKey: false,
           repeat: false,
           shiftKey: false,
-          which: 119,
-        },
+          which: 119
+        }
       ],
       [
         "F9",
@@ -206,8 +206,8 @@ export const consoleScreenKeys = [
           metaKey: false,
           repeat: false,
           shiftKey: false,
-          which: 120,
-        },
+          which: 120
+        }
       ],
       [
         "F10",
@@ -222,8 +222,8 @@ export const consoleScreenKeys = [
           metaKey: false,
           repeat: false,
           shiftKey: false,
-          which: 121,
-        },
+          which: 121
+        }
       ],
       [
         "F11",
@@ -238,8 +238,8 @@ export const consoleScreenKeys = [
           metaKey: false,
           repeat: false,
           shiftKey: false,
-          which: 122,
-        },
+          which: 122
+        }
       ],
       [
         "F12",
@@ -254,10 +254,10 @@ export const consoleScreenKeys = [
           metaKey: false,
           repeat: false,
           shiftKey: false,
-          which: 123,
-        },
-      ],
-    ],
+          which: 123
+        }
+      ]
+    ]
   },
   {
     title: "Misc Keys",
@@ -275,8 +275,8 @@ export const consoleScreenKeys = [
           metaKey: false,
           repeat: false,
           shiftKey: false,
-          which: 27,
-        },
+          which: 27
+        }
       ],
       [
         "Tab",
@@ -291,8 +291,8 @@ export const consoleScreenKeys = [
           metaKey: false,
           repeat: false,
           shiftKey: false,
-          which: 9,
-        },
+          which: 9
+        }
       ],
       [
         "Insert",
@@ -307,8 +307,8 @@ export const consoleScreenKeys = [
           metaKey: false,
           repeat: false,
           shiftKey: false,
-          which: 45,
-        },
+          which: 45
+        }
       ],
       [
         "Delete",
@@ -323,10 +323,10 @@ export const consoleScreenKeys = [
           metaKey: false,
           repeat: false,
           shiftKey: false,
-          which: 46,
-        },
-      ],
-    ],
+          which: 46
+        }
+      ]
+    ]
   },
   {
     title: "Navigation Keys",
@@ -344,8 +344,8 @@ export const consoleScreenKeys = [
           metaKey: false,
           repeat: false,
           shiftKey: false,
-          which: 36,
-        },
+          which: 36
+        }
       ],
       [
         "End",
@@ -360,8 +360,8 @@ export const consoleScreenKeys = [
           metaKey: false,
           repeat: false,
           shiftKey: false,
-          which: 35,
-        },
+          which: 35
+        }
       ],
       [
         "Up " + String.fromCharCode(8593),
@@ -376,8 +376,8 @@ export const consoleScreenKeys = [
           metaKey: false,
           repeat: false,
           shiftKey: false,
-          which: 38,
-        },
+          which: 38
+        }
       ],
       [
         "Down " + String.fromCharCode(8595),
@@ -392,8 +392,8 @@ export const consoleScreenKeys = [
           metaKey: false,
           repeat: false,
           shiftKey: false,
-          which: 40,
-        },
+          which: 40
+        }
       ],
       [
         "Left " + String.fromCharCode(8592),
@@ -408,8 +408,8 @@ export const consoleScreenKeys = [
           metaKey: false,
           repeat: false,
           shiftKey: false,
-          which: 37,
-        },
+          which: 37
+        }
       ],
       [
         "Right " + String.fromCharCode(8594),
@@ -424,8 +424,8 @@ export const consoleScreenKeys = [
           metaKey: false,
           repeat: false,
           shiftKey: false,
-          which: 39,
-        },
+          which: 39
+        }
       ],
       [
         "Page Up " + String.fromCharCode(9652),
@@ -440,8 +440,8 @@ export const consoleScreenKeys = [
           metaKey: false,
           repeat: false,
           shiftKey: false,
-          which: 33,
-        },
+          which: 33
+        }
       ],
       [
         "Page Down " + String.fromCharCode(9662),
@@ -456,10 +456,10 @@ export const consoleScreenKeys = [
           metaKey: false,
           repeat: false,
           shiftKey: false,
-          which: 34,
-        },
-      ],
-    ],
+          which: 34
+        }
+      ]
+    ]
   },
   {
     title: "Control Keys",
@@ -477,8 +477,8 @@ export const consoleScreenKeys = [
           metaKey: false,
           repeat: false,
           shiftKey: false,
-          which: 67,
-        },
+          which: 67
+        }
       ],
       [
         "Ctrl+Z",
@@ -493,8 +493,8 @@ export const consoleScreenKeys = [
           metaKey: false,
           repeat: false,
           shiftKey: false,
-          which: 90,
-        },
+          which: 90
+        }
       ],
       [
         "Ctrl+R",
@@ -509,8 +509,8 @@ export const consoleScreenKeys = [
           metaKey: false,
           repeat: false,
           shiftKey: false,
-          which: 82,
-        },
+          which: 82
+        }
       ],
       [
         "Ctrl+L",
@@ -525,8 +525,8 @@ export const consoleScreenKeys = [
           metaKey: false,
           repeat: false,
           shiftKey: false,
-          which: 76,
-        },
+          which: 76
+        }
       ],
       [
         "Ctrl+A",
@@ -541,8 +541,8 @@ export const consoleScreenKeys = [
           metaKey: false,
           repeat: false,
           shiftKey: false,
-          which: 65,
-        },
+          which: 65
+        }
       ],
       [
         "Ctrl+E",
@@ -557,8 +557,8 @@ export const consoleScreenKeys = [
           metaKey: false,
           repeat: false,
           shiftKey: false,
-          which: 69,
-        },
+          which: 69
+        }
       ],
       [
         "Ctrl+W",
@@ -573,8 +573,8 @@ export const consoleScreenKeys = [
           metaKey: false,
           repeat: false,
           shiftKey: false,
-          which: 87,
-        },
+          which: 87
+        }
       ],
       [
         "Ctrl+U",
@@ -589,8 +589,8 @@ export const consoleScreenKeys = [
           metaKey: false,
           repeat: false,
           shiftKey: false,
-          which: 85,
-        },
+          which: 85
+        }
       ],
       [
         "Ctrl+K",
@@ -605,8 +605,8 @@ export const consoleScreenKeys = [
           metaKey: false,
           repeat: false,
           shiftKey: false,
-          which: 75,
-        },
+          which: 75
+        }
       ],
       [
         "Ctrl+D",
@@ -621,8 +621,8 @@ export const consoleScreenKeys = [
           metaKey: false,
           repeat: false,
           shiftKey: false,
-          which: 68,
-        },
+          which: 68
+        }
       ],
       [
         "Ctrl+Q",
@@ -637,8 +637,8 @@ export const consoleScreenKeys = [
           metaKey: false,
           repeat: false,
           shiftKey: false,
-          which: 81,
-        },
+          which: 81
+        }
       ],
       [
         "Ctrl+X",
@@ -653,8 +653,8 @@ export const consoleScreenKeys = [
           metaKey: false,
           repeat: false,
           shiftKey: false,
-          which: 88,
-        },
+          which: 88
+        }
       ],
       [
         "Ctrl+T",
@@ -669,9 +669,9 @@ export const consoleScreenKeys = [
           metaKey: false,
           repeat: false,
           shiftKey: false,
-          which: 84,
-        },
-      ],
-    ],
-  },
+          which: 84
+        }
+      ]
+    ]
+  }
 ];

@@ -25,7 +25,7 @@ const presetItem = {
   title: "",
   type: "",
   host: "",
-  meta: {},
+  meta: {}
 };
 
 /**
@@ -217,7 +217,7 @@ export function emptyPreset() {
     title: "Default",
     type: "Default",
     host: "",
-    meta: {},
+    meta: {}
   });
 }
 

@@ -140,8 +140,8 @@ class Term {
       fontSize: this.fontSize,
       logLevel: process.env.NODE_ENV === "development" ? "info" : "off",
       theme: {
-        background: this.control.activeColor(),
-      },
+        background: this.control.activeColor()
+      }
     });
     this.fit = new FitAddon();
 
@@ -215,7 +215,7 @@ class Term {
         }
         this.control.resize({
           rows: dim.rows,
-          cols: dim.cols,
+          cols: dim.cols
         });
       }, resizeDelayInterval);
     });
@@ -382,29 +382,29 @@ export default {
         tail = "</span>";
 
       return head + key.split("+").join(tail + "+" + head) + tail;
-    },
+    }
   },
   props: {
     active: {
       type: Boolean,
-      default: false,
+      default: false
     },
     control: {
       type: Object,
-      default: () => null,
+      default: () => null
     },
     change: {
       type: Object,
-      default: () => null,
+      default: () => null
     },
     toolbar: {
       type: Boolean,
-      default: false,
+      default: false
     },
     viewPort: {
       type: Object,
-      default: () => null,
-    },
+      default: () => null
+    }
   },
   data() {
     return {
@@ -414,8 +414,8 @@ export default {
       runner: null,
       eventHandlers: {
         keydown: null,
-        keyup: null,
-      },
+        keyup: null
+      }
     };
   },
   watch: {
@@ -430,7 +430,7 @@ export default {
 
         this.fit();
       },
-      deep: true,
+      deep: true
     },
     viewPort: {
       handler() {
@@ -440,8 +440,8 @@ export default {
 
         this.fit();
       },
-      deep: true,
-    },
+      deep: true
+    }
   },
   async mounted() {
     await this.init();
@@ -457,7 +457,7 @@ export default {
         observers.push(new FontFaceObserver(tfs[v].trim()).load(null, timeout));
         observers.push(
           new FontFaceObserver(tfs[v].trim(), {
-            weight: "bold",
+            weight: "bold"
           }).load(null, timeout)
         );
       }
@@ -514,15 +514,15 @@ export default {
           warn(msg, toDismiss) {
             self.$emit("warning", {
               text: msg,
-              toDismiss: toDismiss,
+              toDismiss: toDismiss
             });
           },
           info(msg, toDismiss) {
             self.$emit("info", {
               text: msg,
-              toDismiss: toDismiss,
+              toDismiss: toDismiss
             });
-          },
+          }
         }
       );
 
@@ -594,7 +594,7 @@ export default {
     },
     fontSizeDown() {
       this.term.fontSizeDown();
-    },
-  },
+    }
+  }
 };
 </script>

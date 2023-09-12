@@ -39,7 +39,7 @@
         href="javascript:;"
         :class="{
           working: connector.inputting,
-          intensify: connector.inputting && !windows.connect,
+          intensify: connector.inputting && !windows.connect
         }"
         @click="showConnectWindow"
       ></a>
@@ -162,45 +162,45 @@ export default {
     connector: Connector,
     tabs: Tabs,
     "tab-window": TabWindow,
-    screens: Screens,
+    screens: Screens
   },
   props: {
     hostPath: {
       type: String,
-      default: "",
+      default: ""
     },
     query: {
       type: String,
-      default: "",
+      default: ""
     },
     connection: {
       type: Object,
-      default: () => null,
+      default: () => null
     },
     controls: {
       type: Object,
-      default: () => null,
+      default: () => null
     },
     commands: {
       type: Object,
-      default: () => null,
+      default: () => null
     },
     serverMessage: {
       type: String,
-      default: "",
+      default: ""
     },
     presetData: {
       type: Object,
-      default: () => new presets.Presets([]),
+      default: () => new presets.Presets([])
     },
     restrictedToPresets: {
       type: Boolean,
-      default: () => false,
+      default: () => false
     },
     viewPort: {
       type: Object,
-      default: () => null,
-    },
+      default: () => null
+    }
   },
   data() {
     let history = home_history.build(this);
@@ -210,7 +210,7 @@ export default {
       windows: {
         delay: false,
         connect: false,
-        tabs: false,
+        tabs: false
       },
       socket: home_socket.build(this),
       connector: {
@@ -220,14 +220,14 @@ export default {
         inputting: false,
         acquired: false,
         busy: false,
-        knowns: history.all(),
+        knowns: history.all()
       },
       presets: this.commands.mergePresets(this.presetData),
       tab: {
         current: -1,
         lastID: 0,
-        tabs: [],
-      },
+        tabs: []
+      }
     };
   },
   mounted() {
@@ -347,7 +347,7 @@ export default {
             null,
             false,
             () => {}
-          ),
+          )
         };
 
         self.connector.inputting = true;
@@ -369,7 +369,7 @@ export default {
             null,
             [],
             () => {}
-          ),
+          )
         };
 
         self.connector.inputting = true;
@@ -416,7 +416,7 @@ export default {
             () => {
               self.connector.knowns = self.connector.historyRec.all();
             }
-          ),
+          )
         };
 
         self.connector.inputting = true;
@@ -432,7 +432,7 @@ export default {
 
       return {
         type: ll.slice(0, llSeparatorIdx),
-        query: ll.slice(llSeparatorIdx + 1, ll.length),
+        query: ll.slice(llSeparatorIdx + 1, ll.length)
       };
     },
     connectLaunch(launcher, done) {
@@ -466,7 +466,7 @@ export default {
 
               done(n.data().success);
             }
-          ),
+          )
         };
 
         this.connector.inputting = true;
@@ -524,11 +524,11 @@ export default {
           indicator: {
             level: "",
             message: "",
-            updated: false,
+            updated: false
           },
           status: {
-            closing: false,
-          },
+            closing: false
+          }
         }) - 1
       );
     },
@@ -611,7 +611,7 @@ export default {
       this.$emit("tab-updated", this.tab.tabs);
 
       this.tab.tabs[index].indicator.updated = index !== this.tab.current;
-    },
-  },
+    }
+  }
 };
 </script>

@@ -45,7 +45,7 @@ class Control {
       this.charsetDecoder = (d) => {
         return enc.encode(
           dec.decode(d, {
-            stream: true,
+            stream: true
           })
         );
       };

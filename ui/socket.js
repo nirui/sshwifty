@@ -256,7 +256,7 @@ class Dial {
       return {
         reader: cgmReader,
         sender: sd,
-        ws: ws,
+        ws: ws
       };
     } catch (e) {
       ws.close();
@@ -343,7 +343,7 @@ export class Socket {
         },
         outbound(data) {
           callbacks.traffic(0, data.length);
-        },
+        }
       });
 
       let streamHandler = new streams.Streams(conn.reader, conn.sender, {
@@ -372,7 +372,7 @@ export class Socket {
           // risk sending things out
           conn.ws.close();
           callbacks.close(e);
-        },
+        }
       });
 
       callbacks.connected();

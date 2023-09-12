@@ -129,7 +129,7 @@ export class Sender {
 
       callbacks.push({
         resolve: fetched.resolve,
-        reject: fetched.reject,
+        reject: fetched.reject
       });
 
       // Add data to buffer and maybe flush when the buffer is full
@@ -199,7 +199,7 @@ export class Sender {
       self.subscribe.resolve({
         data: data,
         resolve: resolve,
-        reject: reject,
+        reject: reject
       });
 
       if (self.bufferedRequests >= self.maxBufferedRequests) {

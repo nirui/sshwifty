@@ -45,7 +45,7 @@ describe("Reader", () => {
         return data;
       }),
       expected = [
-        0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7,
+        0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7
       ],
       feedIntv = setInterval(() => {
         r.feed(Uint8Array.from(expected.slice(0, 8)));

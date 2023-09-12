@@ -161,7 +161,7 @@ export class Multiple {
     if (this.reader === null && this.subscribe.pendings() <= 0) {
       this.reader = {
         reader: reader,
-        depleted: depleted,
+        depleted: depleted
       };
 
       return;
@@ -169,7 +169,7 @@ export class Multiple {
 
     this.subscribe.resolve({
       reader: reader,
-      depleted: depleted,
+      depleted: depleted
     });
   }
 
@@ -567,7 +567,7 @@ export async function readUntil(indexOfReader, byteData) {
   if (pos >= 0) {
     return {
       data: await readN(indexOfReader, pos + 1),
-      found: true,
+      found: true
     };
   }
 
@@ -576,12 +576,12 @@ export async function readUntil(indexOfReader, byteData) {
 
     return {
       data: d,
-      found: d[0] === byteData,
+      found: d[0] === byteData
     };
   }
 
   return {
     data: await readN(indexOfReader, buffered),
-    found: false,
+    found: false
   };
 }

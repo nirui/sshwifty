@@ -84,7 +84,7 @@ class SSH {
         "@stdout",
         "@stderr",
         "close",
-        "@completed",
+        "@completed"
       ],
       callbacks
     );
@@ -274,7 +274,7 @@ const initialFieldDef = {
       }
 
       return "Look like " + addr.type + " address";
-    },
+    }
   },
   User: {
     name: "User",
@@ -298,7 +298,7 @@ const initialFieldDef = {
       }
 
       return "We'll login as user \"" + d + '"';
-    },
+    }
   },
   Encoding: {
     name: "Encoding",
@@ -320,7 +320,7 @@ const initialFieldDef = {
       }
 
       throw new Error('The character encoding "' + d + '" is not supported');
-    },
+    }
   },
   Notice: {
     name: "Notice",
@@ -336,7 +336,7 @@ const initialFieldDef = {
     },
     verify(d) {
       return "";
-    },
+    }
   },
   Password: {
     name: "Password",
@@ -360,7 +360,7 @@ const initialFieldDef = {
       }
 
       return "We'll login with this password";
-    },
+    }
   },
   "Private Key": {
     name: "Private Key",
@@ -426,7 +426,7 @@ const initialFieldDef = {
       }
 
       return "We'll login with this Private Key";
-    },
+    }
   },
   Authentication: {
     name: "Authentication",
@@ -451,7 +451,7 @@ const initialFieldDef = {
         default:
           throw new Error("Authentication method must be specified");
       }
-    },
+    }
   },
   Fingerprint: {
     name: "Fingerprint",
@@ -468,8 +468,8 @@ const initialFieldDef = {
     },
     verify(d) {
       return "";
-    },
-  },
+    }
+  }
 };
 
 /**
@@ -529,7 +529,7 @@ class Wizard {
     this.session = session
       ? session
       : {
-          credential: "",
+          credential: ""
         };
     this.keptSessions = keptSessions;
     this.step = subs;
@@ -608,7 +608,7 @@ class Wizard {
       charset: configInput.charset,
       credential: sessionData.credential,
       host: address.parseHostPort(configInput.host, DEFAULT_PORT),
-      fingerprint: configInput.fingerprint,
+      fingerprint: configInput.fingerprint
     };
 
     // Copy the keptSessions from the record so it will not be overwritten here
@@ -669,7 +669,7 @@ class Wizard {
                 resize(rows, cols) {
                   return commandHandler.sendResize(rows, cols);
                 },
-                events: commandHandler.events,
+                events: commandHandler.events
               }),
               self.controls.ui()
             )
@@ -730,7 +730,7 @@ class Wizard {
             "Connection has been cancelled"
           )
         );
-      },
+      }
     });
   }
 
@@ -754,7 +754,7 @@ class Wizard {
               charset: r.encoding,
               fingerprint: self.preset
                 ? self.preset.metaDefault("Fingerprint", "")
-                : "",
+                : ""
             },
             self.session
           );
@@ -785,18 +785,18 @@ class Wizard {
                   meta: {
                     User: hosts[i].data.user,
                     Authentication: hosts[i].data.authentication,
-                    Encoding: hosts[i].data.charset,
-                  },
+                    Encoding: hosts[i].data.charset
+                  }
                 });
               }
 
               return sugg;
-            },
+            }
           },
           { name: "User" },
           { name: "Authentication" },
           { name: "Encoding" },
-          { name: "Notice" },
+          { name: "Notice" }
         ],
         self.preset,
         (r) => {}
@@ -847,8 +847,8 @@ class Wizard {
       command.fields(initialFieldDef, [
         {
           name: "Fingerprint",
-          value: fingerprintData,
-        },
+          value: fingerprintData
+        }
       ])
     );
   }
@@ -978,7 +978,7 @@ class Executer extends Wizard {
           authentication: self.config.authentication,
           host: self.config.host,
           charset: self.config.charset ? self.config.charset : "utf-8",
-          fingerprint: self.config.fingerprint,
+          fingerprint: self.config.fingerprint
         },
         self.session
       );
@@ -1086,7 +1086,7 @@ export class Command {
         user: user,
         host: host,
         authentication: auth,
-        charset: charset,
+        charset: charset
       },
       null,
       null,

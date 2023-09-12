@@ -64,21 +64,21 @@ import "./screens.css";
 
 export default {
   components: {
-    ConsoleScreen,
+    ConsoleScreen
   },
   props: {
     screen: {
       type: Number,
-      default: 0,
+      default: 0
     },
     screens: {
       type: Array,
-      default: () => [],
+      default: () => []
     },
     viewPort: {
       type: Object,
-      default: () => {},
-    },
+      default: () => {}
+    }
   },
   methods: {
     getComponent(ui) {
@@ -101,7 +101,7 @@ export default {
     },
     updated(index) {
       this.$emit("updated", index);
-    },
-  },
+    }
+  }
 };
 </script>

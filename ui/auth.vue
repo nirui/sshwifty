@@ -28,7 +28,7 @@
             <div
               class="field"
               :class="{
-                error: passphraseErr.length > 0 || error.length > 0,
+                error: passphraseErr.length > 0 || error.length > 0
               }"
             >
               Passphrase
@@ -79,20 +79,20 @@ export default {
         }
 
         el.focus();
-      },
-    },
+      }
+    }
   },
   props: {
     error: {
       type: String,
-      default: "",
-    },
+      default: ""
+    }
   },
   data() {
     return {
       submitting: false,
       passphrase: "",
-      passphraseErr: "",
+      passphraseErr: ""
     };
   },
   watch: {
@@ -100,7 +100,7 @@ export default {
       if (newVal.length > 0) {
         this.submitting = false;
       }
-    },
+    }
   },
   mounted() {},
   methods: {
@@ -120,7 +120,7 @@ export default {
       this.passphraseErr = "";
 
       this.$emit("auth", this.passphrase);
-    },
-  },
+    }
+  }
 };
 </script>

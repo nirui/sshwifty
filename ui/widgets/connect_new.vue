@@ -41,13 +41,13 @@ export default {
   props: {
     connectors: {
       type: Array,
-      default: () => [],
-    },
+      default: () => []
+    }
   },
   methods: {
     select(connector) {
       this.$emit("select", connector);
-    },
-  },
+    }
+  }
 };
 </script>

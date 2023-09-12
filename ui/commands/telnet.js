@@ -60,7 +60,7 @@ class Telnet {
         "connect.succeed",
         "@inband",
         "close",
-        "@completed",
+        "@completed"
       ],
       callbacks
     );
@@ -214,7 +214,7 @@ const initialFieldDef = {
       }
 
       return "Look like " + addr.type + " address";
-    },
+    }
   },
   Encoding: {
     name: "Encoding",
@@ -236,8 +236,8 @@ const initialFieldDef = {
       }
 
       throw new Error('The character encoding "' + d + '" is not supported');
-    },
-  },
+    }
+  }
 };
 
 class Wizard {
@@ -335,7 +335,7 @@ class Wizard {
 
     let parsedConfig = {
       host: address.parseHostPort(configInput.host, DEFAULT_PORT),
-      charset: configInput.charset,
+      charset: configInput.charset
     };
 
     // Copy the keptSessions from the record so it will not be overwritten here
@@ -376,7 +376,7 @@ class Wizard {
                 close() {
                   return commandHandler.sendClose();
                 },
-                events: commandHandler.events,
+                events: commandHandler.events
               }),
               self.controls.ui()
             )
@@ -401,7 +401,7 @@ class Wizard {
       },
       "@inband"(rd) {},
       close() {},
-      "@completed"() {},
+      "@completed"() {}
     });
   }
 
@@ -420,7 +420,7 @@ class Wizard {
             sd,
             {
               host: r.host,
-              charset: r.encoding,
+              charset: r.encoding
             },
             self.session
           );
@@ -449,15 +449,15 @@ class Wizard {
                   title: hosts[i].title,
                   value: hosts[i].data.host,
                   meta: {
-                    Encoding: hosts[i].data.charset,
-                  },
+                    Encoding: hosts[i].data.charset
+                  }
                 });
               }
 
               return sugg;
-            },
+            }
           },
-          { name: "Encoding" },
+          { name: "Encoding" }
         ],
         self.preset,
         (r) => {}
@@ -514,7 +514,7 @@ class Executor extends Wizard {
         sd,
         {
           host: self.config.host,
-          charset: self.config.charset ? self.config.charset : "utf-8",
+          charset: self.config.charset ? self.config.charset : "utf-8"
         },
         self.session
       );
@@ -621,7 +621,7 @@ export class Command {
       info,
       {
         host: d[0],
-        charset: charset,
+        charset: charset
       },
       null,
       null,

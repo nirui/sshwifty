@@ -313,7 +313,7 @@ function buildEmptyCurrent() {
     actionText: "Continue",
     cancellable: false,
     submittable: false,
-    submitting: false,
+    submitting: false
   };
 }
 
@@ -326,14 +326,14 @@ export default {
         }
 
         el.focus();
-      },
-    },
+      }
+    }
   },
   props: {
     connector: {
       type: Object,
-      default: () => null,
-    },
+      default: () => null
+    }
   },
   data() {
     return {
@@ -345,7 +345,7 @@ export default {
       submitterTabIndex: 1,
       working: false,
       disabled: false,
-      cancelled: false,
+      cancelled: false
     };
   },
   watch: {
@@ -357,7 +357,7 @@ export default {
       this.cancelled = false;
       this.currentConnector = newV;
       this.runWizard();
-    },
+    }
   },
   async mounted() {
     await this.closeWizard();
@@ -828,7 +828,7 @@ export default {
       this.current.submitting = true;
 
       await this.current.data.cancel();
-    },
-  },
+    }
+  }
 };
 </script>

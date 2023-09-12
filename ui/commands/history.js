@@ -130,7 +130,7 @@ export class History {
       last: lastUsed.getTime(),
       data: data,
       session: sessionData,
-      keptSessions: keptSessions,
+      keptSessions: keptSessions
     });
 
     if (this.records.length > this.maxItems) {
@@ -209,7 +209,7 @@ export class History {
         last: new Date(this.records[i].last),
         data: this.records[i].data,
         session: this.records[i].session,
-        keptSessions: this.records[i].keptSessions,
+        keptSessions: this.records[i].keptSessions
       });
     }
 
@@ -237,7 +237,7 @@ export class History {
           this.records[i].keptSessions,
           this.records[i].session
         ),
-        keptSessions: this.records[i].keptSessions,
+        keptSessions: this.records[i].keptSessions
       });
     }
 
@@ -267,7 +267,7 @@ export class History {
           records[i].keptSessions,
           records[i].session
         ),
-        keptSessions: records[i].keptSessions,
+        keptSessions: records[i].keptSessions
       });
     }
 

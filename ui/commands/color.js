@@ -91,7 +91,7 @@ export class Color {
 
       return {
         color: color[0],
-        dark: color[1],
+        dark: color[1]
       };
     }
   }

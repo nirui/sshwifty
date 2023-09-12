@@ -247,7 +247,7 @@ describe("String", () => {
           "O",
           "R",
           "L",
-          "D",
+          "D"
         ])
       ),
       sBuf = s.buffer();

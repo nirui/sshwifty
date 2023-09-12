@@ -95,7 +95,7 @@ function startApp(rootEl) {
     components: {
       loading: Loading,
       auth: Auth,
-      home: Home,
+      home: Home
     },
     data() {
       return {
@@ -114,14 +114,14 @@ function startApp(rootEl) {
         serverMessage: "",
         presetData: {
           presets: new Presets([]),
-          restricted: false,
+          restricted: false
         },
         authErr: "",
         loadErr: "",
         socket: null,
         controls: new Controls([
           new telnetctl.Telnet(uiControlColor),
-          new sshctl.SSH(uiControlColor),
+          new sshctl.SSH(uiControlColor)
         ]),
         commands: new Commands([new telnet.Command(), new ssh.Command()]),
         tabUpdateIndicator: null,
@@ -132,14 +132,14 @@ function startApp(rootEl) {
             renew(width, height) {
               this.width = width;
               this.height = height;
-            },
-          },
+            }
+          }
         },
         viewPortUpdaters: {
           width: 0,
           height: 0,
-          dimResizer: null,
-        },
+          dimResizer: null
+        }
       };
     },
     watch: {
@@ -152,7 +152,7 @@ function startApp(rootEl) {
         this.isErrored()
           ? document.body.classList.add("app-error")
           : document.body.classList.remove("app-error");
-      },
+      }
     },
     mounted() {
       const self = this;
@@ -208,7 +208,7 @@ function startApp(rootEl) {
       buildBackendSocketURLs() {
         let r = {
           webSocket: "",
-          keepAlive: "",
+          keepAlive: ""
         };
 
         switch (location.protocol) {
@@ -240,7 +240,7 @@ function startApp(rootEl) {
           : "";
         this.presetData = {
           presets: new Presets(authData.presets ? authData.presets : []),
-          restricted: authResult.onlyAllowPresetRemotes,
+          restricted: authResult.onlyAllowPresetRemotes
         };
         this.socket = this.buildSocket(
           key,
@@ -265,9 +265,7 @@ function startApp(rootEl) {
             : await this.getSocketAuthKey(privateKey);
 
         let h = await xhr.get(socksVerificationInterface, {
-          "X-Key": authKey
-            ? btoa(String.fromCharCode.apply(null, authKey))
-            : "",
+          "X-Key": authKey ? btoa(String.fromCharCode.apply(null, authKey)) : ""
         });
 
         let serverDate = h.getResponseHeader("Date");
@@ -280,7 +278,7 @@ function startApp(rootEl) {
           date: serverDate ? new Date(serverDate) : null,
           data: h.responseText,
           onlyAllowPresetRemotes:
-            h.getResponseHeader("X-OnlyAllowPresetRemotes") === "yes",
+            h.getResponseHeader("X-OnlyAllowPresetRemotes") === "yes"
         };
       },
       async tryInitialAuth() {
@@ -320,7 +318,7 @@ function startApp(rootEl) {
                   }
 
                   return await buildSocketKey(atob(result.key) + "+");
-                },
+                }
               });
               break;
 
@@ -365,7 +363,7 @@ function startApp(rootEl) {
                   return await buildSocketKey(
                     atob(result.key) + "+" + passphrase
                   );
-                },
+                }
               });
               break;
 
@@ -419,8 +417,8 @@ function startApp(rootEl) {
           this.tabUpdateIndicator = null;
           this.updateTabTitleInfo(tabs, false);
         }, updateIndicatorMaxDisplayTime);
-      },
-    },
+      }
+    }
   });
 }
 
