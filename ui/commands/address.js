@@ -123,7 +123,7 @@ export class Address {
         return new Uint8Array([
           this.addrPort >> 8,
           this.addrPort & 0xff,
-          LOOPBACK << 6
+          LOOPBACK << 6,
         ]);
 
       case IPV4:
@@ -138,7 +138,7 @@ export class Address {
           this.addrData[0],
           this.addrData[1],
           this.addrData[2],
-          this.addrData[3]
+          this.addrData[3],
         ]);
 
       case IPV6:
@@ -165,7 +165,7 @@ export class Address {
           this.addrData[12],
           this.addrData[13],
           this.addrData[14],
-          this.addrData[15]
+          this.addrData[15],
         ]);
 
       case HOSTNAME:
@@ -225,6 +225,6 @@ export function parseHostPort(s, defaultPort) {
   return {
     type: t,
     address: d.addr,
-    port: d.port
+    port: d.port,
   };
 }

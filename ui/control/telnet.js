@@ -55,7 +55,7 @@ const unknownTermTypeSendData = new Uint8Array([
   84,
   69,
   82,
-  77
+  77,
 ]);
 
 // Most of code of this class is directly from
@@ -70,7 +70,7 @@ class Parser {
     this.options = {
       echoEnabled: false,
       suppressGoAhead: false,
-      nawsAccpeted: false
+      nawsAccpeted: false,
     };
     this.current = 0;
   }
@@ -238,7 +238,7 @@ class Parser {
                 this.callbacks.setEcho(true);
                 break;
             }
-          }
+          },
         );
 
       case optSuppressGoAhead:
@@ -248,7 +248,7 @@ class Parser {
           this.options.suppressGoAhead,
           (d, _action) => {
             this.options.suppressGoAhead = d;
-          }
+          },
         );
 
       case optNAWS:
@@ -354,8 +354,8 @@ class Control {
       this.charsetDecoder = (d) => {
         return enc.encode(
           dec.decode(d, {
-            stream: true
-          })
+            stream: true,
+          }),
         );
       };
 
@@ -372,7 +372,7 @@ class Control {
     this.enable = false;
     this.windowDim = {
       cols: 65535,
-      rows: 65535
+      rows: 65535,
     };
 
     let self = this;
@@ -388,8 +388,8 @@ class Control {
         },
         getWindowDim() {
           return self.windowDim;
-        }
-      }
+        },
+      },
     );
 
     let runWait = this.parser.run();

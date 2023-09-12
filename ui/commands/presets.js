@@ -25,7 +25,7 @@ const presetItem = {
   title: "",
   type: "",
   host: "",
-  meta: {}
+  meta: {},
 };
 
 /**
@@ -45,7 +45,7 @@ function verifyPresetItemMeta(preset) {
         i +
         '" was "' +
         typeof preset.meta[i] +
-        '" instead of expected "string"'
+        '" instead of expected "string"',
     );
   }
 }
@@ -81,7 +81,7 @@ function parsePresetItem(item) {
         typeof presetItem[i] +
         '", given "' +
         typeof item[i] +
-        '" instead'
+        '" instead',
     );
   }
 
@@ -217,7 +217,7 @@ export function emptyPreset() {
     title: "Default",
     type: "Default",
     host: "",
-    meta: {}
+    meta: {},
   });
 }
 

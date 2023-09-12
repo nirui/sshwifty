@@ -54,7 +54,7 @@ export class Integer {
 
     return new Uint8Array([
       (this.num >> 7) | integerHasNextBit,
-      this.num & integerValueCutter
+      this.num & integerValueCutter,
     ]);
   }
 

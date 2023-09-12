@@ -133,7 +133,7 @@ class BarDrawer extends BaseDrawer {
           currentWidth +
           "," +
           cellHalfHeight,
-        class: h === 0 ? "zero" : data.data[i].class
+        class: h === 0 ? "zero" : data.data[i].class,
       });
 
       currentWidth += cellWidth;
@@ -161,7 +161,7 @@ class UpsideDownBarDrawer extends BarDrawer {
           currentWidth +
           "," +
           (Math.round(h) + padHalfHeight),
-        class: h === 0 ? "zero" : data.data[i].class
+        class: h === 0 ? "zero" : data.data[i].class,
       });
 
       currentWidth += cellWidth;
@@ -182,7 +182,7 @@ class Chart {
       "0 0 " +
         parseInt(this.dim.width, 10) +
         " " +
-        parseInt(this.dim.height, 10)
+        parseInt(this.dim.height, 10),
     );
 
     this.el.setAttribute("preserveAspectRatio", "xMidYMid meet");
@@ -211,7 +211,7 @@ class Chart {
 
     return {
       dataMax: max,
-      resultMax: d.max
+      resultMax: d.max,
     };
   }
 
@@ -237,33 +237,33 @@ export default {
   props: {
     values: {
       type: Array,
-      default: () => []
+      default: () => [],
     },
     width: {
       type: Number,
-      default: 0
+      default: 0,
     },
     height: {
       type: Number,
-      default: 0
+      default: 0,
     },
     max: {
       type: Number,
-      default: 0
+      default: 0,
     },
     enabled: {
       type: Boolean,
-      default: false
+      default: false,
     },
     type: {
       type: String,
-      default: ""
-    }
+      default: "",
+    },
   },
   data() {
     return {
       chart: null,
-      previousMax: 0
+      previousMax: 0,
     };
   },
   watch: {
@@ -287,14 +287,14 @@ export default {
       }
 
       this.draw();
-    }
+    },
   },
   mounted() {
     this.chart = new Chart(
       this.$el,
       this.width,
       this.height,
-      buildDrawer(this.type)
+      buildDrawer(this.type),
     );
   },
   beforeDestroy() {
@@ -310,7 +310,7 @@ export default {
 
       this.$emit("max", r.dataMax);
       this.previousMax = r.dataMax;
-    }
-  }
+    },
+  },
 };
 </script>

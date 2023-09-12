@@ -48,7 +48,7 @@ export class Sender {
     if (this.closed) {
       throw new Exception(
         "Sender already been closed. No data can be send",
-        false
+        false,
       );
     }
 
@@ -80,7 +80,7 @@ export class Sender {
     if (this.closed) {
       throw new Exception(
         "Sender already been closed. No data can be send",
-        false
+        false,
       );
     }
 
@@ -115,7 +115,7 @@ export class Sender {
     if (this.closed) {
       throw new Exception(
         "Sender already been closed. No signal can be send",
-        false
+        false,
       );
     }
 
@@ -248,7 +248,7 @@ export class Stream {
     if (this.running()) {
       throw new Exception(
         "Stream already running, cannot accept new commands",
-        false
+        false,
       );
     }
 
@@ -270,14 +270,14 @@ export class Stream {
     if (!this.running()) {
       throw new Exception(
         "Cannot initialize a stream that is not running",
-        false
+        false,
       );
     }
 
     if (this.isShuttingDown) {
       throw new Exception(
         "Cannot initialize a stream that is about to shutdown",
-        false
+        false,
       );
     }
 
@@ -309,7 +309,7 @@ export class Stream {
     if (this.isShuttingDown) {
       throw new Exception(
         "Cannot tick a stream that is about to shutdown",
-        false
+        false,
       );
     }
 
@@ -330,7 +330,7 @@ export class Stream {
     if (this.isShuttingDown) {
       throw new Exception(
         "Cannot close a stream that is about to shutdown",
-        false
+        false,
       );
     }
 
@@ -353,7 +353,7 @@ export class Stream {
       throw new Exception(
         "Can't complete current stream because Close " +
           "signal is not received",
-        false
+        false,
       );
     }
 

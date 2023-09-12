@@ -40,26 +40,26 @@ export default {
   props: {
     id: {
       type: String,
-      default: ""
+      default: "",
     },
     display: {
       type: Boolean,
-      default: false
+      default: false,
     },
     flashClass: {
       type: String,
-      default: ""
-    }
+      default: "",
+    },
   },
   data() {
     return {
-      displaying: false
+      displaying: false,
     };
   },
   watch: {
     display(newVal) {
       newVal ? this.show() : this.hide();
-    }
+    },
   },
   methods: {
     show() {
@@ -71,7 +71,7 @@ export default {
       this.displaying = false;
 
       this.$emit("display", this.displaying);
-    }
-  }
+    },
+  },
 };
 </script>

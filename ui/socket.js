@@ -202,7 +202,7 @@ class Dial {
           },
           4096 - 64, // Server has a 4096 bytes receive buffer, can be no greater,
           minSenderDelay, // 30ms input delay
-          10 // max 10 buffered requests
+          10, // max 10 buffered requests
         );
 
       let senderNonce = crypt.generateNonce();
@@ -239,14 +239,14 @@ class Dial {
           let decoded = await crypt.decryptGCM(
             key,
             receiverNonce,
-            await reader.readN(rd, dSize)
+            await reader.readN(rd, dSize),
           );
 
           crypt.increaseNonce(receiverNonce);
 
           r.feed(
             new reader.Buffer(new Uint8Array(decoded), () => {}),
-            () => {}
+            () => {},
           );
         } catch (e) {
           r.closeWithReason(e);
@@ -256,7 +256,7 @@ class Dial {
       return {
         reader: cgmReader,
         sender: sd,
-        ws: ws
+        ws: ws,
       };
     } catch (e) {
       ws.close();
@@ -343,7 +343,7 @@ export class Socket {
         },
         outbound(data) {
           callbacks.traffic(0, data.length);
-        }
+        },
       });
 
       let streamHandler = new streams.Streams(conn.reader, conn.sender, {
@@ -372,7 +372,7 @@ export class Socket {
           // risk sending things out
           conn.ws.close();
           callbacks.close(e);
-        }
+        },
       });
 
       callbacks.connected();

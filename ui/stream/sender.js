@@ -129,7 +129,7 @@ export class Sender {
 
       callbacks.push({
         resolve: fetched.resolve,
-        reject: fetched.reject
+        reject: fetched.reject,
       });
 
       // Add data to buffer and maybe flush when the buffer is full
@@ -137,7 +137,7 @@ export class Sender {
 
       while (fetched.data.length > currentSendDataLen) {
         const sentLen = this.appendBuffer(
-          fetched.data.slice(currentSendDataLen, fetched.data.length)
+          fetched.data.slice(currentSendDataLen, fetched.data.length),
         );
 
         // Buffer not full, wait for the force flush
@@ -199,7 +199,7 @@ export class Sender {
       self.subscribe.resolve({
         data: data,
         resolve: resolve,
-        reject: reject
+        reject: reject,
       });
 
       if (self.bufferedRequests >= self.maxBufferedRequests) {

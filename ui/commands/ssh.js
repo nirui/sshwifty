@@ -84,9 +84,9 @@ class SSH {
         "@stdout",
         "@stderr",
         "close",
-        "@completed"
+        "@completed",
       ],
-      callbacks
+      callbacks,
     );
   }
 
@@ -102,7 +102,7 @@ class SSH {
       addr = new address.Address(
         this.config.host.type,
         this.config.host.address,
-        this.config.host.port
+        this.config.host.port,
       ),
       addrBuf = addr.buffer(),
       authMethod = new Uint8Array([this.config.auth]);
@@ -265,7 +265,7 @@ const initialFieldDef = {
 
       if (addr.addr.length > address.MAX_ADDR_LEN) {
         throw new Error(
-          "Can no longer than " + address.MAX_ADDR_LEN + " bytes"
+          "Can no longer than " + address.MAX_ADDR_LEN + " bytes",
         );
       }
 
@@ -274,7 +274,7 @@ const initialFieldDef = {
       }
 
       return "Look like " + addr.type + " address";
-    }
+    },
   },
   User: {
     name: "User",
@@ -293,12 +293,12 @@ const initialFieldDef = {
 
       if (d.length > MAX_USERNAME_LEN) {
         throw new Error(
-          "Username must not longer than " + MAX_USERNAME_LEN + " bytes"
+          "Username must not longer than " + MAX_USERNAME_LEN + " bytes",
         );
       }
 
       return "We'll login as user \"" + d + '"';
-    }
+    },
   },
   Encoding: {
     name: "Encoding",
@@ -320,7 +320,7 @@ const initialFieldDef = {
       }
 
       throw new Error('The character encoding "' + d + '" is not supported');
-    }
+    },
   },
   Notice: {
     name: "Notice",
@@ -336,7 +336,7 @@ const initialFieldDef = {
     },
     verify(d) {
       return "";
-    }
+    },
   },
   Password: {
     name: "Password",
@@ -355,12 +355,12 @@ const initialFieldDef = {
 
       if (d.length > MAX_PASSWORD_LEN) {
         throw new Error(
-          "It's too long, make it shorter than " + MAX_PASSWORD_LEN + " bytes"
+          "It's too long, make it shorter than " + MAX_PASSWORD_LEN + " bytes",
         );
       }
 
       return "We'll login with this password";
-    }
+    },
   },
   "Private Key": {
     name: "Private Key",
@@ -390,7 +390,7 @@ const initialFieldDef = {
 
       if (d.length > MAX_PASSWORD_LEN) {
         throw new Error(
-          "It's too long, make it shorter than " + MAX_PASSWORD_LEN + " bytes"
+          "It's too long, make it shorter than " + MAX_PASSWORD_LEN + " bytes",
         );
       }
 
@@ -426,7 +426,7 @@ const initialFieldDef = {
       }
 
       return "We'll login with this Private Key";
-    }
+    },
   },
   Authentication: {
     name: "Authentication",
@@ -451,7 +451,7 @@ const initialFieldDef = {
         default:
           throw new Error("Authentication method must be specified");
       }
-    }
+    },
   },
   Fingerprint: {
     name: "Fingerprint",
@@ -468,8 +468,8 @@ const initialFieldDef = {
     },
     verify(d) {
       return "";
-    }
-  }
+    },
+  },
 };
 
 /**
@@ -520,7 +520,7 @@ class Wizard {
     streams,
     subs,
     controls,
-    history
+    history,
   ) {
     this.info = info;
     this.preset = preset;
@@ -529,7 +529,7 @@ class Wizard {
     this.session = session
       ? session
       : {
-          credential: ""
+          credential: "",
         };
     this.keptSessions = keptSessions;
     this.step = subs;
@@ -553,8 +553,8 @@ class Wizard {
     this.step.resolve(
       this.stepErrorDone(
         "Action cancelled",
-        "Action has been cancelled without reach any success"
-      )
+        "Action has been cancelled without reach any success",
+      ),
     );
   }
 
@@ -567,28 +567,28 @@ class Wizard {
       true,
       data,
       "Success!",
-      "We have connected to the remote"
+      "We have connected to the remote",
     );
   }
 
   stepWaitForAcceptWait() {
     return command.wait(
       "Requesting",
-      "Waiting for the request to be accepted by the backend"
+      "Waiting for the request to be accepted by the backend",
     );
   }
 
   stepWaitForEstablishWait(host) {
     return command.wait(
       "Connecting to " + host,
-      "Establishing connection with the remote host, may take a while"
+      "Establishing connection with the remote host, may take a while",
     );
   }
 
   stepContinueWaitForEstablishWait() {
     return command.wait(
       "Connecting",
-      "Establishing connection with the remote host, may take a while"
+      "Establishing connection with the remote host, may take a while",
     );
   }
 
@@ -608,7 +608,7 @@ class Wizard {
       charset: configInput.charset,
       credential: sessionData.credential,
       host: address.parseHostPort(configInput.host, DEFAULT_PORT),
-      fingerprint: configInput.fingerprint
+      fingerprint: configInput.fingerprint,
     };
 
     // Copy the keptSessions from the record so it will not be overwritten here
@@ -619,25 +619,28 @@ class Wizard {
         switch (hd.data()) {
           case SERVER_REQUEST_ERROR_BAD_USERNAME:
             self.step.resolve(
-              self.stepErrorDone("Request failed", "Invalid username")
+              self.stepErrorDone("Request failed", "Invalid username"),
             );
             return;
 
           case SERVER_REQUEST_ERROR_BAD_ADDRESS:
             self.step.resolve(
-              self.stepErrorDone("Request failed", "Invalid address")
+              self.stepErrorDone("Request failed", "Invalid address"),
             );
             return;
 
           case SERVER_REQUEST_ERROR_BAD_AUTHMETHOD:
             self.step.resolve(
-              self.stepErrorDone("Request failed", "Invalid authication method")
+              self.stepErrorDone(
+                "Request failed",
+                "Invalid authication method",
+              ),
             );
             return;
         }
 
         self.step.resolve(
-          self.stepErrorDone("Request failed", "Unknown error: " + hd.data())
+          self.stepErrorDone("Request failed", "Unknown error: " + hd.data()),
         );
       },
       initialized(hd) {
@@ -645,7 +648,7 @@ class Wizard {
       },
       async "connect.failed"(rd) {
         let d = new TextDecoder("utf-8").decode(
-          await reader.readCompletely(rd)
+          await reader.readCompletely(rd),
         );
 
         self.step.resolve(self.stepErrorDone("Connection failed", d));
@@ -669,11 +672,11 @@ class Wizard {
                 resize(rows, cols) {
                   return commandHandler.sendResize(rows, cols);
                 },
-                events: commandHandler.events
+                events: commandHandler.events,
               }),
-              self.controls.ui()
-            )
-          )
+              self.controls.ui(),
+            ),
+          ),
         );
 
         self.history.save(
@@ -683,7 +686,7 @@ class Wizard {
           self.info,
           configInput,
           sessionData,
-          keptSessions
+          keptSessions,
         );
       },
       async "connect.fingerprint"(rd, sd) {
@@ -704,8 +707,8 @@ class Wizard {
             },
             (newFingerprint) => {
               configInput.fingerprint = newFingerprint;
-            }
-          )
+            },
+          ),
         );
       },
       async "connect.credential"(rd, sd) {
@@ -717,7 +720,7 @@ class Wizard {
             if (fromPreset && keptSessions.indexOf("credential") < 0) {
               keptSessions.push("credential");
             }
-          })
+          }),
         );
       },
       "@stdout"(rd) {},
@@ -727,10 +730,10 @@ class Wizard {
         self.step.resolve(
           self.stepErrorDone(
             "Operation has failed",
-            "Connection has been cancelled"
-          )
+            "Connection has been cancelled",
+          ),
         );
-      }
+      },
     });
   }
 
@@ -754,9 +757,9 @@ class Wizard {
               charset: r.encoding,
               fingerprint: self.preset
                 ? self.preset.metaDefault("Fingerprint", "")
-                : ""
+                : "",
             },
-            self.session
+            self.session,
           );
         });
 
@@ -773,7 +776,7 @@ class Wizard {
                 "SSH",
                 "host",
                 input,
-                HostMaxSearchResults
+                HostMaxSearchResults,
               );
 
               let sugg = [];
@@ -785,22 +788,22 @@ class Wizard {
                   meta: {
                     User: hosts[i].data.user,
                     Authentication: hosts[i].data.authentication,
-                    Encoding: hosts[i].data.charset
-                  }
+                    Encoding: hosts[i].data.charset,
+                  },
                 });
               }
 
               return sugg;
-            }
+            },
           },
           { name: "User" },
           { name: "Authentication" },
           { name: "Encoding" },
-          { name: "Notice" }
+          { name: "Notice" },
         ],
         self.preset,
-        (r) => {}
-      )
+        (r) => {},
+      ),
     );
   }
 
@@ -808,7 +811,7 @@ class Wizard {
     const self = this;
 
     let fingerprintData = new TextDecoder("utf-8").decode(
-        await reader.readCompletely(rd)
+        await reader.readCompletely(rd),
       ),
       fingerprintChanged = false;
 
@@ -841,15 +844,15 @@ class Wizard {
         sd.send(CLIENT_CONNECT_RESPOND_FINGERPRINT, new Uint8Array([1]));
 
         self.step.resolve(
-          command.wait("Rejecting", "Sending rejection to the backend")
+          command.wait("Rejecting", "Sending rejection to the backend"),
         );
       },
       command.fields(initialFieldDef, [
         {
           name: "Fingerprint",
-          value: fingerprintData
-        }
-      ])
+          value: fingerprintData,
+        },
+      ]),
     );
   }
 
@@ -861,7 +864,7 @@ class Wizard {
     if (config.credential.length > 0) {
       sd.send(
         CLIENT_CONNECT_RESPOND_CREDENTIAL,
-        new TextEncoder().encode(config.credential)
+        new TextEncoder().encode(config.credential),
       );
 
       return self.stepContinueWaitForEstablishWait();
@@ -878,7 +881,7 @@ class Wizard {
 
       default:
         throw new Exception(
-          'Auth method "' + config.auth + '" was unsupported'
+          'Auth method "' + config.auth + '" was unsupported',
         );
     }
 
@@ -893,7 +896,7 @@ class Wizard {
         }
 
         presetCredentialUsed = true;
-      }
+      },
     );
 
     return command.prompt(
@@ -905,7 +908,7 @@ class Wizard {
 
         sd.send(
           CLIENT_CONNECT_RESPOND_CREDENTIAL,
-          new TextEncoder().encode(vv)
+          new TextEncoder().encode(vv),
         );
 
         newCredential(vv, presetCredentialUsed);
@@ -918,11 +921,11 @@ class Wizard {
         self.step.resolve(
           command.wait(
             "Cancelling login",
-            "Cancelling login request, please wait"
-          )
+            "Cancelling login request, please wait",
+          ),
         );
       },
-      inputFields
+      inputFields,
     );
   }
 }
@@ -949,7 +952,7 @@ class Executer extends Wizard {
     streams,
     subs,
     controls,
-    history
+    history,
   ) {
     super(
       info,
@@ -959,7 +962,7 @@ class Executer extends Wizard {
       streams,
       subs,
       controls,
-      history
+      history,
     );
 
     this.config = config;
@@ -978,9 +981,9 @@ class Executer extends Wizard {
           authentication: self.config.authentication,
           host: self.config.host,
           charset: self.config.charset ? self.config.charset : "utf-8",
-          fingerprint: self.config.fingerprint
+          fingerprint: self.config.fingerprint,
         },
-        self.session
+        self.session,
       );
     });
 
@@ -1015,7 +1018,7 @@ export class Command {
     streams,
     subs,
     controls,
-    history
+    history,
   ) {
     return new Wizard(
       info,
@@ -1025,7 +1028,7 @@ export class Command {
       streams,
       subs,
       controls,
-      history
+      history,
     );
   }
 
@@ -1037,7 +1040,7 @@ export class Command {
     streams,
     subs,
     controls,
-    history
+    history,
   ) {
     return new Executer(
       info,
@@ -1047,7 +1050,7 @@ export class Command {
       streams,
       subs,
       controls,
-      history
+      history,
     );
   }
 
@@ -1076,7 +1079,7 @@ export class Command {
       initialFieldDef["Encoding"].verify(charset);
     } catch (e) {
       throw new Exception(
-        'Given launcher "' + launcher + '" was malformed ' + e
+        'Given launcher "' + launcher + '" was malformed ' + e,
       );
     }
 
@@ -1086,14 +1089,14 @@ export class Command {
         user: user,
         host: host,
         authentication: auth,
-        charset: charset
+        charset: charset,
       },
       null,
       null,
       streams,
       subs,
       controls,
-      history
+      history,
     );
   }
 

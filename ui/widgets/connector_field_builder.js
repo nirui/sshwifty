@@ -160,7 +160,7 @@ export function build(tabIndex, i, field) {
           this.suggestions.push({
             title: suggestions[v].title,
             value: suggestions[v].value,
-            fields: suggestions[v].meta
+            fields: suggestions[v].meta,
           });
         }
       },
@@ -169,12 +169,12 @@ export function build(tabIndex, i, field) {
           return {
             title: "Input",
             value: this.loadStored(defaultValue),
-            fields: {}
+            fields: {},
           };
         }
 
         return this.suggestions[this.selected];
-      }
+      },
     },
     disableSuggestionsForInput(val) {
       this.blockedSuggestionValue = val;
@@ -197,7 +197,7 @@ export function build(tabIndex, i, field) {
 
       this.suggestion.reload(
         this.field.value,
-        this.field.suggestions(this.field.value)
+        this.field.suggestions(this.field.value),
       );
     },
     resetSuggestions(force) {
@@ -217,6 +217,6 @@ export function build(tabIndex, i, field) {
     },
     selectedSuggestionIndex() {
       return this.suggestion.selected;
-    }
+    },
   };
 }

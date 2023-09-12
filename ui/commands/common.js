@@ -54,7 +54,7 @@ const availableEncodings = [
   "shift-jis",
   "euc-kr",
   "utf-16be",
-  "utf-16le"
+  "utf-16le",
 ];
 
 export const charsetPresets = (() => {
@@ -87,7 +87,7 @@ const numCharators = {
   6: true,
   7: true,
   8: true,
-  9: true
+  9: true,
 };
 
 const hexCharators = {
@@ -106,7 +106,7 @@ const hexCharators = {
   c: true,
   d: true,
   e: true,
-  f: true
+  f: true,
 };
 
 /**
@@ -345,7 +345,7 @@ function parseIP(d) {
   try {
     return {
       type: "IPv4",
-      data: parseIPv4(d)
+      data: parseIPv4(d),
     };
   } catch (e) {
     // Do nothing
@@ -354,7 +354,7 @@ function parseIP(d) {
   try {
     return {
       type: "IPv6",
-      data: new Uint8Array(parseIPv6(d).buffer)
+      data: new Uint8Array(parseIPv6(d).buffer),
     };
   } catch (e) {
     // Do nothing
@@ -362,7 +362,7 @@ function parseIP(d) {
 
   return {
     type: "Hostname",
-    data: parseHostname(d)
+    data: parseHostname(d),
   };
 }
 
@@ -377,7 +377,7 @@ export function splitHostPort(d, defPort) {
     return {
       type: a.type,
       addr: a.data,
-      port: defPort
+      port: defPort,
     };
   }
 
@@ -404,6 +404,6 @@ export function splitHostPort(d, defPort) {
   return {
     type: a.type,
     addr: a.data,
-    port: portNum
+    port: portNum,
   };
 }

@@ -46,7 +46,7 @@ describe("Sender", () => {
       },
       maxSegSize,
       300,
-      3
+      3,
     );
     let expected = generateTestData(maxSegSize * 16);
 
@@ -86,7 +86,7 @@ describe("Sender", () => {
       },
       maxSegSize,
       300,
-      100
+      100,
     );
     let expectedSingle = generateTestData(maxSegSize * 2),
       expectedLen = expectedSingle.length * 16,

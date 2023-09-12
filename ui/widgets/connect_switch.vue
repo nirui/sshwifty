@@ -36,17 +36,17 @@ export default {
   props: {
     tab: {
       type: String,
-      default: "new"
+      default: "new",
     },
     knownsLength: {
       type: Number,
-      default: 0
-    }
+      default: 0,
+    },
   },
   methods: {
     switchTab(to) {
       this.$emit("switch", to);
-    }
-  }
+    },
+  },
 };
 </script>

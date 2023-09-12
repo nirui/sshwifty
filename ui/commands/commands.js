@@ -138,7 +138,7 @@ const defField = {
   },
   verify(v) {
     return "";
-  }
+  },
 };
 
 /**
@@ -173,7 +173,7 @@ export function field(def, f) {
         typeof n[i] +
         '", got "' +
         typeof f[i] +
-        '" instead'
+        '" instead',
     );
   }
 
@@ -228,7 +228,7 @@ export function fieldsWithPreset(
   definitions,
   fieldsData,
   presetData,
-  presetApplied
+  presetApplied,
 ) {
   let newFields = fields(definitions, fieldsData);
 
@@ -272,7 +272,7 @@ class Prompt {
 
       this.f[data.inputs[i].name.toLowerCase()] = {
         value: f.value,
-        verify: f.verify
+        verify: f.verify,
       };
     }
   }
@@ -384,7 +384,7 @@ function next(type, data) {
     },
     data() {
       return data;
-    }
+    },
   };
 }
 
@@ -404,7 +404,7 @@ export function done(success, successData, errorTitle, errorMessage) {
     success: success,
     successData: successData,
     errorTitle: errorTitle,
-    errorMessage: errorMessage
+    errorMessage: errorMessage,
   });
 }
 
@@ -420,7 +420,7 @@ export function done(success, successData, errorTitle, errorMessage) {
 export function wait(title, message) {
   return next(NEXT_WAIT, {
     title: title,
-    message: message
+    message: message,
   });
 }
 
@@ -444,7 +444,7 @@ export function prompt(title, message, actionText, respond, cancel, inputs) {
     actionText: actionText,
     inputs: inputs,
     respond: respond,
-    cancel: cancel
+    cancel: cancel,
   });
 }
 
@@ -711,10 +711,10 @@ class Builder {
         streams,
         subs,
         controls,
-        history
+        history,
       ),
       subs,
-      done
+      done,
     );
   }
 
@@ -744,10 +744,10 @@ class Builder {
         streams,
         subs,
         controls,
-        history
+        history,
       ),
       subs,
-      done
+      done,
     );
   }
 
@@ -773,10 +773,10 @@ class Builder {
         streams,
         subs,
         controls,
-        history
+        history,
       ),
       subs,
-      done
+      done,
     );
   }
 
@@ -870,7 +870,7 @@ export class Commands {
 
       for (let j = 0; j < fetched.length; j++) {
         pp.push(
-          new Preset(this.commands[i].represet(fetched[j]), this.commands[i])
+          new Preset(this.commands[i].represet(fetched[j]), this.commands[i]),
         );
       }
     }
