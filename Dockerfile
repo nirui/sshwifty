@@ -9,7 +9,7 @@ RUN set -ex && \
     ([ -z "$HTTP_PROXY" ] || (echo "Acquire::http::Proxy \"$HTTP_PROXY\";" >> /etc/apt/apt.conf)) && \
     ([ -z "$HTTPS_PROXY" ] || (echo "Acquire::https::Proxy \"$HTTPS_PROXY\";" >> /etc/apt/apt.conf)) && \
     (echo "Acquire::Retries \"8\";" >> /etc/apt/apt.conf) && \
-    echo '#!/bin/sh' > /install.sh && echo 'apt-get update && apt-get --fix-broken install autoconf automake libtool build-essential ca-certificates curl git npm golang-go libvips libvips-dev -y' >> /install.sh && chmod +x /install.sh && \
+    echo '#!/bin/sh' > /install.sh && echo 'apt-get -y update && apt-get -y --fix-broken install autoconf automake libtool build-essential ca-certificates curl git npm golang-go libvips libvips-dev && npm install -g --force node@latest npm@latest' >> /install.sh && chmod +x /install.sh && \
     /try.sh /install.sh && rm /install.sh && \
     /try.sh update-ca-certificates -f && c_rehash && \
     ([ -z "$HTTP_PROXY" ] || (git config --global http.proxy "$HTTP_PROXY" && npm config set proxy "$HTTP_PROXY")) && \
