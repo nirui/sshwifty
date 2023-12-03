@@ -25,35 +25,14 @@ class Control {
   constructor(data, color) {
     this.colorM = color;
     this.colors = this.colorM.get();
-
     this.charset = data.charset;
 
-    if (this.charset === "utf-8") {
-      let enc = new TextEncoder();
-
-      this.charsetDecoder = (d) => {
-        return d;
-      };
-
-      this.charsetEncoder = (dStr) => {
-        return enc.encode(dStr);
-      };
-    } else {
-      let dec = new TextDecoder(this.charset),
-        enc = new TextEncoder();
-
-      this.charsetDecoder = (d) => {
-        return enc.encode(
-          dec.decode(d, {
-            stream: true,
-          }),
-        );
-      };
-
-      this.charsetEncoder = (dStr) => {
-        return iconv.encode(dStr, this.charset);
-      };
-    }
+    this.charsetDecoder = (d) => {
+      return iconv.decode(d, this.charset);
+    };
+    this.charsetEncoder = (dStr) => {
+      return iconv.encode(dStr, this.charset);
+    };
 
     this.enable = false;
     this.sender = data.send;
