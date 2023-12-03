@@ -120,18 +120,6 @@ type sshRemoteConnWrapper struct {
 }
 
 func (s *sshRemoteConnWrapper) Read(b []byte) (int, error) {
-	rLen, rErr := s.Conn.Read(b)
-
-	if rErr == nil {
-		return rLen, nil
-	}
-
-	netErr, isNetErr := rErr.(net.Error)
-
-	if !isNetErr || !netErr.Timeout() || !s.requestTimeoutRetry(s) {
-		return rLen, rErr
-	}
-
 	for {
 		rLen, rErr := s.Conn.Read(b)
 
@@ -341,7 +329,7 @@ func (d *sshClient) buildAuthMethod(
 	return nil, ErrSSHInvalidAuthMethod
 }
 
-func (d *sshClient) comfirmRemoteFingerprint(
+func (d *sshClient) confirmRemoteFingerprint(
 	hostname string,
 	remote net.Addr,
 	key ssh.PublicKey,
@@ -461,7 +449,7 @@ func (d *sshClient) remote(
 			User: user,
 			Auth: authMethodBuilder(buf[:]),
 			HostKeyCallback: func(h string, r net.Addr, k ssh.PublicKey) error {
-				return d.comfirmRemoteFingerprint(h, r, k, buf[:])
+				return d.confirmRemoteFingerprint(h, r, k, buf[:])
 			},
 			Timeout: d.cfg.DialTimeout,
 		})
