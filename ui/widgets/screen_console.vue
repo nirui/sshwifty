@@ -101,10 +101,11 @@
 
 <script>
 import FontFaceObserver from "fontfaceobserver";
-import { Terminal } from "xterm";
-import { WebLinksAddon } from "xterm-addon-web-links";
-// import { WebglAddon } from "xterm-addon-webgl";
-import { FitAddon } from "xterm-addon-fit";
+import { Terminal } from "@xterm/xterm";
+import { WebLinksAddon } from "@xterm/addon-web-links";
+import { Unicode11Addon } from '@xterm/addon-unicode11';
+import { WebglAddon } from "@xterm/addon-webgl";
+import { FitAddon } from "@xterm/addon-fit";
 import { isNumber } from "../commands/common.js";
 import { consoleScreenKeys } from "./screen_console_keys.js";
 
@@ -228,19 +229,18 @@ class Term {
     this.term.open(root);
     this.term.loadAddon(this.fit);
     this.term.loadAddon(new WebLinksAddon());
-    // TODO: Uncomment this after WebGL render is tested working and could
-    //       improve the performance, which is not yet the case during my last
-    //       revisit.
-    // if (() => {
-    //   try {
-    //     return !!window.WebGLRenderingContext &&
-    //       document.createElement('canvas').getContext('webgl');
-    //   } catch(e) {
-    //      return false;
-    //   }
-    // }) {
-    //   this.term.loadAddon(new WebglAddon());
-    // }
+    this.term.loadAddon(new Unicode11Addon());
+    if (() => {
+      try {
+        return !!window.WebGLRenderingContext &&
+          document.createElement('canvas').getContext('webgl');
+      } catch(e) {
+        return false;
+      }
+    }) {
+      this.term.loadAddon(new WebglAddon());
+    }
+    this.term.unicode.activeVersion = '11';
     this.refit();
   }
 
@@ -255,29 +255,7 @@ class Term {
     }
   }
 
-  writeEchoStr(d) {
-    if (this.closed) {
-      return;
-    }
-    this.control.send(d);
-    if (!this.control.echo()) {
-      return;
-    }
-    this.writeStr(d);
-  }
-
   writeStr(d) {
-    if (this.closed) {
-      return;
-    }
-    try {
-      this.term.write(d);
-    } catch (e) {
-      process.env.NODE_ENV === "development" && console.trace(e);
-    }
-  }
-
-  write(d) {
     if (this.closed) {
       return;
     }
@@ -562,7 +540,7 @@ export default {
               break;
             }
 
-            self.term.write(await this.control.receive());
+            self.term.writeStr(await this.control.receive());
 
             self.$emit("updated");
           }
