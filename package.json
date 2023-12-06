@@ -4,7 +4,7 @@
   "description": "Sshwifty Web Front-end Project",
   "main": "",
   "devDependencies": {
-    "@azurity/pure-nerd-font": "3.0.0",
+    "@azurity/pure-nerd-font": "^3.0.1",
     "@babel/core": "^7.23.5",
     "@babel/eslint-parser": "^7.23.3",
     "@babel/plugin-transform-runtime": "^7.23.4",
@@ -24,7 +24,7 @@
     "css-minimizer-webpack-plugin": "^5.0.1",
     "cwebp-bin": "^8.0.0",
     "eslint": "^8.55.0",
-    "eslint-config-prettier": "^9.0.0",
+    "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.0.1",
     "eslint-plugin-vue": "^9.19.2",
     "eslint-webpack-plugin": "^4.0.1",
