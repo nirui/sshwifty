@@ -33,6 +33,14 @@ $ docker run --detach \
   niruix/sshwifty:latest
 ```
 
+This will open port `8182` on the Docker host to accept traffic from all remote
+clients, and serve these clients with Sshwifty instance running inside the
+container.
+
+Operator can also use `--publish 127.0.0.1:8182:8182` to open Sshwifty to only
+local clients, which is useful if the Sshwifty instance is intended to run
+behind a reverse-proxy hosted on the same host.
+
 When TLS is desired and you don't want to setup Docker Volumes, you can use
 `SSHWIFTY_DOCKER_TLSCERT` and `SSHWIFTY_DOCKER_TLSCERTKEY` environment variables
 to import credential files to the container and automatically apply them:
