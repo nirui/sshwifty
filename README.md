@@ -78,6 +78,23 @@ working directory.
 Notice: `Dockerfile` contains the entire build procedure of this software.
 Please refer to it when you encounter any compile/build related issue.
 
+### Third-party Homebrew Formulae from @unbeatable-101
+
+If you're a macOS user, [@unbeatable-101] is kindly hosting a Homebrew
+Formulae that allows you to install his custom Sshwifty builds for macOS via
+`homebrew`. You can hop over to [unbeatable-101/homebrew-sshwifty] for detailed
+instruction and contribute to his work.
+
+Please note that, due to the third-party nature of the work, the author(s) of
+Sshwifty are unable to provide any audit, warranty or support for it. If you
+have any question or request regarding to the Formulae, please contact
+@unbeatable-101 directly through appreciate channels.
+
+Thank @unbeatable-101 for his work.
+
+[@unbeatable-101]: https://github.com/unbeatable-101
+[unbeatable-101/homebrew-sshwifty]: https://github.com/unbeatable-101/homebrew-sshwifty
+
 ## Configure
 
 Sshwifty can be configured through either file or environment variables. By
