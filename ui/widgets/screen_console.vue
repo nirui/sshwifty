@@ -125,6 +125,24 @@ const termDefaultFontSize = 16;
 const termMinFontSize = 8;
 const termMaxFontSize = 36;
 
+function webglSupported() {
+  try {
+    if (typeof window !== "object") {
+      return false;
+    }
+    if (typeof window.WebGLRenderingContext !== "function") {
+      return false;
+    }
+    if (typeof window.WebGL2RenderingContext !== "function") {
+      return false;
+    }
+    return document.createElement('canvas').getContext('webgl') &&
+      document.createElement('canvas').getContext('webgl2');
+  } catch(e) {
+  }
+  return false;
+}
+
 class Term {
   constructor(control) {
     const resizeDelayInterval = 500;
@@ -230,16 +248,11 @@ class Term {
     this.term.loadAddon(this.fit);
     this.term.loadAddon(new WebLinksAddon());
     this.term.loadAddon(new Unicode11Addon());
-    if (() => {
-      try {
-        return !!window.WebGLRenderingContext &&
-          document.createElement('canvas').getContext('webgl');
-      } catch(e) {
-        return false;
+    try {
+      if (webglSupported()) {
+        this.term.loadAddon(new WebglAddon());
       }
-    }) {
-      this.term.loadAddon(new WebglAddon());
-    }
+    } catch(e) {}
     this.term.unicode.activeVersion = '11';
     this.refit();
   }
