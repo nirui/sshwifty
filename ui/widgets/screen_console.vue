@@ -110,7 +110,7 @@ import { isNumber } from "../commands/common.js";
 import { consoleScreenKeys } from "./screen_console_keys.js";
 
 import "./screen_console.css";
-import "xterm/css/xterm.css";
+import "@xterm/xterm/css/xterm.css";
 
 const termTypeFaces = "PureNerdFont, Hack";
 const termFallbackTypeFace = '"Cascadia Code" , monospace';
@@ -157,6 +157,8 @@ class Term {
       cursorStyle: "block",
       fontFamily: termTypeFaces + ", " + termFallbackTypeFace,
       fontSize: this.fontSize,
+      letterSpacing: 1,
+      lineHeight: 1.5,
       logLevel: process.env.NODE_ENV === "development" ? "info" : "off",
       theme: {
         background: this.control.activeColor(),
