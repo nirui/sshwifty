@@ -29,8 +29,12 @@
 }
 
 body.app-error {
-  background: #b44;
+  background: #944;
   color: #fff;
+}
+
+body.app-error .app-error-message {
+  white-space: pre-line;
 }
 
 #app-loading {

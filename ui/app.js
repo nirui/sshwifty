@@ -63,7 +63,7 @@ const mainTemplate = `
   :error="authErr"
   @auth="submitAuth"
 ></auth>
-<loading v-else :error="loadErr"></loading>
+<loading class="app-error-message" v-else :error="loadErr"></loading>
 `.trim();
 
 const socksInterface = "/sshwifty/socket";
@@ -288,17 +288,30 @@ function startApp(rootEl) {
           let result = await this.doAuth("");
 
           if (result.date) {
-            let serverTime = result.date.getTime(),
-              clientTime = new Date().getTime(),
-              timeDiff = Math.abs(serverTime - clientTime);
+            let serverRespondTime = result.date,
+              serverRespondTimestamp = serverRespondTime.getTime(),
+              clientCurrent = new Date(),
+              clientTimestamp = clientCurrent.getTime(),
+              timeDiff = Math.abs(serverRespondTimestamp - clientTimestamp);
 
             if (timeDiff > maxTimeDiff) {
               this.loadErr =
-                "The time difference between this client " +
-                "and the backend server is beyond operational limit.\r\n\r\n" +
-                "Please try reload the page, and if the problem persisted, " +
-                "consider to adjust your local time so both the client and " +
-                "the server are running at same date time";
+                "The datetime difference between current client " +
+                "and the Sshwifty server is beyond the operational tolerance." +
+                "\r\n\r\n" +
+                "The server time was " +
+                serverRespondTime +
+                ", and the client time was " +
+                clientCurrent +
+                ", resulted a " +
+                timeDiff +
+                "ms time difference, exceeding the " +
+                "limitation of " +
+                maxTimeDiff +
+                "ms.\r\n\r\n" +
+                "Try reload the page, see if the problem persists. And if " +
+                "it did, please make sure both the server and the client are " +
+                "having the correct time settings";
 
               return;
             }
