@@ -30,12 +30,12 @@ free to open an issue, so we can take a look.
 
 ### Docker Image (recommended)
 
-You might also want to run Sshwifty inside a Docker container. This allow you
-to isolate Sshwifty from the rest of the system for better system security.
+Deploying Sshwifty as a Docker container allows you to isolate Sshwifty from the
+rest of the system for better system organization and security.
 
-We also offer prebuilt Docker Images for few selected platforms compiled by an
-unsupervised automatic procedure in the same fashion as the Prebuilt
-Executables described above. To deploy one on your Docker host, run:
+We also offer prebuilt Docker Images for few selected platforms generated in the
+same way as we generate the prebuilt Executables described above. To deploy one
+on your Docker host, run:
 
 ```
 $ docker run --detach \
@@ -45,7 +45,7 @@ $ docker run --detach \
   niruix/sshwifty:latest
 ```
 
-(Note: it's `niruix/sshwifty` with a `x`.)
+(Note: it's `niruix/sshwifty` with an `x`)
 
 This will open port `8182` on the Docker host to accept traffic from all
 clients (including remote ones), and serve them with the Sshwifty instance
@@ -53,9 +53,9 @@ just created.
 
 To expose Sshwifty locally only to the Docker host, change the line
 `--publish 8182:8182` from the command above to `--publish 127.0.0.1:8182:8182`.
-This is useful if the Sshwifty instance is intended to run behind a reverse
-proxy hosted on the same host, and should not be directly accessed by any
-remote host.
+This is useful for scenarios where you want to force remote clients to access
+Sshwifty only though a reverse proxy, or just simply want to prevent remote
+access.
 
 When TLS is desired and you don't want to setup Docker Volumes, you can use
 `SSHWIFTY_DOCKER_TLSCERT` and `SSHWIFTY_DOCKER_TLSCERTKEY` environment variables
@@ -76,13 +76,13 @@ $ docker run --detach \
 The `domain.crt` and `domain.key` in the command above is the location of valid
 X509 certificate and key file.
 
-Though, in most scenarios, where a reverse proxy and/or load balancer (for
+Though, in most situations where a reverse proxy and/or load balancer (for
 example, Nginx or Traefik) is used in front of Sshwifty instances, TLS should
-usually terminate on the proxy, rather than letting Sshwifty handle it directly.
+usually terminate on the proxy, not on the individual Sshwifty instances.
 
 [docker]: https://www.docker.com
 
-### Compile from source code (recommended for developer)
+### Compile from source code (recommended for developers)
 
 The following tools are required in order to compile the software from source
 code:
@@ -100,7 +100,7 @@ $ npm install
 $ npm run build
 ```
 
-When done, you can found the newly generated `sshwifty` binary under current
+When done, you can find the newly generated `sshwifty` binary under current
 working directory.
 
 Notice: `Dockerfile` contains the entire build procedure of this software.
