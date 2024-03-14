@@ -66,7 +66,7 @@ const mainTemplate = `
 <loading class="app-error-message" v-else :error="loadErr"></loading>
 `.trim();
 
-const socksInterface = "/sshwifty/socket";
+const socksInterface = "socket";
 const socksVerificationInterface = socksInterface + "/verify";
 const socksKeyTimeTruncater = 100 * 1000;
 
@@ -220,8 +220,8 @@ function startApp(rootEl) {
             r.webSocket = "ws://";
         }
 
-        r.webSocket += location.host + socksInterface;
-        r.keepAlive = location.protocol + "//" + location.host + socksInterface;
+        r.webSocket += location.host + location.pathname + socksInterface;
+        r.keepAlive = location.protocol + "//" + location.host + location.pathname + socksInterface;
 
         return r;
       },
