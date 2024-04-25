@@ -112,7 +112,7 @@ import { consoleScreenKeys } from "./screen_console_keys.js";
 import "./screen_console.css";
 import "@xterm/xterm/css/xterm.css";
 
-const termTypeFaces = "PureNerdFont, Hack";
+const termTypeFaces = "Hack, PureNerdFont";
 const termFallbackTypeFace = '"Cascadia Code" , monospace';
 const termTypeFaceLoadTimeout = 3000;
 const termTypeFaceLoadError =
@@ -158,7 +158,7 @@ class Term {
       fontFamily: termTypeFaces + ", " + termFallbackTypeFace,
       fontSize: this.fontSize,
       letterSpacing: 1,
-      lineHeight: 1.5,
+      lineHeight: 1.3,
       logLevel: process.env.NODE_ENV === "development" ? "info" : "off",
       theme: {
         background: this.control.activeColor(),
