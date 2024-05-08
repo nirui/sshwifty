@@ -432,18 +432,50 @@ module.exports = {
     ];
 
     if (!inDevMode) {
+      const defaultImageCompressOptions = {
+        quality: 75,
+      };
       plugins.push(
         new ImageMinimizerPlugin({
           concurrency: os.cpus().length,
           minimizer: {
-            implementation: ImageMinimizerPlugin.imageminMinify,
+            implementation: ImageMinimizerPlugin.sharpMinify,
             options: {
-              plugins: [
-                ["imagemin-gifsicle", { interlaced: true }],
-                ["imagemin-mozjpeg", { progressive: true }],
-                ["imagemin-pngquant", { quality: [0.02, 0.2] }],
-                ["imagemin-svgo", { plugins: ["preset-default"] }],
-              ],
+              encodeOptions: {
+                jpeg: {
+                  ...defaultImageCompressOptions,
+                  lossless: false,
+                },
+                webp: {
+                  ...defaultImageCompressOptions,
+                  lossless: false,
+                },
+                avif: {
+                  ...defaultImageCompressOptions,
+                  lossless: false,
+                },
+                png: {
+                  ...defaultImageCompressOptions,
+                  compressionLevel: 9,
+                },
+                gif: {},
+              },
+            },
+          },
+        })
+      );
+      plugins.push(
+        new ImageMinimizerPlugin({
+          concurrency: os.cpus().length,
+          minimizer: {
+            implementation: ImageMinimizerPlugin.svgoMinify,
+            options: {
+              encodeOptions: {
+                multipass: true,
+                plugins: [
+                  "preset-default",
+                ],
+              },
             },
           },
         })
