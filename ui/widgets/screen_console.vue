@@ -463,7 +463,10 @@ export default {
           onSuccess(await self.loadRemoteFont(typefaces, timeout));
           return;
         } catch (e) {
-          // Retry
+          // Wait and then retry
+          await new Promise(res => {
+            window.setTimeout(() => { res(); }, timeout);
+          });
         }
       }
     },
@@ -545,18 +548,14 @@ export default {
       if (this.runner !== null) {
         return;
       }
-
       let self = this;
-
       this.runner = (async () => {
         try {
           for (;;) {
             if (self.term.destroyed()) {
               break;
             }
-
             self.term.writeStr(await this.control.receive());
-
             self.$emit("updated");
           }
         } catch (e) {
