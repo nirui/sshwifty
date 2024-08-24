@@ -6,7 +6,7 @@ ASC_URL=https://keybase.io/nirui/pgp_keys.asc
 VERSION_VARIABLE=github.com/nirui/sshwifty/application.version
 BUILD_TARGETS="darwin/amd64 windows/386 windows/amd64 openbsd/386 openbsd/amd64 openbsd/arm openbsd/arm64 freebsd/386 freebsd/amd64 freebsd/arm freebsd/arm64 linux/386 linux/amd64 linux/arm linux/arm64 linux/riscv64 linux/ppc64 linux/ppc64le linux/mips linux/mipsle linux/mips64 linux/mips64le"
 
-DOCKER_BUILD_TARGETS="linux/amd64,linux/arm/v7,linux/arm64"
+DOCKER_BUILD_TARGETS="linux/amd64"
 DOCKER_CLI_EXPERIMENTAL=enabled
 DOCKER_BUILDKIT=1
 
