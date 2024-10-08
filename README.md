@@ -144,7 +144,7 @@ This tells Sshwifty to only load configuration from file `./sshwifty.conf.json`.
 
 Here is all the options of the configuration file:
 
-```json
+```jsonc
 {
   // HTTP Host. Keep it empty to accept request from all hosts, otherwise, only
   // specified host is allowed to access
