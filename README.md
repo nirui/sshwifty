@@ -80,9 +80,9 @@ Though, in most situations where a reverse proxy and/or load balancer (for
 example, [Nginx] or [Traefik]) is used in front of Sshwifty instances, TLS should
 usually terminate on the proxy, not on the individual Sshwifty instances.
 
-[docker]: https://www.docker.com
-[nginx]: https://github.com/nginx/nginx
-[traefik]: https://github.com/traefik/traefik
+[Docker]: https://www.docker.com
+[Nginx]: https://github.com/nginx/nginx
+[Traefik]: https://github.com/traefik/traefik
 
 ### Compile from source code (recommended for developers)
 
@@ -432,9 +432,11 @@ computer console.
 ## Credits
 
 - Thanks to [Ryan Fortner](https://github.com/ryanfortner) for the grammar fix
-- Thanks to [Tweak](https://github.com/Tweak4141) for the grammer fix too
-- Thanks to [CJendantix](https://github.com/CJendantix) for the grammer and typo 
+- Thanks to [Tweak](https://github.com/Tweak4141) for the grammar fix
+- Thanks to [CJendantix](https://github.com/CJendantix) for the grammar and typo 
   fix
+- Thanks to [ZStrikeGit](https://github.com/ZStrikeGit) for the grammar and 
+  formatting fixes
 
 ## License
 
@@ -461,6 +463,7 @@ by yourself, then maintain it like one of your own project. It's not that hard
 with some Github features.
 
 (Notice: Typos, grammar errors or invalid use of language in the source code and
-documentation should be catagorized as a bug, please report them if you find any. Thank you!)
+documentation should be categorized as a bug, please report them if you find 
+any. Thank you!)
 
 Appreciate your help, enjoy!
