@@ -92,7 +92,7 @@ if [ "$SSHWIFTY_DEPLOY" = 'yes' ]; then
     catch child \
         '
         docker login -u "$DOCKER_HUB_USER" -p "$DOCKER_HUB_PASSWORD" &&
-        docker run --rm --privileged multiarch/qemu-user-static --reset -p yes &&
+        docker run --privileged --rm tonistiigi/binfmt --install all &&
         docker buildx create --use --driver docker-container --name buildx-instance &&
         docker buildx inspect --bootstrap &&
         docker buildx ls &&
