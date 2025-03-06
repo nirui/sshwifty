@@ -8,3 +8,5 @@
 !*.mod
 !*.json
 !*.js
+!*.cjs
+!*.mjs
