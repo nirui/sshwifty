@@ -1,0 +1,8 @@
+[
+    {
+      "Title": "Testing telnet server",
+      "Type": "Telnet",
+      "Host": "sshwifty-telnet-test:5555",
+      "Meta": {}
+    },
+]

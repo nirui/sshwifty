@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "description": "Sshwifty Web Front-end Project",
   "main": "",
+  "type": "module",
   "devDependencies": {
     "@azurity/pure-nerd-font": "^3.0.4",
     "@babel/core": "^7.26.9",

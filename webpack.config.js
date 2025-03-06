@@ -15,21 +15,22 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-const webpack = require("webpack"),
-  { spawn } = require("child_process"),
-  path = require("path"),
-  os = require("os"),
-  HtmlWebpackPlugin = require("html-webpack-plugin"),
-  MiniCssExtractPlugin = require("mini-css-extract-plugin"),
-  CssMinimizerPlugin = require("css-minimizer-webpack-plugin"),
-  ImageMinimizerPlugin = require("image-minimizer-webpack-plugin"),
-  { VueLoaderPlugin } = require("vue-loader"),
-  WebpackFavicons = require("webpack-favicons"),
-  CopyPlugin = require("copy-webpack-plugin"),
-  TerserPlugin = require("terser-webpack-plugin"),
-  { CleanWebpackPlugin } = require("clean-webpack-plugin"),
-  ESLintPlugin = require("eslint-webpack-plugin");
+import webpack from "webpack";
+import { spawn } from "child_process";
+import path from "path";
+import os from "os";
+import HtmlWebpackPlugin from "html-webpack-plugin";
+import MiniCssExtractPlugin from "mini-css-extract-plugin";
+import CssMinimizerPlugin from "css-minimizer-webpack-plugin";
+import ImageMinimizerPlugin from "image-minimizer-webpack-plugin";
+import { VueLoaderPlugin  } from "vue-loader";
+import WebpackFavicons from "webpack-favicons";
+import CopyPlugin from "copy-webpack-plugin";
+import TerserPlugin from "terser-webpack-plugin";
+import { CleanWebpackPlugin } from "clean-webpack-plugin";
+import ESLintPlugin from "eslint-webpack-plugin";
 
+const __dirname = path.resolve(path.dirname(''));
 const inDevMode = process.env.NODE_ENV === "development";
 
 process.traceDeprecation = true;
@@ -183,7 +184,7 @@ const killAllProc = () => {
 process.on("SIGTERM", killAllProc);
 process.on("SIGINT", killAllProc);
 
-module.exports = {
+export default {
   entry: {
     app: path.join(__dirname, "ui", "app.js"),
   },

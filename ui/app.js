@@ -32,7 +32,7 @@ import Home from "./home.vue";
 import "./landing.css";
 import Loading from "./loading.vue";
 import { Socket } from "./socket.js";
-import * as stream from "./stream/common";
+import * as stream from "./stream/common.js";
 import * as xhr from "./xhr.js";
 
 const backendQueryRetryDelay = 2000;
