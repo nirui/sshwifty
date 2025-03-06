@@ -326,6 +326,10 @@ body {
   position: absolute;
 }
 
+.window .window-title {
+  margin: 0;
+}
+
 .window.window1 {
   background: #a56;
   box-shadow: 0 0 5px #0006;
