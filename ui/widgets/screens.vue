@@ -45,7 +45,7 @@
           :change="screenInfo.indicator"
           :toolbar="screenInfo.toolbar"
           :view-port="viewPort"
-          :style="'background-color: ' + screenInfo.control.activeColor()"
+          :style="'background-color: ' + screenInfo.control.color()"
           class="screen-content"
           @stopped="stopped(idx, $event)"
           @warning="warning(idx, $event)"

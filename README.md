@@ -249,6 +249,16 @@ Here is all the options of the configuration file:
       // Target address and port
       "Host": "sdf.org:22",
 
+      // Define the tab and background color of the console in RGB hex format
+      // for better visual identification
+      //
+      // For example: 110000 will give you a dark red background, 001100 is
+      // dark green and 000011 is dark blue
+      //
+      // The color must not be too bright, as it will make the foreground text
+      // hard to read
+      "TabColor": "112233",
+
       // Form fields and values, you have to manually validate the correctness
       // of the field value
       //

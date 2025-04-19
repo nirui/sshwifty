@@ -77,10 +77,11 @@ func (f *fileCfgServer) build() Server {
 }
 
 type fileCfgPreset struct {
-	Title string
-	Type  string
-	Host  string
-	Meta  Meta
+	Title    string
+	Type     string
+	Host     string
+	TabColor string
+	Meta     Meta
 }
 
 func (f fileCfgPreset) concretize() (Preset, error) {
@@ -91,10 +92,11 @@ func (f fileCfgPreset) concretize() (Preset, error) {
 	}
 
 	return Preset{
-		Title: f.Title,
-		Type:  strings.TrimSpace(f.Type),
-		Host:  f.Host,
-		Meta:  m,
+		Title:    f.Title,
+		Type:     strings.TrimSpace(f.Type),
+		Host:     f.Host,
+		TabColor: strings.TrimSpace(f.TabColor),
+		Meta:     m,
 	}, nil
 }
 

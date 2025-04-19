@@ -29,10 +29,7 @@
           tabInfo.indicator.level === 'error',
         updated: tabInfo.indicator.updated && tab !== idx,
       }"
-      :style="
-        'background: ' +
-        (tab === idx ? tabInfo.control.activeColor() : tabInfo.control.color())
-      "
+      :style="'background: ' + tabInfo.control.color()"
       @click.self="switchTab(idx)"
     >
       <span class="title" :title="tabInfo.name" @click="switchTab(idx)">

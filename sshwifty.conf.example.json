@@ -25,6 +25,7 @@
       "Title": "SDF.org Unix Shell",
       "Type": "SSH",
       "Host": "sdf.org:22",
+      "TabColor": "112233",
       "Meta": {
         "Encoding": "utf-8",
         "Authentication": "Password"
@@ -45,7 +46,7 @@
     {
       "Title": "My own super expensive router",
       "Type": "Telnet",
-      "Host": "10.0.0.1",
+      "Host": "localhost",
       "Meta": {
         "Encoding": "ibm866"
       }

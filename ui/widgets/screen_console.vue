@@ -42,7 +42,7 @@
     <div
       v-if="toolbar"
       class="console-toolbar"
-      :style="'background-color: ' + control.activeColor() + 'ee'"
+      :style="'background-color: ' + control.color() + 'ee'"
     >
       <h2 style="display: none">Tool bar</h2>
 
@@ -161,7 +161,7 @@ class Term {
       lineHeight: 1.3,
       logLevel: process.env.NODE_ENV === "development" ? "info" : "off",
       theme: {
-        background: this.control.activeColor(),
+        background: this.control.color(),
       },
     });
     this.fit = new FitAddon();

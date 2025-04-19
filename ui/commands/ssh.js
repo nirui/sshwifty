@@ -663,6 +663,7 @@ class Wizard {
               self.info,
               self.controls.build({
                 charset: configInput.charset,
+                tabColor: configInput.tabColor,
                 send(data) {
                   return commandHandler.sendData(data);
                 },
@@ -755,6 +756,7 @@ class Wizard {
               authentication: r.authentication,
               host: r.host,
               charset: r.encoding,
+              tabColor: self.preset ? self.preset.tabColor() : "",
               fingerprint: self.preset
                 ? self.preset.metaDefault("Fingerprint", "")
                 : "",
@@ -981,6 +983,7 @@ class Executer extends Wizard {
           authentication: self.config.authentication,
           host: self.config.host,
           charset: self.config.charset ? self.config.charset : "utf-8",
+          tabColor: self.config.tabColor ? self.config.tabColor : "",
           fingerprint: self.config.fingerprint,
         },
         self.session,

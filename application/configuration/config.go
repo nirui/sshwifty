@@ -145,10 +145,11 @@ func (m Meta) Concretize() (map[string]string, error) {
 
 // Preset contains data of a static remote host
 type Preset struct {
-	Title string
-	Type  string
-	Host  string
-	Meta  map[string]string
+	Title    string
+	Type     string
+	Host     string
+	TabColor string
+	Meta     map[string]string
 }
 
 // Configuration contains configuration of the application

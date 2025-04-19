@@ -370,6 +370,7 @@ class Wizard {
               self.info,
               self.controls.build({
                 charset: parsedConfig.charset,
+                tabColor: configInput.tabColor,
                 send(data) {
                   return commandHandler.sendData(data);
                 },
@@ -421,6 +422,7 @@ class Wizard {
             {
               host: r.host,
               charset: r.encoding,
+              tabColor: self.preset ? self.preset.tabColor() : "",
             },
             self.session,
           );
@@ -515,6 +517,7 @@ class Executor extends Wizard {
         {
           host: self.config.host,
           charset: self.config.charset ? self.config.charset : "utf-8",
+          tabColor: self.config.tabColor ? self.config.tabColor : "",
         },
         self.session,
       );

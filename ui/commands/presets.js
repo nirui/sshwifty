@@ -25,6 +25,7 @@ const presetItem = {
   title: "",
   type: "",
   host: "",
+  tab_color: "",
   meta: {},
 };
 
@@ -70,7 +71,11 @@ function parsePresetItem(item) {
   for (let i in presetItem) {
     if (typeof presetItem[i] === typeof item[i]) {
       preset[i] = item[i];
+      continue;
+    }
 
+    if (typeof item[i] === "undefined" || !item[i]) {
+      preset[i] = presetItem[i];
       continue;
     }
 
@@ -79,9 +84,9 @@ function parsePresetItem(item) {
         i +
         '" is "' +
         typeof presetItem[i] +
-        '", given "' +
+        '", received data of "' +
         typeof item[i] +
-        '" instead',
+        '" type instead',
     );
   }
 
@@ -133,6 +138,16 @@ export class Preset {
    */
   host() {
     return this.preset.host;
+  }
+
+  /**
+   * Return the tab color of the preset
+   *
+   * @returns {string}
+   *
+   */
+  tabColor() {
+    return this.preset.tab_color;
   }
 
   /**
@@ -217,6 +232,7 @@ export function emptyPreset() {
     title: "Default",
     type: "Default",
     host: "",
+    tab_color: "",
     meta: {},
   });
 }

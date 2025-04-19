@@ -40,10 +40,11 @@ type socketVerification struct {
 }
 
 type socketRemotePreset struct {
-	Title string            `json:"title"`
-	Type  string            `json:"type"`
-	Host  string            `json:"host"`
-	Meta  map[string]string `json:"meta"`
+	Title    string            `json:"title"`
+	Type     string            `json:"type"`
+	Host     string            `json:"host"`
+	TabColor string            `json:"tab_color"`
+	Meta     map[string]string `json:"meta"`
 }
 
 type socketAccessConfiguration struct {
@@ -58,10 +59,11 @@ func newSocketAccessConfiguration(
 	presets := make([]socketRemotePreset, len(remotes))
 	for i := range presets {
 		presets[i] = socketRemotePreset{
-			Title: remotes[i].Title,
-			Type:  remotes[i].Type,
-			Host:  remotes[i].Host,
-			Meta:  remotes[i].Meta,
+			Title:    remotes[i].Title,
+			Type:     remotes[i].Type,
+			Host:     remotes[i].Host,
+			TabColor: remotes[i].TabColor,
+			Meta:     remotes[i].Meta,
 		}
 	}
 	return socketAccessConfiguration{

@@ -332,8 +332,7 @@ class Parser {
 
 class Control {
   constructor(data, color) {
-    this.colorM = color;
-    this.colors = this.colorM.get();
+    this.background = color;
     this.charset = data.charset;
 
     this.charsetDecoder = (d) => {
@@ -385,7 +384,7 @@ class Control {
       self.parser.close();
       self.closed = true;
 
-      self.colorM.forget(self.colors.color);
+      self.background.forget();
 
       await runWait;
 
@@ -470,11 +469,7 @@ class Control {
   }
 
   color() {
-    return this.colors.dark;
-  }
-
-  activeColor() {
-    return this.colors.color;
+    return this.background.hex();
   }
 
   close() {
@@ -493,10 +488,10 @@ export class Telnet {
   /**
    * constructor
    *
-   * @param {color.Color} c
+   * @param {color.Colors} c
    */
   constructor(c) {
-    this.color = c;
+    this.colors = c;
   }
 
   type() {
@@ -508,6 +503,6 @@ export class Telnet {
   }
 
   build(data) {
-    return new Control(data, this.color);
+    return new Control(data, this.colors.get(data.tabColor));
   }
 }

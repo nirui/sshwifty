@@ -18,7 +18,7 @@
 import Vue from "vue";
 import "./app.css";
 import Auth from "./auth.vue";
-import { Color as ControlColor } from "./commands/color.js";
+import { Colors as ControlColors } from "./commands/color.js";
 import { Commands } from "./commands/commands.js";
 import { Controls } from "./commands/controls.js";
 import { Presets } from "./commands/presets.js";
@@ -73,7 +73,7 @@ const socksKeyTimeTruncater = 100 * 1000;
 function startApp(rootEl) {
   const pageTitle = document.title;
 
-  let uiControlColor = new ControlColor();
+  let uiControlColors = new ControlColors();
 
   function getCurrentKeyMixer() {
     return Number(
@@ -120,8 +120,8 @@ function startApp(rootEl) {
         loadErr: "",
         socket: null,
         controls: new Controls([
-          new telnetctl.Telnet(uiControlColor),
-          new sshctl.SSH(uiControlColor),
+          new telnetctl.Telnet(uiControlColors),
+          new sshctl.SSH(uiControlColors),
         ]),
         commands: new Commands([new telnet.Command(), new ssh.Command()]),
         tabUpdateIndicator: null,
