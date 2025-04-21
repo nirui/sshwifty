@@ -39,7 +39,7 @@ on your Docker host, run:
 
 ```shell
 $ docker run --detach \
-  --restart always \
+  --restart unless-stopped \
   --publish 8182:8182 \
   --name sshwifty \
   niruix/sshwifty:latest

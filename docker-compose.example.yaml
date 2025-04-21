@@ -6,7 +6,7 @@ services:
     container_name: sshwifty
     user: "nobody:nobody"
     build: ./
-    restart: always
+    restart: unless-stopped
     # environment:
     #   - SSHWIFTY_SHAREDKEY=WEB_ACCESS_PASSWORD
     ports:
