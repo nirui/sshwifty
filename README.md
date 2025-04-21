@@ -313,7 +313,7 @@ Here is all the options of the configuration file:
     {
       "Title": "Endpoint Telnet",
       "Type": "Telnet",
-      "Host": "endpoint.vaguly.com:23",
+      "Host": "endpoint.nirui.org:23",
       "Meta": {
         // Data for predefined Encoding field. Valid data is those displayed on
         // the page
