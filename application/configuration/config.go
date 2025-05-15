@@ -143,6 +143,64 @@ func (m Meta) Concretize() (map[string]string, error) {
 	return mm, nil
 }
 
+// HookType is a type of Hook
+type HookType string
+
+// Defined Hook Types
+const (
+	HOOK_BEFORE_CONNECTING HookType = "before_connecting"
+)
+
+// verifyHookName returns the HookType of given `name`
+func (h HookType) verify() error {
+	switch h {
+	case "before_connecting":
+		return nil
+	default:
+		return fmt.Errorf(
+			"unsupported Hook type: %q. Supported types are: %q",
+			h,
+			[]HookType{
+				HOOK_BEFORE_CONNECTING,
+			},
+		)
+	}
+}
+
+// HookCommand contains a single Hook command
+type HookCommand []string
+
+// Hooks contains registered Hooks
+type Hooks map[HookType][]HookCommand
+
+// verify verifies all settings in current Hooks
+func (h Hooks) verify() error {
+	for k, v := range h {
+		if err := k.verify(); err != nil {
+			return err
+		}
+		if len(v) <= 0 {
+			continue
+		}
+		for i := range v {
+			if len(v[i]) <= 0 {
+				return fmt.Errorf(
+					"the command %d for Hook type %q must not be empty",
+					i,
+					k,
+				)
+			}
+		}
+	}
+	return nil
+}
+
+// HookSettings contains Hook settings
+type HookSettings struct {
+	Timeout time.Duration
+	Hooks   Hooks
+}
+
 // Preset contains data of a static remote host
 type Preset struct {
 	Title    string
@@ -160,23 +218,19 @@ type Configuration struct {
 	Socks5                 string
 	Socks5User             string
 	Socks5Password         string
+	Hooks                  Hooks
+	HookTimeout            time.Duration
 	Servers                []Server
-	Presets                []Preset
-	OnlyAllowPresetRemotes bool
-}
-
-// Common settings shared by mulitple servers
-type Common struct {
-	HostName               string
-	SharedKey              string
-	Dialer                 network.Dial
-	DialTimeout            time.Duration
 	Presets                []Preset
 	OnlyAllowPresetRemotes bool
 }
 
 // Verify verifies current setting
 func (c Configuration) Verify() error {
+	if err := c.Hooks.verify(); err != nil {
+		return fmt.Errorf("invalid Hook settings: %s", err)
+	}
+
 	if len(c.Servers) <= 0 {
 		return errors.New("must specify at least one server")
 	}
@@ -232,6 +286,25 @@ func (c Configuration) Dialer() network.Dial {
 	return dialer
 }
 
+// Common settings shared by mulitple servers
+type Common struct {
+	HostName               string
+	SharedKey              string
+	Dialer                 network.Dial
+	DialTimeout            time.Duration
+	Presets                []Preset
+	Hooks                  HookSettings
+	OnlyAllowPresetRemotes bool
+}
+
+// hookSettings returns Hooks settings
+func (c Configuration) hookSettings() HookSettings {
+	return HookSettings{
+		Timeout: c.HookTimeout,
+		Hooks:   c.Hooks,
+	}
+}
+
 // Common returns common settings
 func (c Configuration) Common() Common {
 	return Common{
@@ -240,6 +313,7 @@ func (c Configuration) Common() Common {
 		Dialer:                 c.Dialer(),
 		DialTimeout:            c.DialTimeout,
 		Presets:                c.Presets,
+		Hooks:                  c.hookSettings(),
 		OnlyAllowPresetRemotes: c.OnlyAllowPresetRemotes,
 	}
 }

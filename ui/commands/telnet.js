@@ -26,14 +26,16 @@ import * as event from "./events.js";
 import Exception from "./exception.js";
 import * as history from "./history.js";
 import * as presets from "./presets.js";
+import * as strings from "./string.js";
 
 const COMMAND_ID = 0x00;
 
 const SERVER_INITIAL_ERROR_BAD_ADDRESS = 0x01;
 
 const SERVER_REMOTE_BAND = 0x00;
-const SERVER_DIAL_FAILED = 0x01;
-const SERVER_DIAL_CONNECTED = 0x02;
+const SERVER_HOOK_OUTPUT_BEFORE_CONNECTING = 0x01;
+const SERVER_DIAL_FAILED = 0x02;
+const SERVER_DIAL_CONNECTED = 0x03;
 
 const DEFAULT_PORT = 23;
 
@@ -56,6 +58,7 @@ class Telnet {
       [
         "initialization.failed",
         "initialized",
+        "hook.before_connected",
         "connect.failed",
         "connect.succeed",
         "@inband",
@@ -128,6 +131,12 @@ class Telnet {
       case SERVER_DIAL_FAILED:
         if (!this.connected) {
           return this.events.fire("connect.failed", rd);
+        }
+        break;
+
+      case SERVER_HOOK_OUTPUT_BEFORE_CONNECTING:
+        if (!this.connected) {
+          return this.events.fire("hook.before_connected", rd);
         }
         break;
 
@@ -300,6 +309,17 @@ class Wizard {
     return command.done(false, null, title, message);
   }
 
+  stepHookOutputPrompt(title, msg) {
+    return command.wait(
+      title,
+      strings.truncate(
+        msg,
+        common.MAX_HOOK_OUTPUT_LEN,
+        common.HOOK_OUTPUT_STR_ELLIPSIS,
+      ),
+    );
+  }
+
   stepSuccessfulDone(data) {
     return command.done(
       true,
@@ -361,6 +381,14 @@ class Wizard {
       },
       initialized(streamInitialHeader) {
         self.step.resolve(self.stepWaitForEstablishWait(configInput.host));
+      },
+      async "hook.before_connected"(rd) {
+        const d = new TextDecoder("utf-8").decode(
+          await reader.readCompletely(rd),
+        );
+        self.step.resolve(
+          self.stepHookOutputPrompt("Waiting for server hook", d),
+        );
       },
       "connect.succeed"(rd, commandHandler) {
         self.step.resolve(

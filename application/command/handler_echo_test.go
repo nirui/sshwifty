@@ -23,6 +23,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/nirui/sshwifty/application/configuration"
 	"github.com/nirui/sshwifty/application/log"
 	"github.com/nirui/sshwifty/application/rw"
 )
@@ -86,6 +87,7 @@ func TestHandlerHandleEcho(t *testing.T) {
 		0,
 		0,
 		log.NewDitch(),
+		NewHooks(configuration.HookSettings{}),
 	)
 
 	hErr := handler.Handle()

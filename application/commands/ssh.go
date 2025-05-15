@@ -18,6 +18,7 @@
 package commands
 
 import (
+	"context"
 	"errors"
 	"io"
 	"net"
@@ -33,14 +34,15 @@ import (
 	"github.com/nirui/sshwifty/application/rw"
 )
 
-// Server -> client signal Consts
+// Server -> client signal consts
 const (
-	SSHServerRemoteStdOut             = 0x00
-	SSHServerRemoteStdErr             = 0x01
-	SSHServerConnectFailed            = 0x02
-	SSHServerConnectSucceed           = 0x03
-	SSHServerConnectVerifyFingerprint = 0x04
-	SSHServerConnectRequestCredential = 0x05
+	SSHServerRemoteStdOut               = 0x00
+	SSHServerRemoteStdErr               = 0x01
+	SSHServerHookOutputBeforeConnecting = 0x02
+	SSHServerConnectFailed              = 0x03
+	SSHServerConnectSucceed             = 0x04
+	SSHServerConnectVerifyFingerprint   = 0x05
+	SSHServerConnectRequestCredential   = 0x06
 )
 
 // Client -> server signal consts
@@ -122,13 +124,11 @@ type sshRemoteConnWrapper struct {
 func (s *sshRemoteConnWrapper) Read(b []byte) (int, error) {
 	for {
 		rLen, rErr := s.Conn.Read(b)
-
 		if rErr == nil {
 			return rLen, nil
 		}
 
 		netErr, isNetErr := rErr.(net.Error)
-
 		if !isNetErr || !netErr.Timeout() || !s.requestTimeoutRetry(s) {
 			return rLen, rErr
 		}
@@ -152,6 +152,7 @@ func (s sshRemoteConn) isValid() bool {
 type sshClient struct {
 	w                                    command.StreamResponder
 	l                                    log.Logger
+	hooks                                command.Hooks
 	cfg                                  command.Configuration
 	remoteCloseWait                      sync.WaitGroup
 	remoteReadTimeoutRetry               bool
@@ -169,12 +170,14 @@ type sshClient struct {
 
 func newSSH(
 	l log.Logger,
+	hooks command.Hooks,
 	w command.StreamResponder,
 	cfg command.Configuration,
 ) command.FSMMachine {
 	return &sshClient{
 		w:                                    w,
 		l:                                    l,
+		hooks:                                hooks,
 		cfg:                                  cfg,
 		remoteCloseWait:                      sync.WaitGroup{},
 		remoteReadTimeoutRetry:               false,
@@ -195,7 +198,6 @@ func parseSSHConfig(p configuration.Preset) (configuration.Preset, error) {
 	oldHost := p.Host
 
 	_, _, sErr := net.SplitHostPort(p.Host)
-
 	if sErr != nil {
 		p.Host = net.JoinHostPort(p.Host, sshDefaultPortString)
 	}
@@ -213,7 +215,6 @@ func (d *sshClient) Bootup(
 ) (command.FSMState, command.FSMError) {
 	// User name
 	userName, userNameErr := ParseString(r.Read, b)
-
 	if userNameErr != nil {
 		return nil, command.ToFSMError(
 			userNameErr, SSHRequestErrorBadUserName)
@@ -223,14 +224,12 @@ func (d *sshClient) Bootup(
 
 	// Address
 	addr, addrErr := ParseAddress(r.Read, b)
-
 	if addrErr != nil {
 		return nil, command.ToFSMError(
 			addrErr, SSHRequestErrorBadRemoteAddress)
 	}
 
 	addrStr := addr.String()
-
 	if len(addrStr) <= 0 {
 		return nil, command.ToFSMError(
 			ErrSSHInvalidAddress, SSHRequestErrorBadRemoteAddress)
@@ -238,14 +237,12 @@ func (d *sshClient) Bootup(
 
 	// Auth method
 	rData, rErr := rw.FetchOneByte(r.Fetch)
-
 	if rErr != nil {
 		return nil, command.ToFSMError(
 			rErr, SSHRequestErrorBadAuthMethod)
 	}
 
 	authMethodBuilder, authMethodBuilderErr := d.buildAuthMethod(rData[0])
-
 	if authMethodBuilderErr != nil {
 		return nil, command.ToFSMError(
 			authMethodBuilderErr, SSHRequestErrorBadAuthMethod)
@@ -276,13 +273,11 @@ func (d *sshClient) buildAuthMethod(
 						SSHServerConnectRequestCredential,
 						b[d.w.HeaderSize():],
 					)
-
 					if wErr != nil {
 						return "", wErr
 					}
 
 					passphraseBytes, passphraseReceived := <-d.credentialReceive
-
 					if !passphraseReceived {
 						return "", ErrSSHAuthCancelled
 					}
@@ -303,19 +298,16 @@ func (d *sshClient) buildAuthMethod(
 						SSHServerConnectRequestCredential,
 						b[d.w.HeaderSize():],
 					)
-
 					if wErr != nil {
 						return nil, wErr
 					}
 
 					privateKeyBytes, privateKeyReceived := <-d.credentialReceive
-
 					if !privateKeyReceived {
 						return nil, ErrSSHAuthCancelled
 					}
 
 					signer, signerErr := ssh.ParsePrivateKey(privateKeyBytes)
-
 					if signerErr != nil {
 						return nil, signerErr
 					}
@@ -345,17 +337,14 @@ func (d *sshClient) confirmRemoteFingerprint(
 		SSHServerConnectVerifyFingerprint,
 		buf[:d.w.HeaderSize()+fgpLen],
 	)
-
 	if wErr != nil {
 		return wErr
 	}
 
 	confirmed, confirmOK := <-d.fingerprintVerifyResultReceive
-
 	if !confirmOK {
 		return ErrSSHRemoteFingerprintVerificationCancelled
 	}
-
 	if !confirmed {
 		return ErrSSHRemoteFingerprintRefused
 	}
@@ -383,7 +372,6 @@ func (d *sshClient) dialRemote(
 	addr string,
 	config *ssh.ClientConfig) (*ssh.Client, func(), error) {
 	conn, err := d.cfg.Dial(networkName, addr, config.Timeout)
-
 	if err != nil {
 		return nil, nil, err
 	}
@@ -399,7 +387,6 @@ func (d *sshClient) dialRemote(
 				if !d.remoteReadForceRetryNextTimeout {
 					return false
 				}
-
 				d.remoteReadForceRetryNextTimeout = false
 			}
 
@@ -415,10 +402,8 @@ func (d *sshClient) dialRemote(
 	sshConn.SetReadDeadline(time.Now().Add(config.Timeout))
 
 	c, chans, reqs, err := ssh.NewClientConn(sshConn, addr, config)
-
 	if err != nil {
 		sshConn.Close()
-
 		return nil, nil, err
 	}
 
@@ -437,14 +422,37 @@ func (d *sshClient) remote(
 	user string, address string, authMethodBuilder sshAuthMethodBuilder) {
 	defer func() {
 		d.w.Signal(command.HeaderClose)
-
 		close(d.remoteConnReceive)
 		d.remoteCloseWait.Done()
 	}()
 
 	buf := [4096]byte{}
 
-	conn, clearConnInitialDeadline, dErr :=
+	err := d.hooks.Run(
+		context.Background(),
+		configuration.HOOK_BEFORE_CONNECTING,
+		command.NewHookParameters(2).
+			Insert("Remote Type", "SSH").
+			Insert("Remote Address", address),
+		command.NewDefaultHookOutput(d.l, func(
+			b []byte,
+		) (wLen int, wErr error) {
+			wLen = len(b)
+			dLen := copy(buf[d.w.HeaderSize():], b) + d.w.HeaderSize()
+			wErr = d.w.SendManual(
+				SSHServerHookOutputBeforeConnecting,
+				buf[:dLen],
+			)
+			return
+		}),
+	)
+	if err != nil {
+		errLen := copy(buf[d.w.HeaderSize():], err.Error()) + d.w.HeaderSize()
+		d.w.SendManual(SSHServerConnectFailed, buf[:errLen])
+		return
+	}
+
+	conn, clearConnInitialDeadline, err :=
 		d.dialRemote("tcp", address, &ssh.ClientConfig{
 			User: user,
 			Auth: authMethodBuilder(buf[:]),
@@ -453,92 +461,68 @@ func (d *sshClient) remote(
 			},
 			Timeout: d.cfg.DialTimeout,
 		})
-
-	if dErr != nil {
-		errLen := copy(buf[d.w.HeaderSize():], dErr.Error()) + d.w.HeaderSize()
+	if err != nil {
+		errLen := copy(buf[d.w.HeaderSize():], err.Error()) + d.w.HeaderSize()
 		d.w.SendManual(SSHServerConnectFailed, buf[:errLen])
-
-		d.l.Debug("Unable to connect to remote machine: %s", dErr)
-
+		d.l.Debug("Unable to connect to remote machine: %s", err)
 		return
 	}
-
 	defer conn.Close()
 
-	session, sErr := conn.NewSession()
-
-	if sErr != nil {
-		errLen := copy(buf[d.w.HeaderSize():], sErr.Error()) + d.w.HeaderSize()
+	session, err := conn.NewSession()
+	if err != nil {
+		errLen := copy(buf[d.w.HeaderSize():], err.Error()) + d.w.HeaderSize()
 		d.w.SendManual(SSHServerConnectFailed, buf[:errLen])
-
-		d.l.Debug("Unable open new session on remote machine: %s", sErr)
-
+		d.l.Debug("Unable open new session on remote machine: %s", err)
 		return
 	}
-
 	defer session.Close()
 
-	in, inErr := session.StdinPipe()
-
-	if inErr != nil {
-		errLen := copy(buf[d.w.HeaderSize():], inErr.Error()) + d.w.HeaderSize()
+	in, err := session.StdinPipe()
+	if err != nil {
+		errLen := copy(buf[d.w.HeaderSize():], err.Error()) + d.w.HeaderSize()
 		d.w.SendManual(SSHServerConnectFailed, buf[:errLen])
-
-		d.l.Debug("Unable export Stdin pipe: %s", inErr)
-
+		d.l.Debug("Unable export Stdin pipe: %s", err)
 		return
 	}
 
-	out, outErr := session.StdoutPipe()
-
-	if outErr != nil {
-		errLen := copy(buf[d.w.HeaderSize():], outErr.Error()) +
+	out, err := session.StdoutPipe()
+	if err != nil {
+		errLen := copy(buf[d.w.HeaderSize():], err.Error()) +
 			d.w.HeaderSize()
 		d.w.SendManual(SSHServerConnectFailed, buf[:errLen])
-
-		d.l.Debug("Unable export Stdout pipe: %s", outErr)
-
+		d.l.Debug("Unable export Stdout pipe: %s", err)
 		return
 	}
 
-	errOut, outErrErr := session.StderrPipe()
-
-	if outErrErr != nil {
-		errLen := copy(buf[d.w.HeaderSize():], outErrErr.Error()) +
+	errOut, err := session.StderrPipe()
+	if err != nil {
+		errLen := copy(buf[d.w.HeaderSize():], err.Error()) +
 			d.w.HeaderSize()
 		d.w.SendManual(SSHServerConnectFailed, buf[:errLen])
-
-		d.l.Debug("Unable export Stderr pipe: %s", outErrErr)
-
+		d.l.Debug("Unable export Stderr pipe: %s", err)
 		return
 	}
 
-	sErr = session.RequestPty("xterm", 80, 40, ssh.TerminalModes{
+	err = session.RequestPty("xterm", 80, 40, ssh.TerminalModes{
 		ssh.ECHO:          1,
 		ssh.TTY_OP_ISPEED: 14400,
 		ssh.TTY_OP_OSPEED: 14400,
 	})
-
-	if sErr != nil {
-		errLen := copy(buf[d.w.HeaderSize():], sErr.Error()) + d.w.HeaderSize()
+	if err != nil {
+		errLen := copy(buf[d.w.HeaderSize():], err.Error()) + d.w.HeaderSize()
 		d.w.SendManual(SSHServerConnectFailed, buf[:errLen])
-
-		d.l.Debug("Unable request PTY: %s", sErr)
-
+		d.l.Debug("Unable request PTY: %s", err)
 		return
 	}
 
-	sErr = session.Shell()
-
-	if sErr != nil {
-		errLen := copy(buf[d.w.HeaderSize():], sErr.Error()) + d.w.HeaderSize()
+	err = session.Shell()
+	if err != nil {
+		errLen := copy(buf[d.w.HeaderSize():], err.Error()) + d.w.HeaderSize()
 		d.w.SendManual(SSHServerConnectFailed, buf[:errLen])
-
-		d.l.Debug("Unable to start Shell: %s", sErr)
-
+		d.l.Debug("Unable to start Shell: %s", err)
 		return
 	}
-
 	defer session.Wait()
 
 	clearConnInitialDeadline()
@@ -555,7 +539,6 @@ func (d *sshClient) remote(
 
 	wErr := d.w.SendManual(
 		SSHServerConnectSucceed, buf[:d.w.HeaderSize()])
-
 	if wErr != nil {
 		return
 	}
@@ -570,16 +553,14 @@ func (d *sshClient) remote(
 		errOutBuf := [4096]byte{}
 
 		for {
-			rLen, rErr := errOut.Read(errOutBuf[d.w.HeaderSize():])
-
-			if rErr != nil {
+			rLen, err := errOut.Read(errOutBuf[d.w.HeaderSize():])
+			if err != nil {
 				return
 			}
 
-			rErr = d.w.SendManual(
+			err = d.w.SendManual(
 				SSHServerRemoteStdErr, errOutBuf[:d.w.HeaderSize()+rLen])
-
-			if rErr != nil {
+			if err != nil {
 				return
 			}
 		}
@@ -587,14 +568,12 @@ func (d *sshClient) remote(
 
 	for {
 		rLen, rErr := out.Read(buf[d.w.HeaderSize():])
-
 		if rErr != nil {
 			return
 		}
 
 		rErr = d.w.SendManual(
 			SSHServerRemoteStdOut, buf[:d.w.HeaderSize()+rLen])
-
 		if rErr != nil {
 			return
 		}
@@ -607,11 +586,9 @@ func (d *sshClient) getRemote() (sshRemoteConn, error) {
 	}
 
 	remoteConn, remoteConnFetched := <-d.remoteConnReceive
-
 	if !remoteConnFetched {
 		return sshRemoteConn{}, ErrSSHRemoteConnUnavailable
 	}
-
 	d.remoteConn = remoteConn
 
 	return d.remoteConn, nil
@@ -626,23 +603,19 @@ func (d *sshClient) local(
 	switch h.Marker() {
 	case SSHClientStdIn:
 		remote, remoteErr := d.getRemote()
-
 		if remoteErr != nil {
 			return remoteErr
 		}
 
 		for !r.Completed() {
 			rData, rErr := r.Buffered()
-
 			if rErr != nil {
 				return rErr
 			}
 
 			_, wErr := remote.writer.Write(rData)
-
 			if wErr != nil {
 				remote.closer()
-
 				d.l.Debug("Failed to write data to remote: %s", wErr)
 			}
 		}
@@ -651,13 +624,11 @@ func (d *sshClient) local(
 
 	case SSHClientResize:
 		remote, remoteErr := d.getRemote()
-
 		if remoteErr != nil {
 			return remoteErr
 		}
 
 		_, rErr := io.ReadFull(r, b[:4])
-
 		if rErr != nil {
 			return rErr
 		}
@@ -672,7 +643,6 @@ func (d *sshClient) local(
 
 		// It's ok for it to fail
 		wcErr := remote.session.WindowChange(rows, cols)
-
 		if wcErr != nil {
 			d.l.Debug("Failed to resize to %d, %d: %s", rows, cols, wcErr)
 		}
@@ -687,7 +657,6 @@ func (d *sshClient) local(
 		d.fingerprintProcessed = true
 
 		rData, rErr := rw.FetchOneByte(r.Fetch)
-
 		if rErr != nil {
 			return rErr
 		}
@@ -698,7 +667,6 @@ func (d *sshClient) local(
 			d.fingerprintVerifyResultReceive <- false
 
 			remote, remoteErr := d.getRemote()
-
 			if remoteErr == nil {
 				remote.closer()
 			}
@@ -728,13 +696,11 @@ func (d *sshClient) local(
 
 		for !r.Completed() {
 			rData, rErr := r.Buffered()
-
 			if rErr != nil {
 				return rErr
 			}
 
 			totalCredentialRead += len(rData)
-
 			if totalCredentialRead > sshCredentialBufSize {
 				return ErrSSHCredentialDataTooLarge
 			}
@@ -768,7 +734,6 @@ func (d *sshClient) Close() error {
 	}
 
 	remote, remoteErr := d.getRemote()
-
 	if remoteErr == nil {
 		remote.closer()
 	}

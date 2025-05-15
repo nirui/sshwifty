@@ -70,3 +70,20 @@ export class String {
     return buf;
   }
 }
+
+/**
+ * Truncates a string to the maximum length
+ *
+ * @param {string} str Source string
+ * @param {integer} maxLength Max length
+ * @param {string} exceed Text appends the string if it was truncated
+ *
+ * @returns {string} truncated String
+ *
+ */
+export function truncate(str, maxLength, exceed) {
+  if (str.length <= maxLength) {
+    return str;
+  }
+  return str.substring(0, maxLength) + exceed;
+}

@@ -158,7 +158,8 @@ func Builder(cmds command.Commands) server.HandlerBuilder {
 		cfg configuration.Server,
 		logger log.Logger,
 	) http.Handler {
-		socketCtl := newSocketCtl(commonCfg, cfg, cmds)
+		hooks := command.NewHooks(commonCfg.Hooks)
+		socketCtl := newSocketCtl(commonCfg, cfg, cmds, hooks)
 
 		return handler{
 			hostNameChecker: commonCfg.HostName + ":",

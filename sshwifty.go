@@ -44,7 +44,8 @@ func main() {
 		Run(configuration.Redundant(configLoaders...),
 			application.DefaultProccessSignallerBuilder,
 			commands.New(),
-			controller.Builder)
+			controller.Builder,
+		)
 
 	if e == nil {
 		return

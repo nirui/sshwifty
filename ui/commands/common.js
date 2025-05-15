@@ -57,6 +57,9 @@ const availableEncodings = [
   "utf-16le",
 ];
 
+export const MAX_HOOK_OUTPUT_LEN = 128;
+export const HOOK_OUTPUT_STR_ELLIPSIS = "...";
+
 export const charsetPresets = (() => {
   let r = [];
 

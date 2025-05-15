@@ -24,6 +24,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/nirui/sshwifty/application/configuration"
 	"github.com/nirui/sshwifty/application/log"
 	"github.com/nirui/sshwifty/application/rw"
 )
@@ -67,6 +68,7 @@ type dummyStreamCommand struct {
 
 func newDummyStreamCommand(
 	l log.Logger,
+	h Hooks,
 	w StreamResponder,
 	cfg Configuration,
 ) FSMMachine {
@@ -187,7 +189,8 @@ func TestHandlerHandleStream(t *testing.T) {
 		&lock,
 		0,
 		0,
-		log.NewDitch())
+		log.NewDitch(),
+		NewHooks(configuration.HookSettings{}))
 
 	go func() {
 		stInitialHeader := streamInitialHeader{}

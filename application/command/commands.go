@@ -39,6 +39,7 @@ var (
 // Command represents a command handler machine builder
 type Command func(
 	l log.Logger,
+	h Hooks,
 	w StreamResponder,
 	cfg Configuration,
 ) FSMMachine
@@ -84,6 +85,7 @@ func (c *Commands) Register(
 func (c Commands) Run(
 	id byte,
 	l log.Logger,
+	hooks Hooks,
 	w StreamResponder,
 	cfg Configuration,
 ) (FSM, error) {
@@ -97,7 +99,7 @@ func (c Commands) Run(
 		return FSM{}, ErrCommandRunUndefinedCommand
 	}
 
-	return newFSM(cc.command(l, w, cfg)), nil
+	return newFSM(cc.command(l, hooks, w, cfg)), nil
 }
 
 // Reconfigure lets commands reset configuration

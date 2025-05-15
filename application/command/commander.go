@@ -54,6 +54,7 @@ func (c Commander) New(
 	receiveDelay time.Duration,
 	sendDelay time.Duration,
 	l log.Logger,
+	hooks Hooks,
 ) (Handler, error) {
 	return newHandler(
 		cfg,
@@ -64,5 +65,6 @@ func (c Commander) New(
 		receiveDelay,
 		sendDelay,
 		l,
+		hooks,
 	), nil
 }

@@ -40,10 +40,11 @@ const DEFAULT_PORT = 22;
 
 const SERVER_REMOTE_STDOUT = 0x00;
 const SERVER_REMOTE_STDERR = 0x01;
-const SERVER_CONNECT_FAILED = 0x02;
-const SERVER_CONNECTED = 0x03;
-const SERVER_CONNECT_REQUEST_FINGERPRINT = 0x04;
-const SERVER_CONNECT_REQUEST_CREDENTIAL = 0x05;
+const SERVER_HOOK_OUTPUT_BEFORE_CONNECTING = 0x02;
+const SERVER_CONNECT_FAILED = 0x03;
+const SERVER_CONNECTED = 0x04;
+const SERVER_CONNECT_REQUEST_FINGERPRINT = 0x05;
+const SERVER_CONNECT_REQUEST_CREDENTIAL = 0x06;
 
 const CLIENT_DATA_STDIN = 0x00;
 const CLIENT_DATA_RESIZE = 0x01;
@@ -77,6 +78,7 @@ class SSH {
       [
         "initialization.failed",
         "initialized",
+        "hook.before_connected",
         "connect.failed",
         "connect.succeed",
         "connect.fingerprint",
@@ -146,6 +148,18 @@ class SSH {
    */
   tick(streamHeader, rd) {
     switch (streamHeader.marker()) {
+      case SERVER_CONNECT_REQUEST_CREDENTIAL:
+        if (!this.connected) {
+          return this.events.fire("connect.credential", rd, this.sender);
+        }
+        break;
+
+      case SERVER_CONNECT_REQUEST_FINGERPRINT:
+        if (!this.connected) {
+          return this.events.fire("connect.fingerprint", rd, this.sender);
+        }
+        break;
+
       case SERVER_CONNECTED:
         if (!this.connected) {
           this.connected = true;
@@ -160,27 +174,21 @@ class SSH {
         }
         break;
 
-      case SERVER_CONNECT_REQUEST_FINGERPRINT:
+      case SERVER_HOOK_OUTPUT_BEFORE_CONNECTING:
         if (!this.connected) {
-          return this.events.fire("connect.fingerprint", rd, this.sender);
-        }
-        break;
-
-      case SERVER_CONNECT_REQUEST_CREDENTIAL:
-        if (!this.connected) {
-          return this.events.fire("connect.credential", rd, this.sender);
-        }
-        break;
-
-      case SERVER_REMOTE_STDOUT:
-        if (this.connected) {
-          return this.events.fire("stdout", rd);
+          return this.events.fire("hook.before_connected", rd);
         }
         break;
 
       case SERVER_REMOTE_STDERR:
         if (this.connected) {
           return this.events.fire("stderr", rd);
+        }
+        break;
+
+      case SERVER_REMOTE_STDOUT:
+        if (this.connected) {
+          return this.events.fire("stdout", rd);
         }
         break;
     }
@@ -650,8 +658,15 @@ class Wizard {
         let d = new TextDecoder("utf-8").decode(
           await reader.readCompletely(rd),
         );
-
         self.step.resolve(self.stepErrorDone("Connection failed", d));
+      },
+      async "hook.before_connected"(rd) {
+        const d = new TextDecoder("utf-8").decode(
+          await reader.readCompletely(rd),
+        );
+        self.step.resolve(
+          self.stepHookOutputPrompt("Waiting for server hook", d),
+        );
       },
       "connect.succeed"(rd, commandHandler) {
         self.connectionSucceed = true;
@@ -855,6 +870,17 @@ class Wizard {
           value: fingerprintData,
         },
       ]),
+    );
+  }
+
+  stepHookOutputPrompt(title, msg) {
+    return command.wait(
+      title,
+      strings.truncate(
+        msg,
+        common.MAX_HOOK_OUTPUT_LEN,
+        common.HOOK_OUTPUT_STR_ELLIPSIS,
+      ),
     );
   }
 

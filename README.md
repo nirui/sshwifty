@@ -170,6 +170,55 @@ Here is all the options of the configuration file:
   // Password of the Socks5 server. Please set when needed
   "Socks5Password": "",
 
+  // Server side hooks, allowing operator to launch a process on the server side
+  // to influence server behaver
+  //
+  // Warning: the process will be launched within the same context and system
+  // permission which Sshwifty is running under, thus is it crucial that the
+  // hook process is designed and operated in a secure manner, otherwise
+  // SECURITY VULNERABILITY maybe created as result
+  //
+  // Warning: all inputs passed by Sshwifty to the hook process must be
+  // considered unsanitized, and must be sanitized by each hook themselves
+  "Hooks": {
+    // before_connecting is called before a remote is connected. If the hook
+    // process exited with a non-zero return code, the connection request is
+    // aborted
+    //
+    // This Hook offers two parameters:
+    // - $SSHWIFTY_HOOK_REMOTE_TYPE: Type of the connection (i.e. SSH or Telnet)
+    // - $SSHWIFTY_HOOK_REMOTE_ADDRESS: Address of the remote host
+    "before_connecting": [
+      // Following example command launches a `/bin/sh` to execute a for loop
+      // that prints to Stdout as well as to Stderr
+      //
+      // Prints to Stdout will be sent to the client side visible to the user,
+      // and prints to Stderr will be captured as server side logs and it is
+      // invisible to the user (as server logs usually are)
+      //
+      // The command must be specified in Json array format. Each array element
+      // is mapped to a command fragment separated by space. For example:
+      // ["command", "-i", "Hello World"] will be mapped to `command -i "Hello
+      // World"` before it is executed
+      [
+        "/bin/sh",
+        "-c",
+        "for n in $(seq 1 5); do sleep 1 && echo Stdout $SSHWIFTY_HOOK_REMOTE_TYPE $n && echo Stderr $SSHWIFTY_HOOK_REMOTE_TYPE $n 1>&2; done"
+      ],
+      // You can add multiple hooks, they're executed in sequence even when the
+      // previous one fails
+      [
+        "/bin/another-command",
+        "...",
+        "..."
+      ]
+    ]
+  },
+
+  // The maximum execution time of each hook, in seconds. If this timeout is 
+  // exceeded, the hook will be terminated, and thus cause a failure
+  "HookTimeout": 30,
+
   // Sshwifty HTTP server, you can set multiple ones to serve on different
   // ports
   "Servers": [
@@ -212,7 +261,7 @@ Here is all the options of the configuration file:
       "TLSCertificateFile": "",
 
       // Path to TLS certificate key file. Set empty to use HTTP
-      "TLSCertificateKeyFile": ""
+      "TLSCertificateKeyFile": "",
       
       // Display a short text message on the Home page. Link is supported 
       // through `[Title text](https://link.example.com)` format
@@ -348,6 +397,8 @@ SSHWIFTY_DIALTIMEOUT
 SSHWIFTY_SOCKS5
 SSHWIFTY_SOCKS5_USER
 SSHWIFTY_SOCKS5_PASSWORD
+SSHWIFTY_HOOK_BEFORE_CONNECTING
+SSHWIFTY_HOOKTIMEOUT
 SSHWIFTY_LISTENPORT
 SSHWIFTY_INITIALTIMEOUT
 SSHWIFTY_READTIMEOUT

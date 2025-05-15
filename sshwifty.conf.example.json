@@ -5,6 +5,10 @@
   "Socks5": "",
   "Socks5User": "",
   "Socks5Password": "",
+  "Hooks": {
+    "before_connecting": []
+  },
+  "HookTimeout": 30,
   "Servers": [
     {
       "ListenInterface": "127.0.0.1",

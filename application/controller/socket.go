@@ -67,6 +67,7 @@ type socket struct {
 	serverCfg configuration.Server
 	upgrader  websocket.Upgrader
 	commander command.Commander
+	hks       command.Hooks
 }
 
 func hashCombineSocketKeys(addedKey string, privateKey string) []byte {
@@ -81,12 +82,14 @@ func newSocketCtl(
 	commonCfg configuration.Common,
 	cfg configuration.Server,
 	cmds command.Commands,
+	hooks command.Hooks,
 ) socket {
 	return socket{
 		commonCfg: commonCfg,
 		serverCfg: cfg,
 		upgrader:  buildWebsocketUpgrader(cfg),
 		commander: command.New(cmds),
+		hks:       hooks,
 	}
 }
 
@@ -383,7 +386,7 @@ func (s socket) Get(
 
 				return nil
 			},
-		}, &senderLock, s.serverCfg.ReadDelay, s.serverCfg.WriteDelay, l)
+		}, &senderLock, s.serverCfg.ReadDelay, s.serverCfg.WriteDelay, l, s.hks)
 
 	if cmdExecErr != nil {
 		return NewError(http.StatusBadRequest, cmdExecErr.Error())
