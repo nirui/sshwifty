@@ -139,6 +139,11 @@ func NewHooks(cfg configuration.HookSettings) Hooks {
 	}
 }
 
+// Constants for Hooks.Run
+const (
+	hooksExecDeadlineFormat = time.RFC3339
+)
+
 // Run runs Hooks of given type `t`
 func (h *Hooks) Run(
 	ctx context.Context,
@@ -150,6 +155,11 @@ func (h *Hooks) Run(
 	if !found {
 		return nil
 	}
+
+	params = params.Insert(
+		"Deadline",
+		time.Now().Add(h.cfg.Timeout).Format(hooksExecDeadlineFormat),
+	)
 
 	timeoutCtx, timeoutCtxCancel := context.WithTimeout(ctx, h.cfg.Timeout)
 	defer timeoutCtxCancel()

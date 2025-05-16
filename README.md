@@ -173,21 +173,30 @@ Here is all the options of the configuration file:
   // Server side hooks, allowing operator to launch a process on the server side
   // to influence server behaver
   //
+  // The operation of a Hook must be completed within the time limit defined
+  // by `HookTimeout` set below. Otherwise it will be terminated, which results
+  // a failure for the execution
+  //
+  // To determine how much time is still left for the execution, a Hook can
+  // fetch the deadline information from the `SSHWIFTY_HOOK_DEADLINE`
+  // environment variable which is a RFC3339 formatted date string indicating
+  // after what time the termination will occur
+  //
   // Warning: the process will be launched within the same context and system
   // permission which Sshwifty is running under, thus is it crucial that the
-  // hook process is designed and operated in a secure manner, otherwise
+  // Hook process is designed and operated in a secure manner, otherwise
   // SECURITY VULNERABILITY maybe created as result
   //
   // Warning: all inputs passed by Sshwifty to the hook process must be
   // considered unsanitized, and must be sanitized by each hook themselves
   "Hooks": {
-    // before_connecting is called before a remote is connected. If the hook
-    // process exited with a non-zero return code, the connection request is
-    // aborted
+    // before_connecting is called before Sshwifty starts to connect to a remote
+    // endpoint. If any of the Hook process exited with a non-zero return code,
+    // the connection request is aborted
     //
     // This Hook offers two parameters:
-    // - $SSHWIFTY_HOOK_REMOTE_TYPE: Type of the connection (i.e. SSH or Telnet)
-    // - $SSHWIFTY_HOOK_REMOTE_ADDRESS: Address of the remote host
+    // - SSHWIFTY_HOOK_REMOTE_TYPE: Type of the connection (i.e. SSH or Telnet)
+    // - SSHWIFTY_HOOK_REMOTE_ADDRESS: Address of the remote host
     "before_connecting": [
       // Following example command launches a `/bin/sh` to execute a for loop
       // that prints to Stdout as well as to Stderr
@@ -207,6 +216,11 @@ Here is all the options of the configuration file:
       ],
       // You can add multiple hooks, they're executed in sequence even when the
       // previous one fails
+      [
+        "/bin/sh",
+        "-c",
+        "/etc/sshwifty/before_connecting.sh"
+      ],
       [
         "/bin/another-command",
         "...",
