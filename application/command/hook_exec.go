@@ -7,7 +7,6 @@ import (
 	"os"
 	"os/exec"
 	"strings"
-	"syscall"
 )
 
 // Predefined prefixes
@@ -114,7 +113,7 @@ func (e ExecHook) Run(
 
 	cmd, args := e[0], e[1:]
 	exec := exec.CommandContext(ctx, cmd, args...)
-	exec.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+	configureExecCommand(exec)
 	exec.Stdout = HookOutputWriter(output.Out)
 	exec.Stderr = HookOutputWriter(output.Err)
 	exec.Env = e.mergeParametersWithEnvirons(params, defaultHookEnvirons)
