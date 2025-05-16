@@ -18,9 +18,9 @@
 package network
 
 import (
+	"context"
 	"errors"
 	"net"
-	"time"
 )
 
 // Errors
@@ -47,14 +47,13 @@ type AllowedHost interface {
 // AccessControlDial creates an access controlled Dial
 func AccessControlDial(allowed AllowedHost, dial Dial) Dial {
 	return func(
+		ctx context.Context,
 		network string,
 		address string,
-		timeout time.Duration,
 	) (net.Conn, error) {
 		if !allowed.Allowed(address) {
 			return nil, ErrAccessControlDialTargetHostNotAllowed
 		}
-
-		return dial(network, address, timeout)
+		return dial(ctx, network, address)
 	}
 }

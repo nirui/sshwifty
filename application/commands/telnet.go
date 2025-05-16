@@ -55,13 +55,15 @@ const (
 )
 
 type telnetClient struct {
-	l          log.Logger
-	hooks      command.Hooks
-	w          command.StreamResponder
-	cfg        command.Configuration
-	remoteChan chan net.Conn
-	remoteConn net.Conn
-	closeWait  sync.WaitGroup
+	l             log.Logger
+	hooks         command.Hooks
+	w             command.StreamResponder
+	cfg           command.Configuration
+	baseCtx       context.Context
+	baseCtxCancel func()
+	remoteChan    chan net.Conn
+	remoteConn    net.Conn
+	closeWait     sync.WaitGroup
 }
 
 func newTelnet(
@@ -70,14 +72,17 @@ func newTelnet(
 	w command.StreamResponder,
 	cfg command.Configuration,
 ) command.FSMMachine {
+	ctx, ctxCancel := context.WithCancel(context.Background())
 	return &telnetClient{
-		l:          l,
-		hooks:      hooks,
-		w:          w,
-		cfg:        cfg,
-		remoteChan: make(chan net.Conn, 1),
-		remoteConn: nil,
-		closeWait:  sync.WaitGroup{},
+		l:             l,
+		hooks:         hooks,
+		w:             w,
+		cfg:           cfg,
+		baseCtx:       ctx,
+		baseCtxCancel: sync.OnceFunc(ctxCancel),
+		remoteChan:    make(chan net.Conn, 1),
+		remoteConn:    nil,
+		closeWait:     sync.WaitGroup{},
 	}
 }
 
@@ -115,13 +120,14 @@ func (d *telnetClient) remote(addr string) {
 	defer func() {
 		d.w.Signal(command.HeaderClose)
 		close(d.remoteChan)
+		d.baseCtxCancel()
 		d.closeWait.Done()
 	}()
 
 	buf := [4096]byte{}
 
 	err := d.hooks.Run(
-		context.Background(),
+		d.baseCtx,
 		configuration.HOOK_BEFORE_CONNECTING,
 		command.NewHookParameters(2).
 			Insert("Remote Type", "Telnet").
@@ -144,7 +150,9 @@ func (d *telnetClient) remote(addr string) {
 		return
 	}
 
-	clientConn, err := d.cfg.Dial("tcp", addr, d.cfg.DialTimeout)
+	dialCtx, dialCtxCancel := context.WithTimeout(d.baseCtx, d.cfg.DialTimeout)
+	defer dialCtxCancel()
+	clientConn, err := d.cfg.Dial(dialCtx, "tcp", addr)
 	if err != nil {
 		errLen := copy(buf[d.w.HeaderSize():], err.Error()) + d.w.HeaderSize()
 		d.w.SendManual(TelnetServerDialFailed, buf[:errLen])
@@ -227,10 +235,13 @@ func (d *telnetClient) Close() error {
 	if remoteConnErr == nil {
 		remoteConn.Close()
 	}
+
+	d.baseCtxCancel()
 	d.closeWait.Wait()
 	return nil
 }
 
 func (d *telnetClient) Release() error {
+	d.baseCtxCancel()
 	return nil
 }

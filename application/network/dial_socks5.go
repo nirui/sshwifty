@@ -27,11 +27,14 @@ import (
 
 type socks5Dial struct {
 	net.Dialer
+	ctx context.Context
 }
 
 func (s socks5Dial) Dial(
-	network, address string) (net.Conn, error) {
-	conn, dErr := s.Dialer.Dial(network, address)
+	network string,
+	address string,
+) (net.Conn, error) {
+	conn, dErr := s.Dialer.DialContext(s.ctx, network, address)
 
 	if dErr == nil {
 		conn.SetReadDeadline(time.Now().Add(s.Dialer.Timeout))
@@ -64,15 +67,13 @@ func BuildSocks5Dial(
 	}
 
 	return func(
+		ctx context.Context,
 		network string,
 		address string,
-		timeout time.Duration,
 	) (net.Conn, error) {
 		dialCfg := socks5Dial{
-			Dialer: net.Dialer{
-				Timeout:  timeout,
-				Deadline: time.Now().Add(timeout),
-			},
+			Dialer: net.Dialer{},
+			ctx:    ctx,
 		}
 
 		dial, dialErr := proxy.SOCKS5("tcp", socks5Address, auth, &dialCfg)

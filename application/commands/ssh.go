@@ -154,6 +154,8 @@ type sshClient struct {
 	l                                    log.Logger
 	hooks                                command.Hooks
 	cfg                                  command.Configuration
+	baseCtx                              context.Context
+	baseCtxCancel                        func()
 	remoteCloseWait                      sync.WaitGroup
 	remoteReadTimeoutRetry               bool
 	remoteReadForceRetryNextTimeout      bool
@@ -174,11 +176,14 @@ func newSSH(
 	w command.StreamResponder,
 	cfg command.Configuration,
 ) command.FSMMachine {
+	ctx, ctxCancel := context.WithCancel(context.Background())
 	return &sshClient{
 		w:                                    w,
 		l:                                    l,
 		hooks:                                hooks,
 		cfg:                                  cfg,
+		baseCtx:                              ctx,
+		baseCtxCancel:                        sync.OnceFunc(ctxCancel),
 		remoteCloseWait:                      sync.WaitGroup{},
 		remoteReadTimeoutRetry:               false,
 		remoteReadForceRetryNextTimeout:      false,
@@ -371,7 +376,9 @@ func (d *sshClient) dialRemote(
 	networkName,
 	addr string,
 	config *ssh.ClientConfig) (*ssh.Client, func(), error) {
-	conn, err := d.cfg.Dial(networkName, addr, config.Timeout)
+	dialCtx, dialCtxCancel := context.WithTimeout(d.baseCtx, config.Timeout)
+	defer dialCtxCancel()
+	conn, err := d.cfg.Dial(dialCtx, networkName, addr)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -423,13 +430,14 @@ func (d *sshClient) remote(
 	defer func() {
 		d.w.Signal(command.HeaderClose)
 		close(d.remoteConnReceive)
+		d.baseCtxCancel()
 		d.remoteCloseWait.Done()
 	}()
 
 	buf := [4096]byte{}
 
 	err := d.hooks.Run(
-		context.Background(),
+		d.baseCtx,
 		configuration.HOOK_BEFORE_CONNECTING,
 		command.NewHookParameters(2).
 			Insert("Remote Type", "SSH").
@@ -738,11 +746,13 @@ func (d *sshClient) Close() error {
 		remote.closer()
 	}
 
+	d.baseCtxCancel()
 	d.remoteCloseWait.Wait()
 
 	return nil
 }
 
 func (d *sshClient) Release() error {
+	d.baseCtxCancel()
 	return nil
 }
