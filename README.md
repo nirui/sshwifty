@@ -30,8 +30,8 @@ free to open an issue, so we can take a look.
 
 ### Docker Image (recommended)
 
-Deploying Sshwifty as a [Docker] container allows you to isolate Sshwifty from the
-rest of the system for better system organization and security.
+Deploying Sshwifty as a [Docker] container allows you to isolate Sshwifty from
+the rest of the system for better system organization and security.
 
 We also offer prebuilt Docker Images for few selected platforms generated in the
 same way as we generate the prebuilt Executables described above. To deploy one
@@ -77,8 +77,8 @@ The `domain.crt` and `domain.key` in the command above is the location of valid
 X509 certificate and key file.
 
 Though, in most situations where a reverse proxy and/or load balancer (for
-example, [Nginx] or [Traefik]) is used in front of Sshwifty instances, TLS should
-usually terminate on the proxy, not on the individual Sshwifty instances.
+example, [Nginx] or [Traefik]) is used in front of Sshwifty instances, TLS
+should usually terminate on the proxy, not on the individual Sshwifty instances.
 
 [Docker]: https://www.docker.com
 [Nginx]: https://github.com/nginx/nginx
@@ -170,11 +170,11 @@ Here is all the options of the configuration file:
   // Password of the Socks5 server. Please set when needed
   "Socks5Password": "",
 
-  // Server side hooks, allowing operator to launch a process on the server side
-  // to influence server behaver
+  // Server side hooks, allowing operator to launch external processes on the
+  // server side to influence server behaver
   //
   // The operation of a Hook must be completed within the time limit defined
-  // by `HookTimeout` set below. Otherwise it will be terminated, which results
+  // by `HookTimeout` set below. Otherwise it will be terminated, and results
   // a failure for the execution
   //
   // To determine how much time is still left for the execution, a Hook can
@@ -185,7 +185,8 @@ Here is all the options of the configuration file:
   // Warning: the process will be launched within the same context and system
   // permission which Sshwifty is running under, thus is it crucial that the
   // Hook process is designed and operated in a secure manner, otherwise
-  // SECURITY VULNERABILITY maybe created as result
+  // SECURITY VULNERABILITY (commandline injection, for example) maybe created
+  // as result
   //
   // Warning: all inputs passed by Sshwifty to the hook process must be
   // considered unsanitized, and must be sanitized by each hook themselves
