@@ -322,8 +322,10 @@ export function strToBinary(d) {
   return new Uint8Array(buffer.Buffer.from(d, "binary").buffer);
 }
 
+const hostnameVerifier = new RegExp("^([0-9A-Za-z_.]+)$");
+
 /**
- * Parse IPv6 address. ::ffff: notation is NOT supported
+ * Parse hostname
  *
  * @param {string} d IP address
  *
@@ -341,10 +343,24 @@ export function parseHostname(d) {
     throw new Exception("Invalid address");
   }
 
+  if (!hostnameVerifier.test(d)) {
+    throw new Exception("Invalid address");
+  }
+
   return strToUint8Array(d);
 }
 
-function parseIP(d) {
+/**
+ * Parse address
+ *
+ * @param {string} d address
+ *
+ * @returns {Uint8Array} Parsed Address
+ *
+ * @throws {Exception} When the address is invalid
+ *
+ */
+function parseAddr(d) {
   try {
     return {
       type: "IPv4",
@@ -375,7 +391,7 @@ export function splitHostPort(d, defPort) {
     ipv6hps = d.indexOf("[");
 
   if ((hps < 0 || hps != fhps) && ipv6hps < 0) {
-    let a = parseIP(d);
+    let a = parseAddr(d);
 
     return {
       type: a.type,
@@ -402,7 +418,7 @@ export function splitHostPort(d, defPort) {
   }
 
   let portNum = parseInt(port, 10),
-    a = parseIP(addr);
+    a = parseAddr(addr);
 
   return {
     type: a.type,
