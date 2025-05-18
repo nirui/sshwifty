@@ -20,6 +20,7 @@ package commands
 import (
 	"errors"
 	"net"
+	"regexp"
 	"strconv"
 
 	"github.com/nirui/sshwifty/application/rw"
@@ -44,6 +45,9 @@ var (
 
 	ErrAddressInvalidAddressType = errors.New(
 		"invalid address type")
+
+	ErrAddressInvalidHostAddress = errors.New(
+		"invalid host address")
 )
 
 // AddressType Type of the address
@@ -63,6 +67,11 @@ type Address struct {
 	kind AddressType
 	data []byte
 }
+
+// Variables for ParseAddress
+var (
+	hostNameVerifier = regexp.MustCompile("^([0-9A-Za-z_.]+)$")
+)
 
 // ParseAddress parses the reader and return an Address
 //
@@ -85,7 +94,6 @@ func ParseAddress(reader rw.ReaderFunc, buf []byte) (Address, error) {
 	}
 
 	_, rErr := rw.ReadFull(reader, buf[:3])
-
 	if rErr != nil {
 		return Address{}, rErr
 	}
@@ -102,47 +110,41 @@ func ParseAddress(reader rw.ReaderFunc, buf []byte) (Address, error) {
 	switch addrType {
 	case LoopbackAddr:
 		// Do nothing
-
 	case IPv4Addr:
 		if len(buf) < 4 {
 			return Address{}, ErrAddressParseBufferTooSmallForIPv4
 		}
 
 		_, rErr := rw.ReadFull(reader, buf[:4])
-
 		if rErr != nil {
 			return Address{}, rErr
 		}
-
 		addrData = buf[:4]
 
 	case IPv6Addr:
 		if len(buf) < 16 {
 			return Address{}, ErrAddressParseBufferTooSmallForIPv6
 		}
-
 		_, rErr := rw.ReadFull(reader, buf[:16])
-
 		if rErr != nil {
 			return Address{}, rErr
 		}
-
 		addrData = buf[:16]
 
 	case HostNameAddr:
 		addrDataLen := int(0x3f & buf[2])
-
 		if len(buf) < addrDataLen {
 			return Address{}, ErrAddressParseBufferTooSmallForHostName
 		}
 
 		_, rErr := rw.ReadFull(reader, buf[:addrDataLen])
-
 		if rErr != nil {
 			return Address{}, rErr
 		}
-
-		addrData = buf[:addrDataLen]
+		addrData = hostNameVerifier.Find(buf[:addrDataLen])
+		if len(addrData) <= 0 {
+			return Address{}, ErrAddressInvalidHostAddress
+		}
 
 	default:
 		return Address{}, ErrAddressInvalidAddressType
@@ -188,57 +190,45 @@ func (a Address) Marshal(b []byte) (int, error) {
 		if bLen < 3 {
 			return 0, ErrAddressMarshalBufferTooSmall
 		}
-
 		b[0] = byte(a.port >> 8)
 		b[1] = byte(a.port)
 		b[2] = byte(LoopbackAddr << 6)
-
 		return 3, nil
 
 	case IPv4Addr:
 		if bLen < 7 {
 			return 0, ErrAddressMarshalBufferTooSmall
 		}
-
 		b[0] = byte(a.port >> 8)
 		b[1] = byte(a.port)
 		b[2] = byte(IPv4Addr << 6)
-
 		copy(b[3:], a.data)
-
 		return 7, nil
 
 	case IPv6Addr:
 		if bLen < 19 {
 			return 0, ErrAddressMarshalBufferTooSmall
 		}
-
 		b[0] = byte(a.port >> 8)
 		b[1] = byte(a.port)
 		b[2] = byte(IPv6Addr << 6)
-
 		copy(b[3:], a.data)
 
 		return 19, nil
 
 	case HostNameAddr:
 		hLen := len(a.data)
-
 		if hLen > 0x3f {
 			panic("Host name cannot longer than 0x3f")
 		}
-
 		if bLen < hLen+3 {
 			return 0, ErrAddressMarshalBufferTooSmall
 		}
-
 		b[0] = byte(a.port >> 8)
 		b[1] = byte(a.port)
 		b[2] = byte(HostNameAddr << 6)
 		b[2] |= byte(hLen)
-
 		copy(b[3:], a.data)
-
 		return hLen + 3, nil
 
 	default:
