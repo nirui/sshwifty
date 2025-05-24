@@ -24,7 +24,10 @@ import (
 
 // Dial dial to remote machine
 type Dial func(
-	ctx context.Context, network string, address string) (net.Conn, error)
+	ctx context.Context,
+	network string,
+	address string,
+) (net.Conn, error)
 
 // TCPDial build a TCP dialer
 func TCPDial() Dial {

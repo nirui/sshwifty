@@ -35,7 +35,6 @@ type AllowedHosts map[string]struct{}
 // Allowed returns whether or not given host is allowed
 func (a AllowedHosts) Allowed(host string) bool {
 	_, ok := a[host]
-
 	return ok
 }
 
