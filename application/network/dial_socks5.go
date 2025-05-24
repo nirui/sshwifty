@@ -20,45 +20,29 @@ package network
 import (
 	"context"
 	"net"
-	"time"
 
 	"golang.org/x/net/proxy"
 )
 
 type socks5Dial struct {
-	net.Dialer
-	ctx context.Context
+	dialer net.Dialer
+	ctx    context.Context
 }
 
 func (s socks5Dial) Dial(
 	network string,
 	address string,
 ) (net.Conn, error) {
-	conn, dErr := s.Dialer.DialContext(s.ctx, network, address)
-
-	if dErr == nil {
-		conn.SetReadDeadline(time.Now().Add(s.Dialer.Timeout))
-	}
-
-	return conn, dErr
-}
-
-func (s socks5Dial) DialContext(
-	ctx context.Context, network, address string) (net.Conn, error) {
-	conn, dErr := s.Dialer.DialContext(ctx, network, address)
-
-	if dErr == nil {
-		conn.SetReadDeadline(time.Now().Add(s.Dialer.Timeout))
-	}
-
-	return conn, dErr
+	return s.dialer.DialContext(s.ctx, network, address)
 }
 
 // BuildSocks5Dial builds a Socks5 dialer
 func BuildSocks5Dial(
-	socks5Address string, userName string, password string) (Dial, error) {
+	socks5Address string,
+	userName string,
+	password string,
+) (Dial, error) {
 	var auth *proxy.Auth
-
 	if len(userName) > 0 || len(password) > 0 {
 		auth = &proxy.Auth{
 			User:     userName,
@@ -66,29 +50,21 @@ func BuildSocks5Dial(
 		}
 	}
 
-	return func(
-		ctx context.Context,
-		network string,
-		address string,
-	) (net.Conn, error) {
+	return func(ctx context.Context, n string, addr string) (net.Conn, error) {
 		dialCfg := socks5Dial{
-			Dialer: net.Dialer{},
+			dialer: net.Dialer{},
 			ctx:    ctx,
 		}
 
 		dial, dialErr := proxy.SOCKS5("tcp", socks5Address, auth, &dialCfg)
-
 		if dialErr != nil {
 			return nil, dialErr
 		}
 
-		dialConn, dialErr := dial.Dial(network, address)
-
+		dialConn, dialErr := dial.Dial(n, addr)
 		if dialErr != nil {
 			return nil, dialErr
 		}
-
-		dialConn.SetReadDeadline(emptyTime)
 
 		return dialConn, nil
 	}, nil
