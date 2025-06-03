@@ -70,7 +70,7 @@ type Address struct {
 
 // Variables for ParseAddress
 var (
-	hostNameVerifier = regexp.MustCompile("^([0-9A-Za-z_.]+)$")
+	hostNameVerifier = regexp.MustCompile("^([0-9A-Za-z_.\\-]+)$")
 )
 
 // ParseAddress parses the reader and return an Address

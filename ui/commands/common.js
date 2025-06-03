@@ -322,7 +322,7 @@ export function strToBinary(d) {
   return new Uint8Array(buffer.Buffer.from(d, "binary").buffer);
 }
 
-const hostnameVerifier = new RegExp("^([0-9A-Za-z_.]+)$");
+const hostnameVerifier = new RegExp("^([0-9A-Za-z_.\-]+)$");
 
 /**
  * Parse hostname
