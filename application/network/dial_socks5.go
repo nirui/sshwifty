@@ -36,6 +36,14 @@ func (s socks5Dial) Dial(
 	return s.dialer.DialContext(s.ctx, network, address)
 }
 
+func (s socks5Dial) DialContext(
+	ctx context.Context,
+	network string,
+	address string,
+) (net.Conn, error) {
+	return s.dialer.DialContext(ctx, network, address)
+}
+
 // BuildSocks5Dial builds a Socks5 dialer
 func BuildSocks5Dial(
 	socks5Address string,
@@ -61,7 +69,29 @@ func BuildSocks5Dial(
 			return nil, dialErr
 		}
 
-		dialConn, dialErr := dial.Dial(n, addr)
+		var dialConn net.Conn
+		if d, ok := dial.(proxy.ContextDialer); ok {
+			dialConn, dialErr = d.DialContext(ctx, n, addr)
+		} else {
+			// Wow, could you believe that? The Go team first hid
+			// golang.org/x/net/internal/socks/Dialer behind an interface
+			// golang.org/x/net/proxy/Dialer to only expose the Dial method,
+			// and then they...guess what...deprecated it ask you to use
+			// DialContext instead which they did not expose through the
+			// interface, forcing user to do a type assert
+			//
+			// And these two, Dial and DialContext, behaves differently: Dial
+			// creates new context.Background() all by itself when calling
+			// golang.org/x/net/internal/socks/Dialer.ProxyDial as well as
+			// performing SOCKS5 handshake, while DialContext uses the user
+			// specified context which is the correct one to use
+			//
+			// Wow, this is really, like, top level architecture design, AI
+			// can't never beat that at least not intentionally
+			//
+			// Maybe this is job security looked like at Google
+			dialConn, dialErr = dial.Dial(n, addr)
+		}
 		if dialErr != nil {
 			return nil, dialErr
 		}
