@@ -18,6 +18,7 @@
 package server
 
 import (
+	"bytes"
 	"context"
 	"crypto/tls"
 	"errors"
@@ -33,10 +34,14 @@ import (
 	"github.com/nirui/sshwifty/application/log"
 )
 
-type dumpWrite struct{}
+// loggerWriter writes log to given log.Logger
+type loggerWriter struct {
+	l log.Logger
+}
 
-func (d dumpWrite) Write(b []byte) (int, error) {
-	return len(b), nil
+// Write implements io.Writer
+func (d loggerWriter) Write(b []byte) (int, error) {
+	return d.l.Write(bytes.TrimSpace(b))
 }
 
 // Errors
@@ -96,7 +101,7 @@ func (s Server) Serve(
 			WriteTimeout:      ssCfg.WriteTimeout,
 			IdleTimeout:       ssCfg.ReadTimeout,
 			MaxHeaderBytes:    http.DefaultMaxHeaderBytes,
-			ErrorLog:          goLog.New(dumpWrite{}, "", 0),
+			ErrorLog:          goLog.New(loggerWriter{l: l}, "", 0),
 		},
 		shutdownWait: s.shutdownWait,
 	}
@@ -153,7 +158,8 @@ func (s *Serving) run(
 		s.shutdownWait.Done()
 		closeCallback(err)
 	}()
-	ls, err := s.buildListener(
+	var ls listener
+	ls, err = s.buildListener(
 		cfg.ListenInterface,
 		cfg.ListenPort,
 		cfg.ReadTimeout,
