@@ -22,7 +22,6 @@ package controller
 
 import (
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 
@@ -30,16 +29,15 @@ import (
 )
 
 type staticData struct {
-	data          []byte
-	dataHash      string
-	compressd     []byte
-	compressdHash string
-	created       time.Time
-	contentType   string
+	data        []byte
+	dataHash    string
+	compressed  []byte
+	created     time.Time
+	contentType string
 }
 
 func (s staticData) hasCompressed() bool {
-	return len(s.compressd) > 0
+	return len(s.compressed) > 0
 }
 
 func staticFileExt(fileName string) string {
@@ -74,21 +72,13 @@ func serveStaticCachePage(
 		return ErrNotFound
 	}
 	selectedData := d.data
-	selectedLength := len(d.data)
-	compressEnabled := false
 	if clientSupportGZIP(r) && d.hasCompressed() {
-		selectedData = d.compressd
-		selectedLength = len(d.compressd)
-		compressEnabled = true
+		selectedData = d.compressed
 		w.Header().Add("Vary", "Accept-Encoding")
+		w.Header().Add("Content-Encoding", "gzip")
 	}
 	w.Header().Add("Cache-Control", "public, max-age=5184000")
 	w.Header().Add("Content-Type", d.contentType)
-	if compressEnabled {
-		w.Header().Add("Content-Encoding", "gzip")
-	}
-	w.Header().Add("Content-Length",
-		strconv.FormatInt(int64(selectedLength), 10))
 	_, wErr := w.Write(selectedData)
 	return wErr
 }
@@ -105,20 +95,12 @@ func serveStaticPage(
 		return ErrNotFound
 	}
 	selectedData := d.data
-	selectedLength := len(d.data)
-	compressEnabled := false
 	if clientSupportGZIP(r) && d.hasCompressed() {
-		selectedData = d.compressd
-		selectedLength = len(d.compressd)
-		compressEnabled = true
+		selectedData = d.compressed
 		w.Header().Add("Vary", "Accept-Encoding")
-	}
-	w.Header().Add("Content-Type", d.contentType)
-	if compressEnabled {
 		w.Header().Add("Content-Encoding", "gzip")
 	}
-	w.Header().Add("Content-Length",
-		strconv.FormatInt(int64(selectedLength), 10))
+	w.Header().Add("Content-Type", d.contentType)
 	w.WriteHeader(code)
 	_, wErr := w.Write(selectedData)
 	return wErr

@@ -22,7 +22,6 @@ import (
 	"compress/gzip"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"mime"
 	"os"
 	"path/filepath"
@@ -81,14 +80,14 @@ func parseStaticData(
 ) staticData {
 	return staticData{
 		data: data[fileStart:fileEnd],
-		compressd: data[compressedStart:compressedEnd],
+		compressed: data[compressedStart:compressedEnd],
 		created: creation,
 		contentType: contentType,
 	}
 }
 `
 
-	staticListTemplateDev = `import "io/ioutil"
+	staticListTemplateDev = `import "os"
 import "bytes"
 import "fmt"
 import "compress/gzip"
@@ -110,31 +109,40 @@ func getMimeTypeByExtension(ext string) string {
 	}
 }
 
+func compressContent(compressed *bytes.Buffer, content []byte) {
+	compressor, compressorBuildErr := gzip.NewWriterLevel(
+		compressed, gzip.BestSpeed)
+	if compressorBuildErr != nil {
+		panic(fmt.Sprintln("Cannot build data compressor:", compressorBuildErr))
+	}
+	defer compressor.Close()
+	written := 0
+	for len(content) > written {
+		wLen, compressErr := compressor.Write(content)
+		if compressErr != nil {
+			panic(fmt.Sprintln("Cannot write compressed data:", compressErr))
+		}
+		written += wLen
+	}
+	compressErr := compressor.Flush()
+	if compressErr != nil {
+		panic(fmt.Sprintln("Cannot write compressed data:", compressErr))
+	}
+}
+
 func staticFileGen(fileName, filePath string) staticData {
-	content, readErr := ioutil.ReadFile(filePath)
+	content, readErr := os.ReadFile(filePath)
 	if readErr != nil {
 		panic(fmt.Sprintln("Cannot read file:", readErr))
 	}
 	compressed := bytes.NewBuffer(make([]byte, 0, 1024))
-	compresser, compresserBuildErr := gzip.NewWriterLevel(
-		compressed, gzip.BestSpeed)
-	if compresserBuildErr != nil {
-		panic(fmt.Sprintln("Cannot build data compresser:", compresserBuildErr))
-	}
+	compressContent(compressed, content)
 	contentLen := len(content)
-	_, compressErr := compresser.Write(content)
-	if compressErr != nil {
-		panic(fmt.Sprintln("Cannot write compressed data:", compressErr))
-	}
-	compressErr = compresser.Flush()
-	if compressErr != nil {
-		panic(fmt.Sprintln("Cannot write compressed data:", compressErr))
-	}
 	content = append(content, compressed.Bytes()...)
 	fileExtDotIdx := strings.LastIndex(fileName, ".")
 	fileExt := ""
 	if fileExtDotIdx >= 0 {
-		fileExt = fileName[fileExtDotIdx:len(fileName)]
+		fileExt = fileName[fileExtDotIdx:]
 	}
 	mimeType := getMimeTypeByExtension(fileExt)
 	if len(mimeType) <= 0 {
@@ -143,7 +151,7 @@ func staticFileGen(fileName, filePath string) staticData {
 	return staticData{
 		data: content[0:contentLen],
 		contentType: mimeType,
-		compressd: content[contentLen:],
+		compressed: content[contentLen:],
 		created: time.Now(),
 	}
 }
@@ -258,9 +266,34 @@ func getMimeTypeByExtension(ext string) string {
 	}
 }
 
+func compressContent(compressed *bytes.Buffer, content []byte) {
+	compressor, compressorBuildErr := gzip.NewWriterLevel(
+		compressed, gzip.BestCompression)
+	if compressorBuildErr != nil {
+		panic(fmt.Sprintln("Cannot build data compressor:", compressorBuildErr))
+	}
+	defer compressor.Close()
+	written := 0
+	for len(content) > written {
+		wLen, compressErr := compressor.Write(content)
+		if compressErr != nil {
+			panic(fmt.Sprintln("Cannot write compressed data:", compressErr))
+		}
+		written += wLen
+	}
+	compressErr := compressor.Flush()
+	if compressErr != nil {
+		panic(fmt.Sprintln("Cannot write compressed data:", compressErr))
+	}
+}
+
 func parseFile(
-	id int, name string, filePath string, packageName string) parsedFile {
-	content, readErr := ioutil.ReadFile(filePath)
+	id int,
+	name string,
+	filePath string,
+	packageName string,
+) parsedFile {
+	content, readErr := os.ReadFile(filePath)
 	if readErr != nil {
 		panic(fmt.Sprintln("Cannot read file:", readErr))
 	}
@@ -282,26 +315,13 @@ func parseFile(
 		// Don't compress plain text
 	} else {
 		compressed := bytes.NewBuffer(make([]byte, 0, 1024))
-		compresser, compresserBuildErr := gzip.NewWriterLevel(
-			compressed, gzip.BestCompression)
-		if compresserBuildErr != nil {
-			panic(fmt.Sprintln(
-				"Cannot build data compresser:", compresserBuildErr))
-		}
-		_, compressErr := compresser.Write(content)
-		if compressErr != nil {
-			panic(fmt.Sprintln("Cannot write compressed data:", compressErr))
-		}
-		compressErr = compresser.Flush()
-		if compressErr != nil {
-			panic(fmt.Sprintln("Cannot write compressed data:", compressErr))
-		}
+		compressContent(compressed, content)
 		content = append(content, compressed.Bytes()...)
 	}
 	goFileName := "Static" + strconv.FormatInt(int64(id), 10)
 	return parsedFile{
 		Name:            name,
-		GOVariableName:  strings.Title(goFileName),
+		GOVariableName:  strings.ToTitle(goFileName),
 		GOFileName:      strings.ToLower(goFileName) + "_generated.go",
 		GOPackage:       packageName,
 		Path:            filePath,
@@ -350,7 +370,7 @@ func main() {
 			listFilePath, listFileErr))
 	}
 	defer listFile.Close()
-	files, dirOpenErr := ioutil.ReadDir(sourcePath)
+	files, dirOpenErr := os.ReadDir(sourcePath)
 	if dirOpenErr != nil {
 		panic(fmt.Sprintf("Unable to open dir: %s", dirOpenErr))
 	}
@@ -365,7 +385,7 @@ func main() {
 		}
 		var sources []sourceFiles
 		for f := range files {
-			if !files[f].Mode().IsRegular() {
+			if !files[f].Type().IsRegular() {
 				continue
 			}
 			sources = append(sources, sourceFiles{
@@ -382,7 +402,7 @@ func main() {
 	default:
 		var parsedFiles []parsedFile
 		for f := range files {
-			if !files[f].Mode().IsRegular() {
+			if !files[f].Type().IsRegular() {
 				continue
 			}
 			currentFilePath := filepath.Join(sourcePath, files[f].Name())
