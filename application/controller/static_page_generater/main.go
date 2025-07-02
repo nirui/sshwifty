@@ -118,15 +118,11 @@ func compressContent(compressed *bytes.Buffer, content []byte) {
 	defer compressor.Close()
 	written := 0
 	for len(content) > written {
-		wLen, compressErr := compressor.Write(content)
+		wLen, compressErr := compressor.Write(content[written:])
 		if compressErr != nil {
 			panic(fmt.Sprintln("Cannot write compressed data:", compressErr))
 		}
 		written += wLen
-	}
-	compressErr := compressor.Flush()
-	if compressErr != nil {
-		panic(fmt.Sprintln("Cannot write compressed data:", compressErr))
 	}
 }
 
@@ -275,15 +271,11 @@ func compressContent(compressed *bytes.Buffer, content []byte) {
 	defer compressor.Close()
 	written := 0
 	for len(content) > written {
-		wLen, compressErr := compressor.Write(content)
+		wLen, compressErr := compressor.Write(content[written:])
 		if compressErr != nil {
 			panic(fmt.Sprintln("Cannot write compressed data:", compressErr))
 		}
 		written += wLen
-	}
-	compressErr := compressor.Flush()
-	if compressErr != nil {
-		panic(fmt.Sprintln("Cannot write compressed data:", compressErr))
 	}
 }
 
