@@ -24,7 +24,7 @@ export const IPV4 = 0x01;
 export const IPV6 = 0x02;
 export const HOSTNAME = 0x03;
 
-export const MAX_ADDR_LEN = 0x3f;
+export const MAX_ADDR_LEN = 0xff;
 
 export class Address {
   /**
@@ -123,7 +123,7 @@ export class Address {
         return new Uint8Array([
           this.addrPort >> 8,
           this.addrPort & 0xff,
-          LOOPBACK << 6,
+          LOOPBACK,
         ]);
 
       case IPV4:
@@ -134,7 +134,7 @@ export class Address {
         return new Uint8Array([
           this.addrPort >> 8,
           this.addrPort & 0xff,
-          IPV4 << 6,
+          IPV4,
           this.addrData[0],
           this.addrData[1],
           this.addrData[2],
@@ -149,7 +149,7 @@ export class Address {
         return new Uint8Array([
           this.addrPort >> 8,
           this.addrPort & 0xff,
-          IPV6 << 6,
+          IPV6,
           this.addrData[0],
           this.addrData[1],
           this.addrData[2],
@@ -174,14 +174,14 @@ export class Address {
         }
 
         {
-          let dataBuf = new Uint8Array(this.addrData.length + 3);
+          let dataBuf = new Uint8Array(this.addrData.length + 4);
 
           dataBuf[0] = (this.addrPort >> 8) & 0xff;
           dataBuf[1] = this.addrPort & 0xff;
-          dataBuf[2] = HOSTNAME << 6;
-          dataBuf[2] |= this.addrData.length;
+          dataBuf[2] = HOSTNAME;
+          dataBuf[3] = this.addrData.length & 0xff;
 
-          dataBuf.set(this.addrData, 3);
+          dataBuf.set(this.addrData, 4);
 
           return dataBuf;
         }

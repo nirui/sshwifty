@@ -103,7 +103,7 @@ func ParseAddress(reader rw.ReaderFunc, buf []byte) (Address, error) {
 	portNum <<= 8
 	portNum |= uint16(buf[1])
 
-	addrType := AddressType(buf[2] >> 6)
+	addrType := AddressType(buf[2])
 
 	var addrData []byte
 
@@ -132,12 +132,17 @@ func ParseAddress(reader rw.ReaderFunc, buf []byte) (Address, error) {
 		addrData = buf[:16]
 
 	case HostNameAddr:
-		addrDataLen := int(0x3f & buf[2])
+		addrLen := [1]byte{}
+		_, rErr := rw.ReadFull(reader, addrLen[:])
+		if rErr != nil {
+			return Address{}, rErr
+		}
+		addrDataLen := int(addrLen[0])
 		if len(buf) < addrDataLen {
 			return Address{}, ErrAddressParseBufferTooSmallForHostName
 		}
 
-		_, rErr := rw.ReadFull(reader, buf[:addrDataLen])
+		_, rErr = rw.ReadFull(reader, buf[:addrDataLen])
 		if rErr != nil {
 			return Address{}, rErr
 		}
