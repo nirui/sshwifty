@@ -379,6 +379,9 @@ body {
 
 /* Form1 */
 .form1 {
+  text-wrap: wrap;
+  word-wrap: break-word;
+  word-break: break-all;
 }
 
 .form1 > fieldset,
