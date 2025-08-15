@@ -46,7 +46,7 @@ export class Address {
     portNum <<= 8;
     portNum |= readed[1];
 
-    addrType = readed[2] >> 6;
+    addrType = readed[2];
 
     switch (addrType) {
       case LOOPBACK:
@@ -61,7 +61,8 @@ export class Address {
         break;
 
       case HOSTNAME:
-        addrData = await reader.readN(rd, 0x3f & readed[2]);
+        addrData = await reader.readN(rd, 1);
+        addrData = await reader.readN(rd, addrData[0]);
         break;
 
       default:

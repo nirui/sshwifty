@@ -61,6 +61,11 @@ const (
 	HostNameAddr AddressType = 0x03
 )
 
+// Address size limits
+const (
+	MaxHostNameLen = 255
+)
+
 // Address data
 type Address struct {
 	port uint16
@@ -197,7 +202,7 @@ func (a Address) Marshal(b []byte) (int, error) {
 		}
 		b[0] = byte(a.port >> 8)
 		b[1] = byte(a.port)
-		b[2] = byte(LoopbackAddr << 6)
+		b[2] = byte(LoopbackAddr)
 		return 3, nil
 
 	case IPv4Addr:
@@ -206,7 +211,7 @@ func (a Address) Marshal(b []byte) (int, error) {
 		}
 		b[0] = byte(a.port >> 8)
 		b[1] = byte(a.port)
-		b[2] = byte(IPv4Addr << 6)
+		b[2] = byte(IPv4Addr)
 		copy(b[3:], a.data)
 		return 7, nil
 
@@ -216,25 +221,24 @@ func (a Address) Marshal(b []byte) (int, error) {
 		}
 		b[0] = byte(a.port >> 8)
 		b[1] = byte(a.port)
-		b[2] = byte(IPv6Addr << 6)
+		b[2] = byte(IPv6Addr)
 		copy(b[3:], a.data)
-
 		return 19, nil
 
 	case HostNameAddr:
 		hLen := len(a.data)
-		if hLen > 0x3f {
+		if hLen > MaxHostNameLen {
 			panic("Host name cannot longer than 0x3f")
 		}
-		if bLen < hLen+3 {
+		if bLen < hLen+4 {
 			return 0, ErrAddressMarshalBufferTooSmall
 		}
 		b[0] = byte(a.port >> 8)
 		b[1] = byte(a.port)
-		b[2] = byte(HostNameAddr << 6)
-		b[2] |= byte(hLen)
-		copy(b[3:], a.data)
-		return hLen + 3, nil
+		b[2] = byte(HostNameAddr)
+		b[3] = byte(hLen)
+		copy(b[4:], a.data)
+		return hLen + 4, nil
 
 	default:
 		return 0, ErrAddressInvalidAddressType

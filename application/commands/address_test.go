@@ -95,7 +95,7 @@ func TestParseAddress(t *testing.T) {
 	testParseAddress(
 		t,
 		[]byte{
-			0x04, 0x1e, 0x40,
+			0x04, 0x1e, byte(IPv4Addr),
 			0x7f, 0x00, 0x00, 0x01,
 		},
 		make([]byte, 4), IPv4Addr, []byte{0x7f, 0x00, 0x00, 0x01}, 1054,
@@ -104,7 +104,7 @@ func TestParseAddress(t *testing.T) {
 	testParseAddress(
 		t,
 		[]byte{
-			0x04, 0x1e, 0x80,
+			0x04, 0x1e, byte(IPv6Addr),
 			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 			0x00, 0x7f, 0x00, 0x00, 0x01,
 		},
@@ -116,7 +116,8 @@ func TestParseAddress(t *testing.T) {
 	testParseAddress(
 		t,
 		[]byte{
-			0x04, 0x1e, 0xff,
+			0x04, 0x1e, byte(HostNameAddr), 73,
+			'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
 			'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
 			'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
 			'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
@@ -125,7 +126,8 @@ func TestParseAddress(t *testing.T) {
 			'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
 			'1', '2', '3',
 		},
-		make([]byte, 63), HostNameAddr, []byte{
+		make([]byte, 73), HostNameAddr, []byte{
+			'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
 			'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
 			'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
 			'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
@@ -134,5 +136,5 @@ func TestParseAddress(t *testing.T) {
 			'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
 			'1', '2', '3',
 		}, 1054,
-		strings.Repeat("ABCDEFGHIJ", 6)+"123:1054")
+		strings.Repeat("ABCDEFGHIJ", 7)+"123:1054")
 }

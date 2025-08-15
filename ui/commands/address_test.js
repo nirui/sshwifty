@@ -82,7 +82,7 @@ describe("Address", () => {
   it("Address HostName", async () => {
     let addr = new address.Address(
         address.HOSTNAME,
-        new Uint8Array(["v", "a", "g", "u", "l", "1", "2", "3"]),
+        new Uint8Array(['n', 'i', 'r', 'u', 'i', 'o', 'r', 'g', 1, 2, 3]),
         8080,
       ),
       buf = addr.buffer();
