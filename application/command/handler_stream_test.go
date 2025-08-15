@@ -58,12 +58,13 @@ func testDummyFetchChainGen(dd <-chan []byte) rw.FetchReaderFetcher {
 }
 
 type dummyStreamCommand struct {
-	lock      sync.Mutex
-	l         log.Logger
-	w         StreamResponder
-	downWait  sync.WaitGroup
-	echoData  []byte
-	echoTrans chan []byte
+	lock       sync.Mutex
+	l          log.Logger
+	w          StreamResponder
+	downWait   sync.WaitGroup
+	echoData   []byte
+	echoTrans  chan []byte
+	bufferPool *BufferPool
 }
 
 func newDummyStreamCommand(
@@ -71,14 +72,16 @@ func newDummyStreamCommand(
 	h Hooks,
 	w StreamResponder,
 	cfg Configuration,
+	bufferPool *BufferPool,
 ) FSMMachine {
 	return &dummyStreamCommand{
-		lock:      sync.Mutex{},
-		l:         l,
-		w:         w,
-		downWait:  sync.WaitGroup{},
-		echoData:  []byte{},
-		echoTrans: make(chan []byte),
+		lock:       sync.Mutex{},
+		l:          l,
+		w:          w,
+		downWait:   sync.WaitGroup{},
+		echoData:   []byte{},
+		echoTrans:  make(chan []byte),
+		bufferPool: bufferPool,
 	}
 }
 
@@ -181,6 +184,7 @@ func TestHandlerHandleStream(t *testing.T) {
 	wBuffer := bytes.NewBuffer(make([]byte, 0, 1024))
 
 	lock := sync.Mutex{}
+	bufferPool := NewBufferPool(4096)
 	hhd := newHandler(
 		Configuration{},
 		&cmds,
@@ -190,7 +194,8 @@ func TestHandlerHandleStream(t *testing.T) {
 		0,
 		0,
 		log.NewDitch(),
-		NewHooks(configuration.HookSettings{}))
+		NewHooks(configuration.HookSettings{}),
+		&bufferPool)
 
 	go func() {
 		stInitialHeader := streamInitialHeader{}

@@ -151,15 +151,20 @@ func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		NewError(http.StatusInternalServerError, err.Error()), w, r, h.logger)
 }
 
+const (
+	socketBufferSize = 4096
+)
+
 // Builder returns a http controller builder
 func Builder(cmds command.Commands) server.HandlerBuilder {
+	socketBuffers := command.NewBufferPool(socketBufferSize)
 	return func(
 		commonCfg configuration.Common,
 		cfg configuration.Server,
 		logger log.Logger,
 	) http.Handler {
 		hooks := command.NewHooks(commonCfg.Hooks)
-		socketCtl := newSocketCtl(commonCfg, cfg, cmds, hooks)
+		socketCtl := newSocketCtl(commonCfg, cfg, cmds, hooks, &socketBuffers)
 
 		return handler{
 			hostNameChecker: commonCfg.HostName + ":",

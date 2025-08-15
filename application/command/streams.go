@@ -345,6 +345,7 @@ func (c *stream) reinit(
 	hooks Hooks,
 	cc *Commands,
 	cfg Configuration,
+	bufferPool *BufferPool,
 	b []byte,
 ) error {
 	hd := streamInitialHeader{}
@@ -358,7 +359,7 @@ func (c *stream) reinit(
 	l = l.Context("Command (%d)", hd.command())
 
 	ccc, cccErr := cc.Run(
-		hd.command(), l, hooks, newStreamResponder(w, h), cfg)
+		hd.command(), l, hooks, newStreamResponder(w, h), cfg, bufferPool)
 
 	if cccErr != nil {
 		hd.set(0, uint16(StreamErrorCommandUndefined), false)

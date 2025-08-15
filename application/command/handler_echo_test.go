@@ -78,6 +78,7 @@ func TestHandlerHandleEcho(t *testing.T) {
 		'H', 'E', 'L', 'L', 'O', ' ', 'W', 'O', 'R', 'L', 'D', '3',
 	}
 	lock := sync.Mutex{}
+	bufferPool := NewBufferPool(4096)
 	handler := newHandler(
 		Configuration{},
 		nil,
@@ -88,6 +89,7 @@ func TestHandlerHandleEcho(t *testing.T) {
 		0,
 		log.NewDitch(),
 		NewHooks(configuration.HookSettings{}),
+		&bufferPool,
 	)
 
 	hErr := handler.Handle()

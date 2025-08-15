@@ -42,6 +42,7 @@ type Command func(
 	h Hooks,
 	w StreamResponder,
 	cfg Configuration,
+	bufferPool *BufferPool,
 ) FSMMachine
 
 // Builder builds a command
@@ -88,6 +89,7 @@ func (c Commands) Run(
 	hooks Hooks,
 	w StreamResponder,
 	cfg Configuration,
+	bufferPool *BufferPool,
 ) (FSM, error) {
 	if id > MaxCommandID {
 		return FSM{}, ErrCommandRunUndefinedCommand
@@ -99,7 +101,7 @@ func (c Commands) Run(
 		return FSM{}, ErrCommandRunUndefinedCommand
 	}
 
-	return newFSM(cc.command(l, hooks, w, cfg)), nil
+	return newFSM(cc.command(l, hooks, w, cfg, bufferPool)), nil
 }
 
 // Reconfigure lets commands reset configuration

@@ -131,6 +131,7 @@ type Handler struct {
 	sendDelay    time.Duration
 	log          log.Logger
 	hooks        Hooks
+	bufferPool   *BufferPool
 	rBuf         handlerBuf
 	streams      streams
 }
@@ -145,6 +146,7 @@ func newHandler(
 	sendDelay time.Duration,
 	l log.Logger,
 	hooks Hooks,
+	bufferPool *BufferPool,
 ) Handler {
 	return Handler{
 		cfg:      cfg,
@@ -161,6 +163,7 @@ func newHandler(
 		sendDelay:    sendDelay,
 		log:          l,
 		hooks:        hooks,
+		bufferPool:   bufferPool,
 		rBuf:         handlerBuf{},
 		streams:      newStreams(),
 	}
@@ -273,7 +276,7 @@ func (e *Handler) handleStream(h Header, d byte, l log.Logger) error {
 	return st.reinit(h, &e.receiver, streamHandlerSender{
 		handlerSender: &e.sender,
 		sendDelay:     e.sendDelay,
-	}, l, e.hooks, e.commands, e.cfg, e.rBuf[:])
+	}, l, e.hooks, e.commands, e.cfg, e.bufferPool, e.rBuf[:])
 }
 
 func (e *Handler) handleClose(h Header, d byte, l log.Logger) error {
