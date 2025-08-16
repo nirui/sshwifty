@@ -35,7 +35,7 @@ var (
 )
 
 const (
-	assetsURLPrefix    = "/sshwifty/assets/"
+	assetsURLPrefix    = "/assets/"
 	assetsURLPrefixLen = len(assetsURLPrefix)
 )
 
@@ -79,9 +79,9 @@ func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case "/":
 		err = serveController(h.homeCtl, w, r, clientLogger)
 
-	case "/sshwifty/socket":
+	case "/socket":
 		err = serveController(h.socketCtl, w, r, clientLogger)
-	case "/sshwifty/socket/verify":
+	case "/socket/verify":
 		err = serveController(h.socketVerifyCtl, w, r, clientLogger)
 
 	case "/robots.txt":
