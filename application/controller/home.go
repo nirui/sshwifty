@@ -28,6 +28,6 @@ type home struct {
 	baseController
 }
 
-func (h home) Get(w http.ResponseWriter, r *http.Request, l log.Logger) error {
+func (h home) Get(w *ResponseWriter, r *http.Request, l log.Logger) error {
 	return serveStaticPage("index.html", http.StatusOK, w, r, l)
 }

@@ -50,105 +50,99 @@ type handler struct {
 }
 
 func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	var err error
-
 	clientLogger := h.logger.Context("Client (%s)", r.RemoteAddr)
-
 	if len(h.commonCfg.HostName) > 0 {
 		hostPort := r.Host
-
 		if len(hostPort) <= 0 {
 			hostPort = r.URL.Host
 		}
-
 		if h.commonCfg.HostName != hostPort &&
 			!strings.HasPrefix(hostPort, h.hostNameChecker) {
 			clientLogger.Warning("Requested invalid host \"%s\", denied access",
 				r.Host)
-
 			serveFailure(
-				NewError(http.StatusForbidden, "Invalid host"), w, r, h.logger)
-
+				NewError(http.StatusForbidden, "Invalid host"),
+				w,
+				r,
+				h.logger,
+			)
 			return
 		}
 	}
-
-	w.Header().Add("Date", time.Now().UTC().Format(time.RFC1123))
-
+	startTime := time.Now()
+	ctlResponder := newResponseWriter(w)
+	var err error
+	defer func() {
+		if err == nil {
+			clientLogger.Info(
+				"Request completed: %q (%s)",
+				r.URL.String(),
+				time.Since(startTime),
+			)
+			return
+		}
+		clientLogger.Warning("Request ended with error: %q: %s (%s)",
+			r.URL.String(), err, time.Since(startTime))
+		if controllerErr, isControllerErr := err.(Error); isControllerErr {
+			serveFailure(controllerErr, &ctlResponder, r, h.logger)
+			return
+		}
+		serveFailure(
+			NewError(http.StatusInternalServerError, err.Error()),
+			&ctlResponder,
+			r,
+			h.logger,
+		)
+	}()
+	ctlResponder.Header().Add("Date", time.Now().UTC().Format(time.RFC1123))
 	switch r.URL.Path {
 	case "/":
-		err = serveController(h.homeCtl, w, r, clientLogger)
-
+		err = serveController(h.homeCtl, &ctlResponder, r, clientLogger)
 	case "/sshwifty/socket":
-		err = serveController(h.socketCtl, w, r, clientLogger)
+		err = serveController(h.socketCtl, &ctlResponder, r, clientLogger)
 	case "/sshwifty/socket/verify":
-		err = serveController(h.socketVerifyCtl, w, r, clientLogger)
-
+		err = serveController(h.socketVerifyCtl, &ctlResponder, r, clientLogger)
 	case "/robots.txt":
 		err = serveStaticCacheData(
 			"robots.txt",
 			staticFileExt(".txt"),
-			w,
+			&ctlResponder,
 			r,
 			clientLogger)
-
 	case "/favicon.ico":
 		err = serveStaticCacheData(
 			"favicon.ico",
 			staticFileExt(".ico"),
-			w,
+			&ctlResponder,
 			r,
 			clientLogger)
-
 	case "/manifest.json":
 		err = serveStaticCacheData(
 			"manifest.json",
 			staticFileExt(".json"),
-			w,
+			&ctlResponder,
 			r,
 			clientLogger)
-
 	case "/browserconfig.xml":
 		err = serveStaticCacheData(
 			"browserconfig.xml",
 			staticFileExt(".xml"),
-			w,
+			&ctlResponder,
 			r,
 			clientLogger)
-
 	default:
 		if strings.HasPrefix(r.URL.Path, assetsURLPrefix) &&
 			strings.ToUpper(r.Method) == "GET" {
 			err = serveStaticCacheData(
 				r.URL.Path[assetsURLPrefixLen:],
 				staticFileExt(r.URL.Path[assetsURLPrefixLen:]),
-				w,
+				&ctlResponder,
 				r,
 				clientLogger)
 		} else {
 			err = ErrNotFound
 		}
 	}
-
-	if err == nil {
-		clientLogger.Info("Request completed: %s", r.URL.String())
-
-		return
-	}
-
-	clientLogger.Warning("Request ended with error: %s: %s",
-		r.URL.String(), err)
-
-	controllerErr, isControllerErr := err.(Error)
-
-	if isControllerErr {
-		serveFailure(controllerErr, w, r, h.logger)
-
-		return
-	}
-
-	serveFailure(
-		NewError(http.StatusInternalServerError, err.Error()), w, r, h.logger)
 }
 
 const (
@@ -165,7 +159,6 @@ func Builder(cmds command.Commands) server.HandlerBuilder {
 	) http.Handler {
 		hooks := command.NewHooks(commonCfg.Hooks)
 		socketCtl := newSocketCtl(commonCfg, cfg, cmds, hooks, &socketBuffers)
-
 		return handler{
 			hostNameChecker: commonCfg.HostName + ":",
 			commonCfg:       commonCfg,

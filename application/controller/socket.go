@@ -142,10 +142,9 @@ func buildWebsocketUpgrader(cfg configuration.Server) websocket.Upgrader {
 }
 
 func (s socket) Options(
-	w http.ResponseWriter, r *http.Request, l log.Logger) error {
+	w *ResponseWriter, r *http.Request, l log.Logger) error {
 	w.Header().Add("Access-Control-Allow-Origin", "*")
 	w.Header().Add("Access-Control-Allow-Headers", "X-Key")
-
 	return nil
 }
 
@@ -153,17 +152,14 @@ func (s socket) buildWSFetcher(c *websocket.Conn) rw.FetchReaderFetcher {
 	return func() ([]byte, error) {
 		for {
 			mt, message, err := c.ReadMessage()
-
 			if err != nil {
 				return nil, err
 			}
-
 			if mt != websocket.BinaryMessage {
 				return nil, NewError(
 					http.StatusBadRequest,
 					fmt.Sprintf("Received unknown type of data: %d", message))
 			}
-
 			return message, nil
 		}
 	}
@@ -171,45 +167,38 @@ func (s socket) buildWSFetcher(c *websocket.Conn) rw.FetchReaderFetcher {
 
 func (s socket) generateNonce(nonce []byte) error {
 	_, rErr := io.ReadFull(rand.Reader, nonce[:socketGCMStandardNonceSize])
-
 	return rErr
 }
 
 func (s socket) increaseNonce(nonce []byte) {
 	for i := len(nonce); i > 0; i-- {
 		nonce[i-1]++
-
 		if nonce[i-1] <= 0 {
 			continue
 		}
-
 		break
 	}
 }
 
 func (s socket) createCipher(key []byte) (cipher.AEAD, cipher.AEAD, error) {
 	readCipher, readCipherErr := aes.NewCipher(key)
-
 	if readCipherErr != nil {
 		return nil, nil, readCipherErr
 	}
 
 	writeCipher, writeCipherErr := aes.NewCipher(key)
-
 	if writeCipherErr != nil {
 		return nil, nil, writeCipherErr
 	}
 
 	gcmRead, gcmReadErr := cipher.NewGCMWithNonceSize(
 		readCipher, socketGCMStandardNonceSize)
-
 	if gcmReadErr != nil {
 		return nil, nil, gcmReadErr
 	}
 
 	gcmWrite, gcmWriteErr := cipher.NewGCMWithNonceSize(
 		writeCipher, socketGCMStandardNonceSize)
-
 	if gcmWriteErr != nil {
 		return nil, nil, gcmWriteErr
 	}
@@ -226,26 +215,23 @@ const keyTimeTruncater = 100
 
 func (s socket) buildCipherKey(r *http.Request) [16]byte {
 	key := [16]byte{}
-
 	copy(key[:], hashCombineSocketKeys(
 		strconv.FormatInt(time.Now().Unix()/keyTimeTruncater, 10),
 		string(s.mixerKey(r))+"+"+s.commonCfg.SharedKey,
 	))
-
 	return key
 }
 
 func (s socket) Get(
-	w http.ResponseWriter, r *http.Request, l log.Logger) error {
+	w *ResponseWriter, r *http.Request, l log.Logger) error {
 	// Error will not be returned when Websocket already handled
 	// (i.e. returned the error to client). We just log the error and that's it
 	c, err := s.upgrader.Upgrade(w, r, nil)
-
 	if err != nil {
 		return NewError(http.StatusBadRequest, err.Error())
 	}
-
 	defer c.Close()
+	defer w.disable()
 
 	wsReader := rw.NewFetchReader(s.buildWSFetcher(c))
 	wsWriter := websocketWriter{Conn: c}
@@ -262,7 +248,6 @@ func (s socket) Get(
 	//
 	readNonce := [socketGCMStandardNonceSize]byte{}
 	_, nonceReadErr := io.ReadFull(&wsReader, readNonce[:])
-
 	if nonceReadErr != nil {
 		return NewError(http.StatusBadRequest, fmt.Sprintf(
 			"Unable to read initial client nonce: %s", nonceReadErr.Error()))
@@ -270,7 +255,6 @@ func (s socket) Get(
 
 	writeNonce := [socketGCMStandardNonceSize]byte{}
 	nonceReadErr = s.generateNonce(writeNonce[:])
-
 	if nonceReadErr != nil {
 		return NewError(http.StatusBadRequest, fmt.Sprintf(
 			"Unable to generate initial server nonce: %s",
@@ -278,16 +262,13 @@ func (s socket) Get(
 	}
 
 	_, nonceSendErr := wsWriter.Write(writeNonce[:])
-
 	if nonceSendErr != nil {
 		return NewError(http.StatusBadRequest, fmt.Sprintf(
 			"Unable to send server nonce to client: %s", nonceSendErr.Error()))
 	}
 
 	cipherKey := s.buildCipherKey(r)
-
 	readCipher, writeCipher, cipherCreationErr := s.createCipher(cipherKey[:])
-
 	if cipherCreationErr != nil {
 		return NewError(http.StatusInternalServerError, fmt.Sprintf(
 			"Unable to create cipher: %s", cipherCreationErr.Error()))
@@ -308,40 +289,30 @@ func (s socket) Get(
 		},
 		rw.NewFetchReader(func() ([]byte, error) {
 			defer s.increaseNonce(readNonce[:])
-
 			// Size is unencrypted
 			_, rErr := io.ReadFull(&wsReader, cipherReadBuf[:2])
-
 			if rErr != nil {
 				return nil, rErr
 			}
-
 			// Read full size
 			packageSize := uint16(cipherReadBuf[0])
 			packageSize <<= 8
 			packageSize |= uint16(cipherReadBuf[1])
-
 			if packageSize <= 0 || packageSize > cipherReadBufSize {
 				return nil, ErrSocketInvalidDataPackage
 			}
-
 			if int(packageSize) <= wsReader.Remain() {
 				rData, rErr := wsReader.Export(int(packageSize))
-
 				if rErr != nil {
 					return nil, rErr
 				}
-
 				return readCipher.Open(
 					cipherReadBuf[:0], readNonce[:], rData, nil)
 			}
-
 			_, rErr = io.ReadFull(&wsReader, cipherReadBuf[:packageSize])
-
 			if rErr != nil {
 				return nil, rErr
 			}
-
 			return readCipher.Open(
 				cipherReadBuf[:0],
 				readNonce[:],
@@ -359,34 +330,25 @@ func (s socket) Get(
 					if readLen > maxWriteLen {
 						readLen = maxWriteLen
 					}
-
 					encrypted := writeCipher.Seal(
 						cipherWriteBuf[2:2],
 						writeNonce[:],
 						b[start:start+readLen],
 						nil)
-
 					s.increaseNonce(writeNonce[:])
-
 					encryptedSize := uint16(len(encrypted))
-
 					if encryptedSize <= 0 {
 						return ErrSocketInvalidDataPackage
 					}
-
 					cipherWriteBuf[0] = byte(encryptedSize >> 8)
 					cipherWriteBuf[1] = byte(encryptedSize)
-
 					_, wErr := w.Write(cipherWriteBuf[:encryptedSize+2])
-
 					if wErr != nil {
 						return wErr
 					}
-
 					start += readLen
 					readLen = bLen - start
 				}
-
 				return nil
 			},
 		},
@@ -397,10 +359,8 @@ func (s socket) Get(
 		s.hks,
 		s.socketBufferPool,
 	)
-
 	if cmdExecErr != nil {
 		return NewError(http.StatusBadRequest, cmdExecErr.Error())
 	}
-
 	return cmdExec.Handle()
 }

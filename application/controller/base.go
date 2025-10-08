@@ -32,18 +32,18 @@ var (
 )
 
 type controller interface {
-	Get(w http.ResponseWriter, r *http.Request, l log.Logger) error
-	Head(w http.ResponseWriter, r *http.Request, l log.Logger) error
-	Post(w http.ResponseWriter, r *http.Request, l log.Logger) error
-	Put(w http.ResponseWriter, r *http.Request, l log.Logger) error
-	Delete(w http.ResponseWriter, r *http.Request, l log.Logger) error
-	Connect(w http.ResponseWriter, r *http.Request, l log.Logger) error
-	Options(w http.ResponseWriter, r *http.Request, l log.Logger) error
-	Trace(w http.ResponseWriter, r *http.Request, l log.Logger) error
-	Patch(w http.ResponseWriter, r *http.Request, l log.Logger) error
+	Get(w *ResponseWriter, r *http.Request, l log.Logger) error
+	Head(w *ResponseWriter, r *http.Request, l log.Logger) error
+	Post(w *ResponseWriter, r *http.Request, l log.Logger) error
+	Put(w *ResponseWriter, r *http.Request, l log.Logger) error
+	Delete(w *ResponseWriter, r *http.Request, l log.Logger) error
+	Connect(w *ResponseWriter, r *http.Request, l log.Logger) error
+	Options(w *ResponseWriter, r *http.Request, l log.Logger) error
+	Trace(w *ResponseWriter, r *http.Request, l log.Logger) error
+	Patch(w *ResponseWriter, r *http.Request, l log.Logger) error
 	Other(
 		method string,
-		w http.ResponseWriter,
+		w *ResponseWriter,
 		r *http.Request,
 		l log.Logger,
 	) error
@@ -52,58 +52,58 @@ type controller interface {
 type baseController struct{}
 
 func (b baseController) Get(
-	w http.ResponseWriter, r *http.Request, l log.Logger) error {
+	w *ResponseWriter, r *http.Request, l log.Logger) error {
 	return ErrControllerNotImplemented
 }
 
 func (b baseController) Head(
-	w http.ResponseWriter, r *http.Request, l log.Logger) error {
+	w *ResponseWriter, r *http.Request, l log.Logger) error {
 	return ErrControllerNotImplemented
 }
 
 func (b baseController) Post(
-	w http.ResponseWriter, r *http.Request, l log.Logger) error {
+	w *ResponseWriter, r *http.Request, l log.Logger) error {
 	return ErrControllerNotImplemented
 }
 
 func (b baseController) Put(
-	w http.ResponseWriter, r *http.Request, l log.Logger) error {
+	w *ResponseWriter, r *http.Request, l log.Logger) error {
 	return ErrControllerNotImplemented
 }
 
 func (b baseController) Delete(
-	w http.ResponseWriter, r *http.Request, l log.Logger) error {
+	w *ResponseWriter, r *http.Request, l log.Logger) error {
 	return ErrControllerNotImplemented
 }
 
 func (b baseController) Connect(
-	w http.ResponseWriter, r *http.Request, l log.Logger) error {
+	w *ResponseWriter, r *http.Request, l log.Logger) error {
 	return ErrControllerNotImplemented
 }
 
 func (b baseController) Options(
-	w http.ResponseWriter, r *http.Request, l log.Logger) error {
+	w *ResponseWriter, r *http.Request, l log.Logger) error {
 	return ErrControllerNotImplemented
 }
 
 func (b baseController) Trace(
-	w http.ResponseWriter, r *http.Request, l log.Logger) error {
+	w *ResponseWriter, r *http.Request, l log.Logger) error {
 	return ErrControllerNotImplemented
 }
 
 func (b baseController) Patch(
-	w http.ResponseWriter, r *http.Request, l log.Logger) error {
+	w *ResponseWriter, r *http.Request, l log.Logger) error {
 	return ErrControllerNotImplemented
 }
 
 func (b baseController) Other(
-	method string, w http.ResponseWriter, r *http.Request, l log.Logger) error {
+	method string, w *ResponseWriter, r *http.Request, l log.Logger) error {
 	return ErrControllerNotImplemented
 }
 
 func serveController(
 	c controller,
-	w http.ResponseWriter,
+	w *ResponseWriter,
 	r *http.Request,
 	l log.Logger,
 ) error {
