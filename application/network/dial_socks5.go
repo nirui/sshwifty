@@ -49,10 +49,10 @@ func (s socks5Dial) DialContext(
 
 // BuildSocks5Dial builds a Socks5 dialer
 func BuildSocks5Dial(
-	dial Dial,
 	socks5Address string,
 	userName string,
 	password string,
+	dial Dial,
 ) Dial {
 	var auth *proxy.Auth
 	if len(userName) > 0 || len(password) > 0 {

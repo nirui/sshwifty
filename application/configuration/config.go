@@ -62,7 +62,7 @@ func (c Configuration) Verify() error {
 func (c Configuration) Dialer() network.Dial {
 	d := network.TCPDial()
 	if len(c.Socks5) > 0 {
-		d = network.BuildSocks5Dial(d, c.Socks5, c.Socks5User, c.Socks5Password)
+		d = network.BuildSocks5Dial(c.Socks5, c.Socks5User, c.Socks5Password, d)
 	}
 	if c.OnlyAllowPresetRemotes {
 		accessList := make(network.AllowedHosts, len(c.Presets))
