@@ -82,9 +82,12 @@ class Dial {
         };
 
       if (!self.keepAliveTicker) {
-        self.keepAliveTicker = setInterval(() => {
-          xhr.options(address.keepAlive, {});
-        }, self.timeout);
+        self.keepAliveTicker = setInterval(
+          () => {
+            xhr.options(address.keepAlive, {});
+          },
+          Math.max(self.timeout / 2, 1000),
+        );
       }
 
       ws.addEventListener("open", (_event) => {
