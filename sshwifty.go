@@ -29,15 +29,15 @@ import (
 
 func main() {
 	configLoaders := make([]configuration.Loader, 0, 2)
-
 	if len(os.Getenv("SSHWIFTY_CONFIG")) > 0 {
-		configLoaders = append(configLoaders,
-			configuration.File(os.Getenv("SSHWIFTY_CONFIG")))
+		configLoaders = append(
+			configLoaders,
+			configuration.CustomFile(configuration.GetEnv("SSHWIFTY_CONFIG")),
+		)
 	} else {
-		configLoaders = append(configLoaders, configuration.File(""))
-		configLoaders = append(configLoaders, configuration.Enviro())
+		configLoaders = append(configLoaders, configuration.DefaultFile())
+		configLoaders = append(configLoaders, configuration.Environ())
 	}
-
 	e := application.
 		New(os.Stderr, log.NewDebugOrNonDebugWriter(
 			len(os.Getenv("SSHWIFTY_DEBUG")) > 0, application.Name, os.Stderr)).
@@ -46,10 +46,8 @@ func main() {
 			commands.New(),
 			controller.Builder,
 		)
-
 	if e == nil {
 		return
 	}
-
 	os.Exit(1)
 }
