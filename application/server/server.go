@@ -85,28 +85,27 @@ func New(logger log.Logger) Server {
 // Serve starts serving
 func (s Server) Serve(
 	commonCfg configuration.Common,
-	serverCfg configuration.Server,
+	cfg configuration.Server,
 	closeCallback CloseCallback,
 	handlerBuilder HandlerBuilder,
 ) *Serving {
-	ssCfg := serverCfg.WithDefault()
-	l := s.logger.Context(
-		"Server (%s:%d)", ssCfg.ListenInterface, ssCfg.ListenPort)
+	l := s.logger.Context("Server (%s:%d)", cfg.ListenInterface, cfg.ListenPort)
+	l.Debug("Settings=%+v", cfg)
 	ss := &Serving{
 		server: http.Server{
-			Handler:           handlerBuilder(commonCfg, ssCfg, l),
+			Handler:           handlerBuilder(commonCfg, cfg, l),
 			TLSConfig:         &tls.Config{MinVersion: tls.VersionTLS12},
-			ReadTimeout:       ssCfg.ReadTimeout,
-			ReadHeaderTimeout: ssCfg.InitialTimeout,
-			WriteTimeout:      ssCfg.WriteTimeout,
-			IdleTimeout:       ssCfg.ReadTimeout,
+			ReadTimeout:       cfg.ReadTimeout,
+			ReadHeaderTimeout: cfg.InitialTimeout,
+			WriteTimeout:      cfg.WriteTimeout,
+			IdleTimeout:       cfg.ReadTimeout,
 			MaxHeaderBytes:    http.DefaultMaxHeaderBytes,
 			ErrorLog:          goLog.New(loggerWriter{l: l}, "", 0),
 		},
 		shutdownWait: s.shutdownWait,
 	}
 	s.shutdownWait.Add(1)
-	go ss.run(l, ssCfg, closeCallback)
+	go ss.run(l, cfg, closeCallback)
 	return ss
 }
 
