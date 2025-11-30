@@ -31,12 +31,15 @@ type Dial func(
 
 // TCPDial build a TCP dialer
 func TCPDial() Dial {
+	dial := net.Dialer{}
 	return func(
 		ctx context.Context,
 		network string,
 		address string,
 	) (net.Conn, error) {
-		dial := net.Dialer{}
+		if ctx == nil {
+			return dial.Dial(network, address)
+		}
 		return dial.DialContext(ctx, network, address)
 	}
 }
