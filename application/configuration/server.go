@@ -80,8 +80,8 @@ func (s Server) defaultListenPort() uint16 {
 
 // Predefined variables for normalization
 const (
-	serverMinValidSecond       = 1 * time.Second
-	heartbeatTimeoutProportion = 0.7
+	serverMinValidSecond          = 1 * time.Second
+	maxHeartbeatTimeoutProportion = 0.7
 )
 
 // normalize fills current Server with valid settings. If a setting is
@@ -92,16 +92,16 @@ func (s Server) normalize() Server {
 		serverMinValidSecond,
 	)
 	readTimeout := atLeast(
-		setZeroUintToDefault(s.ReadTimeout, 60*time.Second),
+		setZeroUintToDefault(s.ReadTimeout, 120*time.Second),
 		serverMinValidSecond,
 	)
 	writeTimeout := atLeast(
 		setZeroUintToDefault(s.WriteTimeout, readTimeout),
 		serverMinValidSecond,
 	)
-	heartBeatTimeout := clampRange(
+	heartbeatTimeout := clampRange(
 		setZeroUintToDefault(s.HeartbeatTimeout, initialTimeout),
-		time.Duration(float64(readTimeout)*heartbeatTimeoutProportion),
+		time.Duration(float64(readTimeout)*maxHeartbeatTimeoutProportion),
 		serverMinValidSecond,
 	)
 	return Server{
@@ -110,7 +110,7 @@ func (s Server) normalize() Server {
 		InitialTimeout:        initialTimeout,
 		ReadTimeout:           readTimeout,
 		WriteTimeout:          writeTimeout,
-		HeartbeatTimeout:      heartBeatTimeout,
+		HeartbeatTimeout:      heartbeatTimeout,
 		ReadDelay:             atLeast(s.ReadDelay, 0),  // No less than 0
 		WriteDelay:            atLeast(s.WriteDelay, 0), // No less than 0
 		TLSCertificateFile:    s.TLSCertificateFile,
