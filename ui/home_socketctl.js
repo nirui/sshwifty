@@ -98,6 +98,9 @@ export function build(ctx) {
           inboundPre10Seconds = 0;
           outboundPre10Seconds = 0;
           trafficSamples = 0;
+        } else {
+          inboundHistory.update(0);
+          outboundHistory.update(0);
         }
 
         if (delaySamples > 0) {
@@ -105,6 +108,8 @@ export function build(ctx) {
 
           delaySamples = 0;
           delayPerInterval = 0;
+        } else {
+          delayHistory.update(0);
         }
       }
     },
