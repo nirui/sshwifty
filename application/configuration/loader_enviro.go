@@ -20,140 +20,120 @@ package configuration
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/nirui/sshwifty/application/log"
 )
 
 const (
-	enviroTypeName = "Environment Variable"
+	environTypeName = "Environment Variable"
 )
-
-func parseEnv(name string) string {
-	v := os.Getenv(name)
-	if !strings.HasPrefix(v, "SSHWIFTY_ENV_RENAMED:") {
-		return v
-	}
-	return os.Getenv(v[21:])
-}
 
 func parseJsonStringArray(s string) (r []string, err error) {
 	err = json.Unmarshal([]byte(s), &r)
 	return
 }
 
-// Enviro creates an environment variable based configuration loader
-func Enviro() Loader {
+func parseEnvUint(env string, bitSize int) (uint64, error) {
+	u, err := strconv.ParseUint(strings.TrimSpace(GetEnv(env)), 10, bitSize)
+	if err != nil {
+		return 0, fmt.Errorf(
+			"invalid integer for environment variable %q: %s",
+			env,
+			err,
+		)
+	}
+	return u, nil
+}
+
+func parseEnvUintDefault(env string, def uint64, bitSize int) uint64 {
+	if u, err := parseEnvUint(env, bitSize); err == nil {
+		return u
+	} else {
+		return def
+	}
+}
+
+// Environ creates an environment variable based configuration loader
+func Environ() Loader {
 	return func(log log.Logger) (string, Configuration, error) {
 		log.Info("Loading configuration from environment variables ...")
 
-		dialTimeout, _ := strconv.ParseUint(
-			parseEnv("SSHWIFTY_DIALTIMEOUT"), 10, 32)
-		hookExecTimeout, _ := strconv.ParseUint(
-			parseEnv("SSHWIFTY_HOOKTIMEOUT"), 10, 32)
-
-		hooks := make(map[HookType][]HookCommand)
-		if h := parseEnv("SSHWIFTY_HOOK_BEFORE_CONNECTING"); len(h) > 0 {
+		// Hooks
+		var hooks map[HookType][]HookCommand
+		if h := GetEnv("SSHWIFTY_HOOK_BEFORE_CONNECTING"); len(h) > 0 {
+			hooks = make(map[HookType][]HookCommand)
 			hookBeforeConnecting, err := parseJsonStringArray(h)
 			if err != nil {
 				return "", Configuration{}, fmt.Errorf(
-					"Unable to parse SSHWIFTY_HOOK_BEFORE_CONNECTING: %s",
+					"Unable to parse %q: %s",
+					"SSHWIFTY_HOOK_BEFORE_CONNECTING",
 					err,
 				)
 			}
 			hooks[HOOK_BEFORE_CONNECTING] = []HookCommand{hookBeforeConnecting}
 		}
-		cfg, cfgErr := fileCfgCommon{
-			HostName:       parseEnv("SSHWIFTY_HOSTNAME"),
-			SharedKey:      parseEnv("SSHWIFTY_SHAREDKEY"),
-			DialTimeout:    int(dialTimeout),
-			Socks5:         parseEnv("SSHWIFTY_SOCKS5"),
-			Socks5User:     parseEnv("SSHWIFTY_SOCKS5_USER"),
-			Socks5Password: parseEnv("SSHWIFTY_SOCKS5_PASSWORD"),
-			Hooks:          hooks,
-			HookTimeout:    int(hookExecTimeout),
-			Servers:        nil,
-			Presets:        nil,
-			OnlyAllowPresetRemotes: len(
-				parseEnv("SSHWIFTY_ONLYALLOWPRESETREMOTES")) > 0,
-		}.build()
 
-		if cfgErr != nil {
-			return enviroTypeName, Configuration{}, fmt.Errorf(
-				"failed to build the configuration: %s", cfgErr)
+		// Server
+		cfgSer := serverInput{
+			ListenInterface: GetEnv("SSHWIFTY_LISTENINTERFACE"),
+			ListenPort: uint16(
+				parseEnvUintDefault("SSHWIFTY_LISTENPORT", 0, 16),
+			),
+			InitialTimeout: castUintToInt(
+				parseEnvUintDefault("SSHWIFTY_INITIALTIMEOUT", 0, 32),
+			),
+			ReadTimeout: castUintToInt(
+				parseEnvUintDefault("SSHWIFTY_READTIMEOUT", 0, 32),
+			),
+			WriteTimeout: castUintToInt(
+				parseEnvUintDefault("SSHWIFTY_WRITETIMEOUT", 0, 32),
+			),
+			HeartbeatTimeout: castUintToInt(
+				parseEnvUintDefault("SSHWIFTY_HEARTBEATTIMEOUT", 0, 32),
+			),
+			ReadDelay: castUintToInt(
+				parseEnvUintDefault("SSHWIFTY_READDELAY", 0, 32),
+			),
+			WriteDelay: castUintToInt(
+				parseEnvUintDefault("SSHWIFTY_WRITEELAY", 0, 32),
+			),
+			TLSCertificateFile:    GetEnv("SSHWIFTY_TLSCERTIFICATEFILE"),
+			TLSCertificateKeyFile: GetEnv("SSHWIFTY_TLSCERTIFICATEKEYFILE"),
+			ServerMessage:         GetEnv("SSHWIFTY_SERVERMESSAGE"),
 		}
 
-		listenIface := parseEnv("SSHWIFTY_LISTENINTERFACE")
-
-		listenPort, _ := strconv.ParseUint(
-			parseEnv("SSHWIFTY_LISTENPORT"), 10, 16)
-
-		initialTimeout, _ := strconv.ParseUint(
-			parseEnv("SSHWIFTY_INITIALTIMEOUT"), 10, 32)
-
-		readTimeout, _ := strconv.ParseUint(
-			parseEnv("SSHWIFTY_READTIMEOUT"), 10, 32)
-
-		writeTimeout, _ := strconv.ParseUint(
-			parseEnv("SSHWIFTY_WRITETIMEOUT"), 10, 32)
-
-		heartbeatTimeout, _ := strconv.ParseUint(
-			parseEnv("SSHWIFTY_HEARTBEATTIMEOUT"), 10, 32)
-
-		readDelay, _ := strconv.ParseUint(
-			parseEnv("SSHWIFTY_READDELAY"), 10, 32)
-
-		writeDelay, _ := strconv.ParseUint(
-			parseEnv("SSHWIFTY_WRITEELAY"), 10, 32)
-
-		cfgSer := fileCfgServer{
-			ListenInterface:       listenIface,
-			ListenPort:            uint16(listenPort),
-			InitialTimeout:        int(initialTimeout),
-			ReadTimeout:           int(readTimeout),
-			WriteTimeout:          int(writeTimeout),
-			HeartbeatTimeout:      int(heartbeatTimeout),
-			ReadDelay:             int(readDelay),
-			WriteDelay:            int(writeDelay),
-			TLSCertificateFile:    parseEnv("SSHWIFTY_TLSCERTIFICATEFILE"),
-			TLSCertificateKeyFile: parseEnv("SSHWIFTY_TLSCERTIFICATEKEYFILE"),
-			ServerMessage:         parseEnv("SSHWIFTY_SERVERMESSAGE"),
-		}
-
-		presets := make(fileCfgPresets, 0, 16)
-		presetStr := strings.TrimSpace(parseEnv("SSHWIFTY_PRESETS"))
-
+		// Preset
+		var presets presetInputs
+		presetStr := strings.TrimSpace(GetEnv("SSHWIFTY_PRESETS"))
 		if len(presetStr) > 0 {
-			jErr := json.Unmarshal([]byte(presetStr), &presets)
-
-			if jErr != nil {
-				return enviroTypeName, Configuration{}, fmt.Errorf(
-					"invalid \"SSHWIFTY_PRESETS\": %s", jErr)
+			presets = make(presetInputs, 0, 16)
+			if e := json.Unmarshal([]byte(presetStr), &presets); e != nil {
+				return environTypeName, Configuration{}, fmt.Errorf(
+					"invalid \"SSHWIFTY_PRESETS\": %s", e)
 			}
 		}
 
-		concretizePresets, err := presets.concretize()
-
-		if err != nil {
-			return enviroTypeName, Configuration{}, fmt.Errorf(
-				"unable to parse Preset data: %s", err)
-		}
-
-		return enviroTypeName, Configuration{
-			HostName:               cfg.HostName,
-			SharedKey:              cfg.SharedKey,
-			DialTimeout:            time.Duration(cfg.DialTimeout) * time.Second,
-			Socks5:                 cfg.Socks5,
-			Socks5User:             cfg.Socks5User,
-			Socks5Password:         cfg.Socks5Password,
-			Hooks:                  cfg.Hooks,
-			HookTimeout:            time.Duration(cfg.HookTimeout) * time.Second,
-			Servers:                []Server{cfgSer.build()},
-			Presets:                concretizePresets,
-			OnlyAllowPresetRemotes: cfg.OnlyAllowPresetRemotes,
-		}, nil
+		cfg, err := commonInput{
+			HostName:  GetEnv("SSHWIFTY_HOSTNAME"),
+			SharedKey: GetEnv("SSHWIFTY_SHAREDKEY"),
+			DialTimeout: castUintToInt(
+				parseEnvUintDefault("SSHWIFTY_DIALTIMEOUT", 0, 32),
+			),
+			Socks5:         GetEnv("SSHWIFTY_SOCKS5"),
+			Socks5User:     GetEnv("SSHWIFTY_SOCKS5_USER"),
+			Socks5Password: GetEnv("SSHWIFTY_SOCKS5_PASSWORD"),
+			Hooks:          hooks,
+			HookTimeout: castUintToInt(
+				parseEnvUintDefault("SSHWIFTY_HOOKTIMEOUT", 0, 32),
+			),
+			Servers: serverInputs{cfgSer},
+			Presets: presets,
+			OnlyAllowPresetRemotes: len(
+				GetEnv("SSHWIFTY_ONLYALLOWPRESETREMOTES"),
+			) > 0,
+		}.concretize()
+		return environTypeName, cfg, err
 	}
 }

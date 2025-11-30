@@ -1,3 +1,5 @@
+package configuration
+
 // Sshwifty - A Web SSH client
 //
 // Copyright (C) 2019-2025 Ni Rui <ranqus@gmail.com>
@@ -15,21 +17,22 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-package configuration
+import "fmt"
 
-import (
-	"time"
+// Meta contains data of a Key -> Value map which can be use to store
+// dynamically structured configuration options
+type Meta map[string]String
 
-	"github.com/nirui/sshwifty/application/network"
-)
-
-// Common settings shared by multiple servers
-type Common struct {
-	HostName               string
-	SharedKey              string
-	Dialer                 network.Dial
-	DialTimeout            time.Duration
-	Presets                []Preset
-	Hooks                  HookSettings
-	OnlyAllowPresetRemotes bool
+// Concretize returns an concretized Meta as a `map[string]string`
+func (m Meta) Concretize() (mm map[string]string, err error) {
+	mm = make(map[string]string, len(m))
+	for k, v := range m {
+		var result string
+		if result, err = v.Parse(); err != nil {
+			err = fmt.Errorf("unable to parse Meta \"%s\": %s", k, err)
+			return
+		}
+		mm[k] = result
+	}
+	return
 }

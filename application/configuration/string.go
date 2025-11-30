@@ -19,11 +19,26 @@ package configuration
 
 import (
 	"fmt"
-	"io/ioutil"
+
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
 )
+
+const (
+	environRenamePrefix    = "SSHWIFTY_ENV_RENAMED:"
+	environRenamePrefixLen = len(environRenamePrefix)
+)
+
+// GetEnv returns the environment variable by given `name`
+func GetEnv(name string) string {
+	if v := os.Getenv(name); !strings.HasPrefix(v, environRenamePrefix) {
+		return v
+	} else {
+		return os.Getenv(v[environRenamePrefixLen:])
+	}
+}
 
 // String represents a config string
 type String string
@@ -31,47 +46,31 @@ type String string
 // Parse parses current string and return the parsed result
 func (s String) Parse() (string, error) {
 	ss := string(s)
-
 	sSchemeLeadIdx := strings.Index(ss, "://")
-
 	if sSchemeLeadIdx < 0 {
 		return ss, nil
 	}
-
 	sSchemeLeadEnd := sSchemeLeadIdx + 3
-
 	switch strings.ToLower(ss[:sSchemeLeadIdx]) {
 	case "file":
 		fPath, e := filepath.Abs(ss[sSchemeLeadEnd:])
-
 		if e != nil {
 			return ss, e
 		}
-
 		f, e := os.Open(fPath)
-
 		if e != nil {
 			return "", fmt.Errorf("unable to open %s: %s", fPath, e)
 		}
-
 		defer f.Close()
-
-		fData, e := ioutil.ReadAll(f)
-
+		fData, e := io.ReadAll(f)
 		if e != nil {
 			return "", fmt.Errorf("unable to read from %s: %s", fPath, e)
 		}
-
 		return string(fData), nil
-
-	case "enviroment": // You see what I did there. Remove this a later
-		fallthrough
 	case "environment":
-		return os.Getenv(ss[sSchemeLeadEnd:]), nil
-
+		return GetEnv(ss[sSchemeLeadEnd:]), nil
 	case "literal":
 		return ss[sSchemeLeadEnd:], nil
-
 	default:
 		return "", fmt.Errorf(
 			"scheme \"%s\" was unsupported", ss[:sSchemeLeadIdx])

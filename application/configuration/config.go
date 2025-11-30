@@ -20,195 +20,10 @@ package configuration
 import (
 	"errors"
 	"fmt"
-	"net"
 	"time"
 
 	"github.com/nirui/sshwifty/application/network"
 )
-
-// Server contains configuration of a HTTP server
-type Server struct {
-	ListenInterface       string
-	ListenPort            uint16
-	InitialTimeout        time.Duration
-	ReadTimeout           time.Duration
-	WriteTimeout          time.Duration
-	HeartbeatTimeout      time.Duration
-	ReadDelay             time.Duration
-	WriteDelay            time.Duration
-	TLSCertificateFile    string
-	TLSCertificateKeyFile string
-	ServerMessage         string
-}
-
-func (s Server) defaultListenInterface() string {
-	if len(s.ListenInterface) > 0 {
-		return s.ListenInterface
-	}
-
-	return net.IPv4(127, 0, 0, 1).String()
-}
-
-func (s Server) defaultListenPort() uint16 {
-	if s.ListenPort > 0 {
-		return s.ListenPort
-	}
-
-	return 80
-}
-
-func (s Server) maxDur(cur, def time.Duration) time.Duration {
-	if cur > def {
-		return cur
-	}
-
-	return def
-}
-
-func (s Server) minDur(cur, def time.Duration) time.Duration {
-	if cur < def {
-		return cur
-	}
-
-	return def
-}
-
-// WithDefault build the configuration and fill the blank with default values
-func (s Server) WithDefault() Server {
-	initialTimeout := s.maxDur(s.InitialTimeout, 1*time.Second)
-
-	readTimeout := s.maxDur(initialTimeout, 3*time.Second)
-	readTimeout = s.maxDur(s.ReadTimeout, readTimeout)
-
-	maxHeartBeatTimeout := time.Duration(float64(readTimeout) * 0.8)
-	heartBeatTimeout := s.minDur(s.HeartbeatTimeout, maxHeartBeatTimeout)
-
-	if heartBeatTimeout <= 0 {
-		heartBeatTimeout = maxHeartBeatTimeout
-	}
-
-	return Server{
-		ListenInterface:       s.defaultListenInterface(),
-		ListenPort:            s.defaultListenPort(),
-		InitialTimeout:        initialTimeout,
-		ReadTimeout:           readTimeout,
-		WriteTimeout:          s.maxDur(s.WriteTimeout, 3*time.Second),
-		HeartbeatTimeout:      heartBeatTimeout,
-		ReadDelay:             s.ReadDelay,
-		WriteDelay:            s.WriteDelay,
-		TLSCertificateFile:    s.TLSCertificateFile,
-		TLSCertificateKeyFile: s.TLSCertificateKeyFile,
-		ServerMessage:         s.ServerMessage,
-	}
-}
-
-// IsTLS returns whether or not TLS should be used
-func (s Server) IsTLS() bool {
-	return len(s.TLSCertificateFile) > 0 && len(s.TLSCertificateKeyFile) > 0
-}
-
-// Verify verifies current configuration
-func (s Server) Verify() error {
-	if net.ParseIP(s.ListenInterface) == nil {
-		return fmt.Errorf("invalid IP address \"%s\"", s.ListenInterface)
-	}
-
-	if (len(s.TLSCertificateFile) > 0 && len(s.TLSCertificateKeyFile) <= 0) ||
-		(len(s.TLSCertificateFile) <= 0 && len(s.TLSCertificateKeyFile) > 0) {
-		return errors.New("TLSCertificateFile and TLSCertificateKeyFile must " +
-			"both be specified in order to enable TLS")
-	}
-
-	return nil
-}
-
-// Meta contains data of a Key -> Value map which can be use to store
-// dynamically structured configuration options
-type Meta map[string]String
-
-// Concretize returns an concretized Meta as a `map[string]string`
-func (m Meta) Concretize() (map[string]string, error) {
-	mm := make(map[string]string, len(m))
-
-	for k, v := range m {
-		result, err := v.Parse()
-
-		if err != nil {
-			return nil, fmt.Errorf("unable to parse Meta \"%s\": %s", k, err)
-		}
-
-		mm[k] = result
-	}
-
-	return mm, nil
-}
-
-// HookType is a type of Hook
-type HookType string
-
-// Defined Hook Types
-const (
-	HOOK_BEFORE_CONNECTING HookType = "before_connecting"
-)
-
-// verifyHookName returns the HookType of given `name`
-func (h HookType) verify() error {
-	switch h {
-	case "before_connecting":
-		return nil
-	default:
-		return fmt.Errorf(
-			"unsupported Hook type: %q. Supported types are: %q",
-			h,
-			[]HookType{
-				HOOK_BEFORE_CONNECTING,
-			},
-		)
-	}
-}
-
-// HookCommand contains a single Hook command
-type HookCommand []string
-
-// Hooks contains registered Hooks
-type Hooks map[HookType][]HookCommand
-
-// verify verifies all settings in current Hooks
-func (h Hooks) verify() error {
-	for k, v := range h {
-		if err := k.verify(); err != nil {
-			return err
-		}
-		if len(v) <= 0 {
-			continue
-		}
-		for i := range v {
-			if len(v[i]) <= 0 {
-				return fmt.Errorf(
-					"the command %d for Hook type %q must not be empty",
-					i,
-					k,
-				)
-			}
-		}
-	}
-	return nil
-}
-
-// HookSettings contains Hook settings
-type HookSettings struct {
-	Timeout time.Duration
-	Hooks   Hooks
-}
-
-// Preset contains data of a static remote host
-type Preset struct {
-	Title    string
-	Type     string
-	Host     string
-	TabColor string
-	Meta     map[string]string
-}
 
 // Configuration contains configuration of the application
 type Configuration struct {
@@ -230,71 +45,36 @@ func (c Configuration) Verify() error {
 	if err := c.Hooks.verify(); err != nil {
 		return fmt.Errorf("invalid Hook settings: %s", err)
 	}
-
 	if len(c.Servers) <= 0 {
 		return errors.New("must specify at least one server")
 	}
-
 	for i, c := range c.Servers {
-		vErr := c.Verify()
-
-		if vErr == nil {
+		if vErr := c.verify(); vErr == nil {
 			continue
+		} else {
+			return fmt.Errorf("invalid setting for server %d: %s", i, vErr)
 		}
-
-		return fmt.Errorf("invalid setting for server %d: %s", i, vErr)
 	}
-
 	return nil
 }
 
 // Dialer builds a Dialer
 func (c Configuration) Dialer() network.Dial {
-	dialTimeout := c.DialTimeout
-
-	if dialTimeout < 3 {
-		dialTimeout = 3
-	}
-
-	dialer := network.TCPDial()
-
+	d := network.TCPDial()
 	if len(c.Socks5) > 0 {
-		sDial, sDialErr := network.BuildSocks5Dial(
-			c.Socks5, c.Socks5User, c.Socks5Password)
-
-		if sDialErr != nil {
-			panic("Unable to build Socks5 Dialer: " + sDialErr.Error())
-		}
-
-		dialer = sDial
+		d = network.BuildSocks5Dial(d, c.Socks5, c.Socks5User, c.Socks5Password)
 	}
-
 	if c.OnlyAllowPresetRemotes {
 		accessList := make(network.AllowedHosts, len(c.Presets))
-
 		for _, k := range c.Presets {
 			if len(k.Host) <= 0 {
 				continue
 			}
-
 			accessList[k.Host] = struct{}{}
 		}
-
-		dialer = network.AccessControlDial(accessList, dialer)
+		d = network.AccessControlDial(accessList, d)
 	}
-
-	return dialer
-}
-
-// Common settings shared by mulitple servers
-type Common struct {
-	HostName               string
-	SharedKey              string
-	Dialer                 network.Dial
-	DialTimeout            time.Duration
-	Presets                []Preset
-	Hooks                  HookSettings
-	OnlyAllowPresetRemotes bool
+	return d
 }
 
 // hookSettings returns Hooks settings
@@ -320,9 +100,5 @@ func (c Configuration) Common() Common {
 
 // DecideDialTimeout will return a reasonable timeout for dialing
 func (c Common) DecideDialTimeout(max time.Duration) time.Duration {
-	if c.DialTimeout > max {
-		return max
-	}
-
-	return c.DialTimeout
+	return clampRange(c.DialTimeout, max, 0)
 }

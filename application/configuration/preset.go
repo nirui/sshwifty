@@ -1,3 +1,5 @@
+package configuration
+
 // Sshwifty - A Web SSH client
 //
 // Copyright (C) 2019-2025 Ni Rui <ranqus@gmail.com>
@@ -15,21 +17,11 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-package configuration
-
-import (
-	"time"
-
-	"github.com/nirui/sshwifty/application/network"
-)
-
-// Common settings shared by multiple servers
-type Common struct {
-	HostName               string
-	SharedKey              string
-	Dialer                 network.Dial
-	DialTimeout            time.Duration
-	Presets                []Preset
-	Hooks                  HookSettings
-	OnlyAllowPresetRemotes bool
+// Preset contains data of a static remote host
+type Preset struct {
+	Title    string
+	Type     string
+	Host     string
+	TabColor string
+	Meta     map[string]string
 }
