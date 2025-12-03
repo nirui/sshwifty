@@ -247,22 +247,22 @@ Here is all the options of the configuration file:
       // Timeout of initial request. HTTP handshake must be finished within
       // this time
       // (In Seconds)
-      "InitialTimeout": 3,
+      "InitialTimeout": 10,
 
       // How long do the connection can stay in idle before the backend server
       // disconnects the client
       // (In Seconds)
-      "ReadTimeout": 60,
+      "ReadTimeout": 120,
 
       // How long the server will wait until the client connection is ready to
       // recieve new data. If this timeout is exceed, the connection will be
       // closed.
       // (In Seconds)
-      "WriteTimeout": 60,
+      "WriteTimeout": 120,
 
       // The interval between internal echo requests
       // (In Seconds)
-      "HeartbeatTimeout": 20,
+      "HeartbeatTimeout": 10,
 
       // Forced delay between each request
       // (In Milliseconds)
