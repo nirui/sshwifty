@@ -23,6 +23,7 @@ import (
 	goLog "log"
 	"os"
 	"os/signal"
+	"runtime"
 	"sync"
 	"syscall"
 
@@ -164,29 +165,27 @@ func (a Application) Run(
 	handlerBuilder server.HandlerBuilderBuilder,
 ) error {
 	fmt.Fprintf(a.screen, banner, FullName, version, Author, URL)
-
 	goLog.SetOutput(a.logger)
 	defer goLog.SetOutput(os.Stderr)
-
 	a.logger.Info("Initializing")
 	defer a.logger.Info("Closed")
-
+	a.logger.Debug(
+		"Runtime: %s. GOOS=%s, GOARCH=%s",
+		runtime.Version(),
+		runtime.GOOS,
+		runtime.GOARCH,
+	)
 	for {
 		restart, runErr := a.run(
 			cLoader, closeSigBuilder, commands, handlerBuilder)
-
 		if runErr != nil {
 			a.logger.Error("Unable to start due to error: %s", runErr)
-
 			return runErr
 		}
-
 		if restart {
 			a.logger.Info("Restarting")
-
 			continue
 		}
-
 		return nil
 	}
 }
