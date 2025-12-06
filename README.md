@@ -431,6 +431,22 @@ SSHWIFTY_ONLYALLOWPRESETREMOTES
 
 These options are correspond to their counterparts in the configuration file.
 
+`SSHWIFTY_PRESETS` is a bit special because it should contain valid JSON
+encoded Preset data. An sample of it's format is demonstrated in the
+[`preset.example.json`] file and can be loaded via `cat` command. For example:
+
+    SSHWIFTY_PRESETS=$(cat preset.example.json) ./sshwifty
+
+Of course, you can also directly setup `SSHWIFTY_PRESETS` with a string. But in
+such case, you might need to escape the JSON characters. To do that, one option
+is to use `jq`:
+
+    cat preset.example.json | jq -c | jq -Rs
+
+Which should give you one line of escaped JSON string, safe for use in scripts.
+
+[`preset.example.json`]: preset.example.json
+
 Notice: When you're using environment variables to configure Sshwifty, only one
 Sshwifty HTTP server is then allowed. There is no way to setup multiple servers
 under this method of configuration. If you need to serve on multiple ports, use
