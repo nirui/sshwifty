@@ -29,18 +29,18 @@ import (
 
 func main() {
 	configLoaders := make([]configuration.Loader, 0, 2)
-	if len(os.Getenv("SSHWIFTY_CONFIG")) > 0 {
-		configLoaders = append(
-			configLoaders,
-			configuration.CustomFile(configuration.GetEnv("SSHWIFTY_CONFIG")),
-		)
+	if cfgFile := configuration.GetEnv("SSHWIFTY_CONFIG"); len(cfgFile) > 0 {
+		configLoaders = append(configLoaders, configuration.CustomFile(cfgFile))
 	} else {
 		configLoaders = append(configLoaders, configuration.DefaultFile())
 		configLoaders = append(configLoaders, configuration.Environ())
 	}
 	e := application.
 		New(os.Stderr, log.NewDebugOrNonDebugWriter(
-			len(os.Getenv("SSHWIFTY_DEBUG")) > 0, application.Name, os.Stderr)).
+			len(configuration.GetEnv("SSHWIFTY_DEBUG")) > 0,
+			application.Name,
+			os.Stderr,
+		)).
 		Run(configuration.Redundant(configLoaders...),
 			application.DefaultProccessSignallerBuilder,
 			commands.New(),
