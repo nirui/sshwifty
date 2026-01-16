@@ -202,15 +202,6 @@
   z-index: 0;
 }
 
-#home-content 
-  > .screen
-  > .screen-screen
-  > .screen-console
-  > .console-console
-  > .terminal {
-  padding: 10px;
-}
-
 #home-content
   > .screen
   > .screen-screen
