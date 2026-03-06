@@ -26,7 +26,12 @@ func NewDitch() Ditch {
 }
 
 // Context build a new Sub context
-func (w Ditch) Context(name string, params ...interface{}) Logger {
+func (w Ditch) Context(name string) Logger {
+	return w
+}
+
+// TitledContext build a new Sub context with specified formatted title
+func (w Ditch) TitledContext(name string, params ...any) Logger {
 	return w
 }
 
@@ -36,13 +41,13 @@ func (w Ditch) Write(b []byte) (int, error) {
 }
 
 // Info write an info message
-func (w Ditch) Info(msg string, params ...interface{}) {}
+func (w Ditch) Info(msg string, params ...any) {}
 
 // Debug write an debug message
-func (w Ditch) Debug(msg string, params ...interface{}) {}
+func (w Ditch) Debug(msg string, params ...any) {}
 
 // Warning write an warning message
-func (w Ditch) Warning(msg string, params ...interface{}) {}
+func (w Ditch) Warning(msg string, params ...any) {}
 
 // Error write an error message
-func (w Ditch) Error(msg string, params ...interface{}) {}
+func (w Ditch) Error(msg string, params ...any) {}

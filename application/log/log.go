@@ -19,10 +19,11 @@ package log
 
 // Logger represents a logger
 type Logger interface {
-	Context(name string, params ...interface{}) Logger
+	Context(name string) Logger
+	TitledContext(name string, params ...any) Logger
 	Write(b []byte) (int, error)
-	Info(msg string, params ...interface{})
-	Debug(msg string, params ...interface{})
-	Warning(msg string, params ...interface{})
-	Error(msg string, params ...interface{})
+	Info(msg string, params ...any)
+	Debug(msg string, params ...any)
+	Warning(msg string, params ...any)
+	Error(msg string, params ...any)
 }

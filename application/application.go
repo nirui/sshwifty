@@ -36,8 +36,8 @@ import (
 // ProccessSignaller send signal to the running application
 type ProccessSignaller chan os.Signal
 
-// ProccessSignallerBuilder builds a ProccessSignaler
-type ProccessSignallerBuilder func() chan os.Signal
+// ProcessSignallerBuilder builds a ProccessSignaler
+type ProcessSignallerBuilder func() chan os.Signal
 
 // DefaultProccessSignallerBuilder the default ProccessSignallerBuilder
 func DefaultProccessSignallerBuilder() chan os.Signal {
@@ -67,13 +67,13 @@ func New(screen io.Writer, logger log.Logger) Application {
 // running
 func (a Application) run(
 	cLoader configuration.Loader,
-	closeSigBuilder ProccessSignallerBuilder,
+	closeSigBuilder ProcessSignallerBuilder,
 	commands command.Commands,
 	handlerBuilder server.HandlerBuilderBuilder,
 ) (bool, error) {
 	var err error
 
-	loaderName, c, cErr := cLoader(a.logger.Context("Configuration"))
+	loaderName, c, cErr := cLoader(a.logger.TitledContext("Configuration"))
 
 	if cErr != nil {
 		a.logger.Error("\"%s\" loader cannot load configuration: %s",
@@ -160,7 +160,7 @@ func (a Application) run(
 // running
 func (a Application) Run(
 	cLoader configuration.Loader,
-	closeSigBuilder ProccessSignallerBuilder,
+	closeSigBuilder ProcessSignallerBuilder,
 	commands command.Commands,
 	handlerBuilder server.HandlerBuilderBuilder,
 ) error {

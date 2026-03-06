@@ -356,7 +356,7 @@ func (c *stream) reinit(
 		return rErr
 	}
 
-	l = l.Context("Command (%d)", hd.command())
+	l = l.TitledContext("Command (%d)", hd.command())
 
 	ccc, cccErr := cc.Run(
 		hd.command(), l, hooks, newStreamResponder(w, h), cfg, bufferPool)

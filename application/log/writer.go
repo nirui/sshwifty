@@ -38,7 +38,12 @@ func NewWriter(context string, w io.Writer) Writer {
 }
 
 // Context build a new Sub context
-func (w Writer) Context(name string, params ...interface{}) Logger {
+func (w Writer) Context(name string) Logger {
+	return NewWriter(w.c+" > "+name, w.w)
+}
+
+// TitledContext build a new Sub context
+func (w Writer) TitledContext(name string, params ...any) Logger {
 	return NewWriter(w.c+" > "+fmt.Sprintf(name, params...), w.w)
 }
 
@@ -54,27 +59,27 @@ func (w Writer) Write(b []byte) (int, error) {
 }
 
 func (w Writer) write(
-	prefix string, msg string, params ...interface{}) (int, error) {
+	prefix string, msg string, params ...any) (int, error) {
 	return fmt.Fprintf(w.w, "["+prefix+"] "+
 		time.Now().Format(time.RFC1123)+" "+w.c+": "+msg+"\r\n", params...)
 }
 
 // Info write an info message
-func (w Writer) Info(msg string, params ...interface{}) {
+func (w Writer) Info(msg string, params ...any) {
 	w.write("INF", msg, params...)
 }
 
 // Debug write an debug message
-func (w Writer) Debug(msg string, params ...interface{}) {
+func (w Writer) Debug(msg string, params ...any) {
 	w.write("DBG", msg, params...)
 }
 
 // Warning write an warning message
-func (w Writer) Warning(msg string, params ...interface{}) {
+func (w Writer) Warning(msg string, params ...any) {
 	w.write("WRN", msg, params...)
 }
 
 // Error write an error message
-func (w Writer) Error(msg string, params ...interface{}) {
+func (w Writer) Error(msg string, params ...any) {
 	w.write("ERR", msg, params...)
 }

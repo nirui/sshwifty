@@ -279,7 +279,7 @@ func (e *Handler) handleStream(h Header, d byte, l log.Logger) error {
 	}, l, e.hooks, e.commands, e.cfg, e.bufferPool, e.rBuf[:])
 }
 
-func (e *Handler) handleClose(h Header, d byte, l log.Logger) error {
+func (e *Handler) handleClose(h Header, d byte, _ log.Logger) error {
 	st, stErr := e.streams.get(d)
 
 	if stErr != nil {
@@ -343,7 +343,7 @@ func (e *Handler) Handle() error {
 		}
 
 		h := Header(d[0])
-		l := e.log.Context("Request (%d)", requests).Context(h.String())
+		l := e.log.TitledContext("Request (%d)", requests).Context(h.String())
 
 		l.Debug("Received")
 

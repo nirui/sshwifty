@@ -45,10 +45,13 @@ func NewDebugOrNonDebugWriter(
 	return NewNonDebugWriter(context, w)
 }
 
-// Context build a new Sub context
-func (w NonDebugWriter) Context(name string, params ...interface{}) Logger {
+// TitledContext build a new Sub context with specified formatted title
+func (w NonDebugWriter) TitledContext(
+	name string,
+	params ...any,
+) Logger {
 	return NewNonDebugWriter(w.c+" > "+fmt.Sprintf(name, params...), w.w)
 }
 
-// Debug ditchs debug operation
-func (w NonDebugWriter) Debug(msg string, params ...interface{}) {}
+// Debug write an debug message
+func (w NonDebugWriter) Debug(msg string, params ...any) {}

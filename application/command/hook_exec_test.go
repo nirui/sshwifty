@@ -64,7 +64,11 @@ func newDummyLogger(context string, w io.Writer) dummyLogger {
 	}
 }
 
-func (w dummyLogger) Context(name string, params ...interface{}) log.Logger {
+func (w dummyLogger) Context(name string) log.Logger {
+	return newDummyLogger(w.c+" > "+name, w.w)
+}
+
+func (w dummyLogger) TitledContext(name string, params ...any) log.Logger {
 	return newDummyLogger(w.c+" > "+fmt.Sprintf(name, params...), w.w)
 }
 

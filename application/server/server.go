@@ -89,7 +89,11 @@ func (s Server) Serve(
 	closeCallback CloseCallback,
 	handlerBuilder HandlerBuilder,
 ) *Serving {
-	l := s.logger.Context("Server (%s:%d)", cfg.ListenInterface, cfg.ListenPort)
+	l := s.logger.TitledContext(
+		"Server (%s:%d)",
+		cfg.ListenInterface,
+		cfg.ListenPort,
+	)
 	l.Debug("Settings=%+v", cfg)
 	ss := &Serving{
 		server: http.Server{

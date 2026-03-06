@@ -50,7 +50,7 @@ type handler struct {
 }
 
 func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	clientLogger := h.logger.Context("Client (%s)", r.RemoteAddr)
+	clientLogger := h.logger.TitledContext("Client (%s)", r.RemoteAddr)
 	if len(h.commonCfg.HostName) > 0 {
 		hostPort := r.Host
 		if len(hostPort) <= 0 {
