@@ -23,15 +23,12 @@ export default [...compat.extends(
             ...globals.node,
             $nuxt: true,
         },
-
         ecmaVersion: 13,
         sourceType: "module",
-
         parserOptions: {
             parser: "@babel/eslint-parser",
         },
     },
-
     rules: {
         "vue/component-name-in-template-casing": ["error", "PascalCase"],
         "vue/multi-word-component-names": "off",

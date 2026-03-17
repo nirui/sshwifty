@@ -41,21 +41,15 @@ let appSpawnProc = null,
 const killSpawnProc = (proc, then) => {
   if (proc === null) {
     then();
-
     return;
   }
-
   process.stdout.write("Shutdown application ...\n");
-
   process.kill(-proc.proc.pid, "SIGINT");
-
   let forceKill = setTimeout(() => {
     process.kill(-proc.proc.pid);
   }, 3000);
-
   proc.waiter.then(() => {
     clearTimeout(forceKill);
-
     then();
   });
 };
@@ -63,51 +57,38 @@ const killSpawnProc = (proc, then) => {
 const startAppSpawnProc = (onExit) => {
   killSpawnProc(appSpawnProc, () => {
     let mEnv = {};
-
     for (let i in process.env) {
       mEnv[i] = process.env[i];
     }
-
     mEnv["SSHWIFTY_CONFIG"] = path.join(
       __dirname,
       "sshwifty.conf.example.json"
     );
-
     mEnv["SSHWIFTY_DEBUG"] = "_";
-
     process.stdout.write("Starting application ...\n");
-
     let proc = spawn("go", ["run", "sshwifty.go"], {
         env: mEnv,
         detached: true,
       }),
       waiter = new Promise((resolve) => {
         let closed = false;
-
         proc.stdout.on("data", (msg) => {
           process.stdout.write(msg.toString());
         });
-
         proc.stderr.on("data", (msg) => {
           process.stderr.write(msg.toString());
         });
-
         proc.on("exit", (n) => {
           process.stdout.write("Application process is exited.\n");
-
           if (closed) {
             return;
           }
-
           closed = true;
-
           appSpawnProc = null;
           resolve(n);
-
           onExit();
         });
       });
-
     appSpawnProc = {
       proc,
       waiter,
@@ -118,46 +99,34 @@ const startAppSpawnProc = (onExit) => {
 const startBuildSpawnProc = (onExit) => {
   killSpawnProc(appBuildProc, () => {
     let mEnv = {};
-
     for (let i in process.env) {
       mEnv[i] = process.env[i];
     }
-
     mEnv["NODE_ENV"] = process.env.NODE_ENV;
-
     process.stdout.write("Generating source code ...\n");
-
     let proc = spawn("go", ["generate", "./..."], {
         env: mEnv,
         detached: true,
       }),
       waiter = new Promise((resolve) => {
         let closed = false;
-
         proc.stdout.on("data", (msg) => {
           process.stdout.write(msg.toString());
         });
-
         proc.stderr.on("data", (msg) => {
           process.stderr.write(msg.toString());
         });
-
         proc.on("exit", (n) => {
           process.stdout.write("Code generation process is exited.\n");
-
           if (closed) {
             return;
           }
-
           closed = true;
-
           appBuildProc = null;
           resolve(n);
-
           onExit();
         });
       });
-
     appBuildProc = {
       proc,
       waiter,
@@ -172,19 +141,17 @@ const killAllProc = () => {
         process.exit(0);
       });
     });
-
     return;
   }
-
   killSpawnProc(appSpawnProc, () => {
     process.exit(0);
   });
 };
 
-process.on("SIGTERM", killAllProc);
-process.on("SIGINT", killAllProc);
+process.on("exit", killAllProc);
 
 export default {
+  target: "web",
   entry: {
     app: path.join(__dirname, "ui", "app.js"),
   },
@@ -203,11 +170,14 @@ export default {
     alias: {
       vue$: "vue/dist/vue.esm.js",
     },
+    fallback: {
+      stream: import.meta.resolve("stream-browserify"),
+    },
   },
   optimization: {
     nodeEnv: process.env.NODE_ENV,
     concatenateModules: true,
-    runtimeChunk: "single",
+    runtimeChunk: true,
     mergeDuplicateChunks: true,
     flagIncludedChunks: true,
     providedExports: true,
@@ -297,6 +267,9 @@ export default {
       new webpack.optimize.MinChunkSizePlugin({
         minChunkSize: 56000,
       }),
+      new webpack.ProvidePlugin({
+        process: import.meta.resolve("process/browser.js"),
+      }),
       new webpack.DefinePlugin(
         !inDevMode
           ? {
@@ -318,7 +291,10 @@ export default {
           new Date().toTimeString() +
           ", DO NOT MODIFIY",
       }),
-      new ESLintPlugin({}),
+      new ESLintPlugin({
+        failOnError: false,
+        emitWarning: true,
+      }),
       new CopyPlugin({
         patterns: [
           {
@@ -431,10 +407,9 @@ export default {
           : "[name]-chunk[contenthash:8].css",
       }),
     ];
-
     if (!inDevMode) {
       const defaultImageCompressOptions = {
-        quality: 75,
+        quality: 60,
       };
       plugins.push(
         new ImageMinimizerPlugin({
@@ -481,9 +456,11 @@ export default {
           },
         })
       );
+      plugins.push(new webpack.optimize.AggressiveMergingPlugin({
+        minSizeReduce: 1.5
+      }));
       plugins.push(new CleanWebpackPlugin());
     }
-
     return plugins;
   })(),
 };

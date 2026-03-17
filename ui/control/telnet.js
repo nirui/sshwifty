@@ -15,12 +15,13 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import * as iconv from "iconv-lite";
 import * as color from "../commands/color.js";
 import * as common from "../commands/common.js";
 import Exception from "../commands/exception.js";
 import * as reader from "../stream/reader.js";
 import * as subscribe from "../stream/subscribe.js";
+import * as iconvDecoder from "../iconv/decoder.js";
+import * as iconvEncoder from "../iconv/encoder.js";
 
 // const maxReadBufSize = 1024;
 
@@ -28,7 +29,7 @@ const cmdSE = 240;
 // const cmdNOP = 241;
 // const cmdDataMark = 242;
 // const cmdBreak = 243;
-// const cmdInterrputProcess = 244;
+// const cmdInterruptProcess = 244;
 // const cmdAbortOutput = 245;
 // const cmdAreYouThere = 246;
 // const cmdEraseCharacter = 247;
@@ -83,7 +84,6 @@ class Parser {
     switch (cmd) {
       case cmdDo:
         return this.sendNego(cmdWont, o);
-
       case (cmdWill, cmdWont):
         return this.sendNego(cmdDont, o);
     }
@@ -91,33 +91,26 @@ class Parser {
 
   sendWillSubNego(willCmd, data, option) {
     let b = new Uint8Array(6 + data.length + 2);
-
     b.set([cmdIAC, willCmd, option, cmdIAC, cmdSB, option], 0);
     b.set(data, 6);
     b.set([cmdIAC, cmdSE], data.length + 6);
-
     return this.sender(b);
   }
 
   sendSubNego(data, option) {
     let b = new Uint8Array(3 + data.length + 2);
-
     b.set([cmdIAC, cmdSB, option], 0);
     b.set(data, 3);
     b.set([cmdIAC, cmdSE], data.length + 3);
-
     return this.sender(b);
   }
 
   async handleTermTypeSubNego(rd) {
     let action = await reader.readOne(rd);
-
     if (action[0] !== optTerminalTypeSend) {
       return null;
     }
-
     let self = this;
-
     return () => {
       self.sendSubNego(unknownTermTypeSendData, optTerminalType);
     };
@@ -125,32 +118,24 @@ class Parser {
 
   async handleSubNego(rd) {
     let endExec = null;
-
     for (;;) {
       let d = await reader.readOne(rd);
-
       switch (d[0]) {
         case optTerminalType:
           endExec = await this.handleTermTypeSubNego(rd);
           continue;
-
         case cmdIAC:
           break;
-
         default:
           continue;
       }
-
       let e = await reader.readOne(rd);
-
       if (e[0] !== cmdSE) {
         continue;
       }
-
       if (endExec !== null) {
         endExec();
       }
-
       return;
     }
   }
@@ -161,31 +146,24 @@ class Parser {
         if (!oldVal) {
           this.sendNego(cmdDo, option);
         }
-
         newVal(true, cmdWill);
         return;
-
       case cmdWont:
         if (oldVal) {
           this.sendNego(cmdDont, option);
         }
-
         newVal(false, cmdWont);
         return;
-
       case cmdDo:
         if (!oldVal) {
           this.sendNego(cmdWill, option);
         }
-
         newVal(true, cmdDo);
         return;
-
       case cmdDont:
         if (oldVal) {
           this.sendNego(cmdWont, option);
         }
-
         newVal(false, cmdDont);
         return;
     }
@@ -193,31 +171,24 @@ class Parser {
 
   async handleCmd(rd) {
     let d = await reader.readOne(rd);
-
     switch (d[0]) {
       case cmdWill:
       case cmdWont:
       case cmdDo:
       case cmdDont:
         break;
-
       case cmdIAC:
         this.flusher(d);
         return;
-
       case cmdGoAhead:
         return;
-
       case cmdSB:
         await this.handleSubNego(rd);
         return;
-
       default:
         throw new Exception("Unknown command");
     }
-
     let o = await reader.readOne(rd);
-
     switch (o[0]) {
       case optEcho:
         return this.handleOption(
@@ -226,13 +197,11 @@ class Parser {
           this.options.echoEnabled,
           (d, action) => {
             this.options.echoEnabled = d;
-
             switch (action) {
               case cmdWill:
               case cmdDont:
                 this.callbacks.setEcho(false);
                 break;
-
               case cmdWont:
               case cmdDo:
                 this.callbacks.setEcho(true);
@@ -240,7 +209,6 @@ class Parser {
             }
           },
         );
-
       case optSuppressGoAhead:
         return this.handleOption(
           d[0],
@@ -250,52 +218,39 @@ class Parser {
             this.options.suppressGoAhead = d;
           },
         );
-
       case optNAWS:
         // Window resize allowed?
         if (d[0] !== cmdDo) {
           this.sendDeny(d[0], o[0]);
-
           return;
         }
-
         {
           let dim = this.callbacks.getWindowDim(),
             dimData = new DataView(new ArrayBuffer(4));
-
           dimData.setUint16(0, dim.cols);
           dimData.setUint16(2, dim.rows);
-
           let dimBytes = new Uint8Array(dimData.buffer);
-
           if (this.options.nawsAccpeted) {
             this.sendSubNego(dimBytes, optNAWS);
-
             return;
           }
-
           this.options.nawsAccpeted = true;
           this.sendWillSubNego(cmdWill, dimBytes, optNAWS);
         }
         return;
-
       case optTerminalType:
         if (d[0] !== cmdDo) {
           this.sendDeny(d[0], o[0]);
-
           return;
         }
-
         this.sendNego(cmdWill, o[0]);
         return;
     }
-
     this.sendDeny(d[0], o[0]);
   }
 
   requestWindowResize() {
     this.options.nawsAccpeted = true;
-
     this.sendNego(cmdWill, optNAWS);
   }
 
@@ -303,17 +258,13 @@ class Parser {
     try {
       for (;;) {
         let d = await reader.readUntil(this.reader, cmdIAC);
-
         if (!d.found) {
           this.flusher(d.data);
-
           continue;
         }
-
         if (d.data.length > 1) {
           this.flusher(d.data.slice(0, d.data.length - 1));
         }
-
         await this.handleCmd(this.reader);
       }
     } catch (e) {
@@ -334,14 +285,6 @@ class Control {
   constructor(data, color) {
     this.background = color;
     this.charset = data.charset;
-
-    this.charsetDecoder = (d) => {
-      return iconv.decode(d, this.charset);
-    };
-    this.charsetEncoder = (dStr) => {
-      return iconv.encode(dStr, this.charset);
-    };
-
     this.sender = data.send;
     this.closer = data.close;
     this.closed = false;
@@ -352,26 +295,24 @@ class Control {
       cols: 65535,
       rows: 65535,
     };
-
     let self = this;
-
-    this.parser = new Parser(
-      this.sender,
-      (d) => {
-        self.subs.resolve(this.charsetDecoder(d));
-      },
-      {
-        setEcho(newVal) {
-          self.localEchoEnabled = newVal;
-        },
-        getWindowDim() {
-          return self.windowDim;
-        },
-      },
+    this.charsetEncoder = new iconvEncoder.IconvEncoder(
+      (o) => self.sendSeg(o),
+      this.charset,
     );
-
+    let charsetDecoder = new iconvDecoder.IconvDecoder(
+      (o) => self.subs.resolve(o),
+      this.charset,
+    );
+    this.parser = new Parser(self.sender, (o) => charsetDecoder.write(o), {
+      setEcho(newVal) {
+        self.localEchoEnabled = newVal;
+      },
+      getWindowDim() {
+        return self.windowDim;
+      },
+    });
     let runWait = this.parser.run();
-
     data.events.place("inband", (rd) => {
       return new Promise((resolve, _reject) => {
         self.parser.feed(rd, () => {
@@ -379,15 +320,13 @@ class Control {
         });
       });
     });
-
     data.events.place("completed", async () => {
       self.parser.close();
       self.closed = true;
-
       self.background.forget();
-
+      self.charsetEncoder.close();
+      charsetDecoder.close();
       await runWait;
-
       self.subs.reject("Remote connection has been terminated");
     });
   }
@@ -400,10 +339,8 @@ class Control {
     if (this.closed) {
       return;
     }
-
     this.windowDim.cols = dim.cols;
     this.windowDim.rows = dim.rows;
-
     this.parser.requestWindowResize();
   }
 
@@ -426,28 +363,21 @@ class Control {
       if (data[i] !== cmdIAC) {
         continue;
       }
-
       return i;
     }
-
     return -1;
   }
 
   sendSeg(enc) {
     let currentLen = 0;
-
     while (currentLen < enc.length) {
       const iacPos = this.searchNextIAC(currentLen, enc);
-
       if (iacPos < 0) {
         this.sender(enc.slice(currentLen, enc.length));
-
         return;
       }
-
       this.sender(enc.slice(currentLen, iacPos + 1));
       this.sender(enc.slice(iacPos, iacPos + 1));
-
       currentLen = iacPos + 1;
     }
   }
@@ -456,15 +386,13 @@ class Control {
     if (this.closed) {
       return;
     }
-
-    this.sendSeg(this.charsetEncoder(data));
+    return this.charsetEncoder.write(data);
   }
 
   sendBinary(data) {
     if (this.closed) {
       return;
     }
-
     return this.sendSeg(common.strToBinary(data));
   }
 
@@ -476,10 +404,8 @@ class Control {
     if (this.closer === null) {
       return;
     }
-
     let cc = this.closer;
     this.closer = null;
-
     return cc();
   }
 }

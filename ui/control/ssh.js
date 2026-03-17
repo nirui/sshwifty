@@ -15,52 +15,51 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import * as iconv from "iconv-lite";
 import * as color from "../commands/color.js";
 import * as common from "../commands/common.js";
 import * as reader from "../stream/reader.js";
 import * as subscribe from "../stream/subscribe.js";
+import * as iconvDecoder from "../iconv/decoder.js";
+import * as iconvEncoder from "../iconv/encoder.js";
 
 class Control {
   constructor(data, color) {
     this.background = color;
     this.charset = data.charset;
-
-    this.charsetDecoder = (d) => {
-      return iconv.decode(d, this.charset);
-    };
-    this.charsetEncoder = (dStr) => {
-      return iconv.encode(dStr, this.charset);
-    };
-
     this.enable = false;
     this.sender = data.send;
     this.closer = data.close;
+    this.closed = false;
     this.resizer = data.resize;
     this.subs = new subscribe.Subscribe();
-
     let self = this;
-
+    this.charsetEncoder = new iconvEncoder.IconvEncoder(
+      (o) => self.sender(o),
+      this.charset,
+    );
+    let charsetDecoder = new iconvDecoder.IconvDecoder(
+      (o) => self.subs.resolve(o),
+      this.charset,
+    );
     data.events.place("stdout", async (rd) => {
       try {
-        self.subs.resolve(self.charsetDecoder(await reader.readCompletely(rd)));
+        charsetDecoder.write(await reader.readCompletely(rd));
       } catch (e) {
         // Do nothing
       }
     });
-
     data.events.place("stderr", async (rd) => {
       try {
-        self.subs.resolve(self.charsetDecoder(await reader.readCompletely(rd)));
+        charsetDecoder.write(await reader.readCompletely(rd));
       } catch (e) {
         // Do nothing
       }
     });
-
     data.events.place("completed", () => {
       self.closed = true;
       self.background.forget();
-
+      self.charsetEncoder.close();
+      charsetDecoder.close();
       self.subs.reject("Remote connection has been terminated");
     });
   }
@@ -73,7 +72,6 @@ class Control {
     if (this.closed) {
       return;
     }
-
     this.resizer(dim.rows, dim.cols);
   }
 
@@ -95,15 +93,13 @@ class Control {
     if (this.closed) {
       return;
     }
-
-    return this.sender(this.charsetEncoder(data));
+    return this.charsetEncoder.write(data);
   }
 
   sendBinary(data) {
     if (this.closed) {
       return;
     }
-
     return this.sender(common.strToBinary(data));
   }
 
@@ -115,10 +111,8 @@ class Control {
     if (this.closer === null) {
       return;
     }
-
     let cc = this.closer;
     this.closer = null;
-
     return cc();
   }
 }
