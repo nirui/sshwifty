@@ -41,8 +41,12 @@ func NewDebugOrNonDebugWriter(
 	if useDebug {
 		return NewWriter(context, w)
 	}
-
 	return NewNonDebugWriter(context, w)
+}
+
+// Context build a new Sub context
+func (w NonDebugWriter) Context(name string) Logger {
+	return NewNonDebugWriter(w.c+" > "+name, w.w)
 }
 
 // TitledContext build a new Sub context with specified formatted title
