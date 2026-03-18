@@ -92,10 +92,7 @@ if [ "$SSHWIFTY_DEPLOY" = 'yes' ]; then
     catch child \
         '
         docker login -u "$DOCKER_HUB_USER" -p "$DOCKER_HUB_PASSWORD" &&
-        docker run --privileged --rm tonistiigi/binfmt --install all &&
-        docker buildx create --use --driver docker-container --name buildx-instance &&
-        docker buildx inspect --bootstrap &&
-        docker buildx ls &&
+        docker buildx create --use --name buildx-instance &&
         docker buildx build --tag "$SSHWIFTY_DOCKER_IMAGE_PUSH_TAG" --tag "$SSHWIFTY_DOCKER_IMAGE_PUSH_TAG_LATEST" --platform "$DOCKER_BUILD_TARGETS" --builder buildx-instance --build-arg GOMIPS=softfloat --build-arg CUSTOM_COMMAND="$DOCKER_CUSTOM_COMMAND" --progress plain --push .
         ' \
         '

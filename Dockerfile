@@ -8,14 +8,12 @@ RUN set -ex && \
     export DEBIAN_FRONTEND=noninteractive && \
     ([ -z "$HTTP_PROXY" ] || (echo "Acquire::http::Proxy \"$HTTP_PROXY\";" >> /etc/apt/apt.conf)) && \
     ([ -z "$HTTPS_PROXY" ] || (echo "Acquire::https::Proxy \"$HTTPS_PROXY\";" >> /etc/apt/apt.conf)) && \
-    (echo "Acquire::Retries \"8\";" >> /etc/apt/apt.conf) && \
-    echo '#!/bin/sh' > /install.sh && echo 'apt-get -y update && apt-get -y --fix-broken install autoconf automake libtool build-essential ca-certificates curl git nodejs npm golang-go libvips libvips-dev' >> /install.sh && chmod +x /install.sh && \
+    (echo "Acquire::Retries \"32\";" >> /etc/apt/apt.conf) && \
+    echo '#!/bin/sh' > /install.sh && echo 'apt-get -y update && apt-get -y install build-essential curl git nodejs npm golang-go' >> /install.sh && chmod +x /install.sh && \
     /try.sh /install.sh && rm /install.sh && \
-    /try.sh update-ca-certificates -f && c_rehash && \
     ([ -z "$HTTP_PROXY" ] || (git config --global http.proxy "$HTTP_PROXY" && npm config set proxy "$HTTP_PROXY")) && \
     ([ -z "$HTTPS_PROXY" ] || (git config --global https.proxy "$HTTPS_PROXY" && npm config set https-proxy "$HTTPS_PROXY")) && \
     export PATH=$PATH:"$(go env GOPATH)/bin" && \
-    ([ -z "$CUSTOM_COMMAND" ] || (echo "Running custom command: $CUSTOM_COMMAND" && $CUSTOM_COMMAND)) && \
     echo '#!/bin/sh' > /install.sh && echo "(npm install -g n && n stable) || (npm cache clean -f && false)" >> /install.sh && chmod +x /install.sh && /try.sh /install.sh && rm /install.sh && \
     git version && \
     go version && \
@@ -28,8 +26,6 @@ RUN set -ex && \
     cd / && \
     export PATH=$PATH:/ && \
     export DEBIAN_FRONTEND=noninteractive && \
-    export CPPFLAGS='-DPNG_ARM_NEON_OPT=0' && \
-    /try.sh apt-get install libpng-dev -y && \
     ls -l /tmp/.build/sshwifty && \
     /child.sh \
         "cd /tmp/.build/sshwifty && echo '#!/bin/sh' > /npm_install.sh && echo \"npm install || (npm cache clean -f && rm ~/.npm/_* -rf && false)\" >> /npm_install.sh && chmod +x /npm_install.sh && /try.sh /npm_install.sh && rm /npm_install.sh" \
@@ -42,7 +38,7 @@ RUN set -ex && \
     export PATH=$PATH:/ && \
     ([ -z "$HTTP_PROXY" ] || (git config --global http.proxy "$HTTP_PROXY" && npm config set proxy "$HTTP_PROXY")) && \
     ([ -z "$HTTPS_PROXY" ] || (git config --global https.proxy "$HTTPS_PROXY" && npm config set https-proxy "$HTTPS_PROXY")) && \
-    (cd /tmp/.build/sshwifty && /try.sh npm run build && mv ./sshwifty /)
+    (cd /tmp/.build/sshwifty && npm run build && mv ./sshwifty /)
 
 # Build the final image for running
 FROM alpine:latest
