@@ -51,7 +51,7 @@
     "svgo": "^4.0.1",
     "terser-webpack-plugin": "^5.4.0",
     "vue": "^2.6.14",
-    "vue-loader": "^15.9.8",
+    "vue-loader": "^17.4.2",
     "webpack": "^5.105.4",
     "webpack-cli": "^7.0.2",
     "webpack-favicons": "^1.5.43"
