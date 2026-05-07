@@ -1,0 +1,35 @@
+changelog:
+  exclude:
+    labels:
+      - ignore-for-release
+      - dependencies
+  categories:
+    - title: '💥 Breaking Changes'
+      labels:
+        - Semver-Major
+        - breaking-change
+    - title: '✨ New Features'
+      labels:
+        - feature
+    - title: '🚀 Enhancements'
+      labels:
+        - Semver-Minor
+        - enhancement
+    - title: '🐛 Bug Fixes'
+      labels:
+        - fix
+        - bugfix
+        - bug
+    - title: '📚 Documentation'
+      labels:
+        - documentation
+    - title: '🎓 Code Quality'
+      labels:
+        - code-quality
+    - title: '🧰 Maintenance'
+      labels:
+        - chore
+        - github-workflows
+    - title: 'Other Changes'
+      labels:
+        - '*'

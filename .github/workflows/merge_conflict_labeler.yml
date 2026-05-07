@@ -1,0 +1,21 @@
+name: Merge Conflict Labeler
+
+on:
+  push:
+  pull_request_target:
+    types: [synchronize]
+
+jobs:
+  label:
+    name: Merge Conflict Labeler
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Apply label
+        uses: eps1lon/actions-label-merge-conflict@v3
+        with:
+          dirtyLabel: 'merge conflict'
+          commentOnDirty: 'This pull request has merge conflicts. Please resolve the conflicts so the PR can be successfully reviewed and merged.'
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'

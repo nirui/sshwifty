@@ -1,0 +1,49 @@
+name: prek Autoupdate
+on:
+  schedule:
+    - cron: '0 2 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-hooks:
+    name: Update prek Hooks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v6
+
+      - name: Install prek
+        uses: taiki-e/install-action@v2
+        with:
+          tool: prek
+
+      - name: Run prek auto-update
+        id: prek
+        run: |
+          set -euo pipefail
+          body_file="$GITHUB_WORKSPACE/prek-autoupdate-body.md"
+          {
+            echo "Automated update of \`prek\` hooks."
+            echo
+            echo '```text'
+            prek auto-update --cooldown-days 7 2>&1
+            echo '```'
+          } | tee "$body_file"
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v8
+        id: cpr
+        with:
+          commit-message: 'chore: update prek hooks'
+          title: 'Bump prek Hooks'
+          branch: chore/prek-updates
+          author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+          labels: dependencies
+          delete-branch: true
+          body-path: prek-autoupdate-body.md
+          add-paths: |
+            prek.toml
