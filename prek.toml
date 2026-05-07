@@ -1,0 +1,61 @@
+# Configuration file for `prek`, a git hook framework written in Rust.
+#:schema https://www.schemastore.org/prek.json
+
+[[repos]]
+repo = "https://github.com/pre-commit/pre-commit-hooks"
+rev = "v6.0.0"
+
+[[repos.hooks]]
+id = "trailing-whitespace"
+
+[[repos.hooks]]
+id = "end-of-file-fixer"
+
+[[repos.hooks]]
+id = "check-yaml"
+
+[[repos.hooks]]
+id = "check-json"
+
+[[repos.hooks]]
+id = "check-toml"
+
+[[repos.hooks]]
+id = "check-merge-conflict"
+
+[[repos.hooks]]
+id = "check-added-large-files"
+
+[[repos]]
+repo = "https://github.com/rhysd/actionlint"
+rev = "v1.7.12"
+
+[[repos.hooks]]
+id = "actionlint"
+additional_dependencies = [
+  "github.com/wasilibs/go-shellcheck/cmd/shellcheck@v0.11.1",
+]
+
+[[repos]]
+repo = "local"
+
+[[repos.hooks]]
+id = "gofmt"
+name = "gofmt"
+entry = "gofmt -w"
+language = "system"
+types = ["go"]
+
+[[repos.hooks]]
+id = "eslint"
+name = "eslint"
+entry = "npm run lint"
+language = "system"
+pass_filenames = false
+
+[[repos.hooks]]
+id = "testonly"
+name = "npm testonly"
+entry = "npm run testonly"
+language = "system"
+pass_filenames = false
