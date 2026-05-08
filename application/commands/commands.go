@@ -17,7 +17,7 @@
 
 package commands
 
-import "github.com/nirui/sshwifty/application/command"
+import "github.com/Snuffy2/sshwifty/application/command"
 
 // New creates a new commands group
 func New() command.Commands {

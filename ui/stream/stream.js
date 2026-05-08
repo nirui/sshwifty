@@ -18,8 +18,6 @@
 import * as common from "./common.js";
 import Exception from "./exception.js";
 import * as header from "./header.js";
-import * as reader from "./reader.js";
-import * as sender from "./sender.js";
 
 export class Sender {
   /**

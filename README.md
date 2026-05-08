@@ -11,7 +11,7 @@ cult. Though, science has proven that the normal AD-free version is sufficient
 for most people. In fact, the majority of people surveyed are annoyed by the
 glare, while the rest showed a little interest)
 
-![Build Status](https://github.com/nirui/sshwifty/workflows/Sshwifty-CI/badge.svg)
+![Build Status](https://github.com/Snuffy2/sshwifty/workflows/Sshwifty-CI/badge.svg)
 
 ## Install
 
@@ -26,7 +26,7 @@ procedure, and we (as the authors and contributors) cannot guarantee to test
 them. If you've encountered unusual failure caused by those executables, feel
 free to open an issue, so we can take a look.
 
-[releases]: https://github.com/nirui/sshwifty/releases
+[releases]: https://github.com/Snuffy2/sshwifty/releases
 
 ### Docker Image (recommended)
 
@@ -96,7 +96,7 @@ code:
 To start the build process, run:
 
 ```shell
-$ git clone https://github.com/nirui/sshwifty
+$ git clone https://github.com/Snuffy2/sshwifty
 $ cd sshwifty
 $ npm install
 $ npm run build
@@ -107,23 +107,6 @@ working directory.
 
 Notice: `Dockerfile` contains the entire build procedure of this software.
 Please refer to it when you encounter any compile/build related issue.
-
-### Third-party Homebrew Formulae from [@unbeatable-101]
-
-If you're a macOS user, [@unbeatable-101] is kindly hosting a Homebrew
-Formulae that allows you to install his custom Sshwifty builds for macOS via
-`homebrew`. You can hop over to [unbeatable-101/homebrew-sshwifty] for detailed
-instruction and contribute to his work.
-
-Please note that, due to the third-party nature of the work, the author(s) of
-Sshwifty are unable to provide any audit, warranty or support for it. If you
-have any question or request regarding to the Formulae, please contact
-[@unbeatable-101] directly through appreciate channels.
-
-Thank [@unbeatable-101] for his work.
-
-[@unbeatable-101]: https://github.com/unbeatable-101
-[unbeatable-101/homebrew-sshwifty]: https://github.com/unbeatable-101/homebrew-sshwifty
 
 ## Configuration
 
@@ -230,7 +213,7 @@ Here is all the options of the configuration file:
     ]
   },
 
-  // The maximum execution time of each hook, in seconds. If this timeout is 
+  // The maximum execution time of each hook, in seconds. If this timeout is
   // exceeded, the hook will be terminated, and thus cause a failure
   "HookTimeout": 30,
 
@@ -277,8 +260,8 @@ Here is all the options of the configuration file:
 
       // Path to TLS certificate key file. Set empty to use HTTP
       "TLSCertificateKeyFile": "",
-      
-      // Display a short text message on the Home page. Link is supported 
+
+      // Display a short text message on the Home page. Link is supported
       // through `[Title text](https://link.example.com)` format
       "ServerMessage": ""
     },
@@ -525,9 +508,9 @@ computer console.
 
 - Thanks to [Ryan Fortner](https://github.com/ryanfortner) for the grammar fix
 - Thanks to [Tweak](https://github.com/Tweak4141) for the grammar fix
-- Thanks to [CJendantix](https://github.com/CJendantix) for the grammar and typo 
+- Thanks to [CJendantix](https://github.com/CJendantix) for the grammar and typo
   fix
-- Thanks to [ZStrikeGit](https://github.com/ZStrikeGit) for the grammar and 
+- Thanks to [ZStrikeGit](https://github.com/ZStrikeGit) for the grammar and
   formatting fixes
 
 ## License
@@ -543,19 +526,19 @@ project and read their copyright statements.
 
 ## Contribute
 
-This is a hobbyist project, meaning I don't have that much time to put into it, 
+This is a hobbyist project, meaning I don't have that much time to put into it,
 sorry.
 
 Upon release (Which is then you're able to read this file), this project will
-enter the _maintaining_ state, which includes doing some bug fixes and security 
+enter the _maintaining_ state, which includes doing some bug fixes and security
 updates. _Adding new features however, is not a part of the state_.
 
-Please do not send any pull requests. If you need new feature, fork it, add it 
-by yourself, then maintain it like one of your own project. It's not that hard 
+Please do not send any pull requests. If you need new feature, fork it, add it
+by yourself, then maintain it like one of your own project. It's not that hard
 with some Github features.
 
 (Notice: Typos, grammar errors or invalid use of language in the source code and
-documentation should be categorized as a bug, please report them if you find 
+documentation should be categorized as a bug, please report them if you find
 any. Thank you!)
 
 Appreciate your help, enjoy!

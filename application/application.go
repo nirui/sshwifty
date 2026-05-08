@@ -27,10 +27,10 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/nirui/sshwifty/application/command"
-	"github.com/nirui/sshwifty/application/configuration"
-	"github.com/nirui/sshwifty/application/log"
-	"github.com/nirui/sshwifty/application/server"
+	"github.com/Snuffy2/sshwifty/application/command"
+	"github.com/Snuffy2/sshwifty/application/configuration"
+	"github.com/Snuffy2/sshwifty/application/log"
+	"github.com/Snuffy2/sshwifty/application/server"
 )
 
 // ProccessSignaller send signal to the running application

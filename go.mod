@@ -15,9 +15,9 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-module github.com/nirui/sshwifty
+module github.com/Snuffy2/sshwifty
 
-go 1.26.1
+go 1.26.2
 
 require (
 	github.com/gorilla/websocket v1.5.3

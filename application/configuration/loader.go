@@ -18,7 +18,7 @@
 package configuration
 
 import (
-	"github.com/nirui/sshwifty/application/log"
+	"github.com/Snuffy2/sshwifty/application/log"
 )
 
 // PresetReloader reloads preset

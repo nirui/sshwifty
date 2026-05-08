@@ -22,7 +22,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/nirui/sshwifty/application/network"
+	"github.com/Snuffy2/sshwifty/application/network"
 )
 
 // Configuration contains configuration of the application

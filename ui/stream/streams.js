@@ -19,7 +19,6 @@ import * as common from "./common.js";
 import Exception from "./exception.js";
 import * as header from "./header.js";
 import * as reader from "./reader.js";
-import * as sender from "./sender.js";
 import * as stream from "./stream.js";
 
 export const ECHO_FAILED = -1;

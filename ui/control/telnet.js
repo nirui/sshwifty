@@ -15,7 +15,6 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import * as color from "../commands/color.js";
 import * as common from "../commands/common.js";
 import Exception from "../commands/exception.js";
 import * as reader from "../stream/reader.js";

@@ -24,11 +24,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/nirui/sshwifty/application/command"
-	"github.com/nirui/sshwifty/application/configuration"
-	"github.com/nirui/sshwifty/application/log"
-	"github.com/nirui/sshwifty/application/network"
-	"github.com/nirui/sshwifty/application/rw"
+	"github.com/Snuffy2/sshwifty/application/command"
+	"github.com/Snuffy2/sshwifty/application/configuration"
+	"github.com/Snuffy2/sshwifty/application/log"
+	"github.com/Snuffy2/sshwifty/application/network"
+	"github.com/Snuffy2/sshwifty/application/rw"
 )
 
 // Errors

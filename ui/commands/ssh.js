@@ -15,16 +15,12 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import * as header from "../stream/header.js";
 import * as reader from "../stream/reader.js";
-import * as stream from "../stream/stream.js";
 import * as address from "./address.js";
 import * as command from "./commands.js";
 import * as common from "./common.js";
-import * as controls from "./controls.js";
 import * as event from "./events.js";
 import Exception from "./exception.js";
-import * as history from "./history.js";
 import * as presets from "./presets.js";
 import * as strings from "./string.js";
 
@@ -257,7 +253,7 @@ const initialFieldDef = {
     value: "",
     example: "ssh.nirui.org:22",
     readonly: false,
-    suggestions(input) {
+    suggestions(_input) {
       return [];
     },
     verify(d) {
@@ -291,7 +287,7 @@ const initialFieldDef = {
     value: "",
     example: "guest",
     readonly: false,
-    suggestions(input) {
+    suggestions(_input) {
       return [];
     },
     verify(d) {
@@ -315,7 +311,7 @@ const initialFieldDef = {
     value: "utf-8",
     example: common.charsetPresets.join(","),
     readonly: false,
-    suggestions(input) {
+    suggestions(_input) {
       return [];
     },
     verify(d) {
@@ -339,10 +335,10 @@ const initialFieldDef = {
       "on the backend server and then transmit back to your client.",
     example: "",
     readonly: false,
-    suggestions(input) {
+    suggestions(_input) {
       return [];
     },
-    verify(d) {
+    verify(_d) {
       return "";
     },
   },
@@ -353,7 +349,7 @@ const initialFieldDef = {
     value: "",
     example: "----------",
     readonly: false,
-    suggestions(input) {
+    suggestions(_input) {
       return [];
     },
     verify(d) {
@@ -388,7 +384,7 @@ const initialFieldDef = {
     value: "",
     example: "",
     readonly: false,
-    suggestions(input) {
+    suggestions(_input) {
       return [];
     },
     verify(d) {
@@ -446,7 +442,7 @@ const initialFieldDef = {
     value: "",
     example: "Password,Private Key,None",
     readonly: false,
-    suggestions(input) {
+    suggestions(_input) {
       return [];
     },
     verify(d) {
@@ -471,10 +467,10 @@ const initialFieldDef = {
     value: "",
     example: "",
     readonly: false,
-    suggestions(input) {
+    suggestions(_input) {
       return [];
     },
-    verify(d) {
+    verify(_d) {
       return "";
     },
   },
@@ -651,7 +647,7 @@ class Wizard {
           self.stepErrorDone("Request failed", "Unknown error: " + hd.data()),
         );
       },
-      initialized(hd) {
+      initialized(_hd) {
         self.step.resolve(self.stepWaitForEstablishWait(configInput.host));
       },
       async "connect.failed"(rd) {
@@ -739,8 +735,8 @@ class Wizard {
           }),
         );
       },
-      "@stdout"(rd) {},
-      "@stderr"(rd) {},
+      "@stdout"(_rd) {},
+      "@stderr"(_rd) {},
       close() {},
       "@completed"() {
         self.step.resolve(
@@ -819,7 +815,7 @@ class Wizard {
           { name: "Notice" },
         ],
         self.preset,
-        (r) => {},
+        (_r) => {},
       ),
     );
   }
@@ -850,7 +846,7 @@ class Wizard {
         ? "Verify server fingerprint displayed below"
         : "It's very unusual. Please verify the new server fingerprint below",
       !fingerprintChanged ? "Yes, I do" : "I'm aware of the change",
-      (r) => {
+      (_r) => {
         newFingerprint(fingerprintData);
 
         sd.send(CLIENT_CONNECT_RESPOND_FINGERPRINT, new Uint8Array([0]));

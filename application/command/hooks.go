@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/nirui/sshwifty/application/configuration"
-	"github.com/nirui/sshwifty/application/log"
+	"github.com/Snuffy2/sshwifty/application/configuration"
+	"github.com/Snuffy2/sshwifty/application/log"
 )
 
 // HookParameters contains parameters needed to run a hook

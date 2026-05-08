@@ -103,7 +103,7 @@
 import FontFaceObserver from "fontfaceobserver";
 import { Terminal } from "@xterm/xterm";
 import { WebLinksAddon } from "@xterm/addon-web-links";
-import { Unicode11Addon } from '@xterm/addon-unicode11';
+import { Unicode11Addon } from "@xterm/addon-unicode11";
 import { WebglAddon } from "@xterm/addon-webgl";
 import { FitAddon } from "@xterm/addon-fit";
 import { isNumber } from "../commands/common.js";
@@ -136,9 +136,12 @@ function webglSupported() {
     if (typeof window.WebGL2RenderingContext !== "function") {
       return false;
     }
-    return document.createElement('canvas').getContext('webgl') &&
-      document.createElement('canvas').getContext('webgl2');
-  } catch(e) {
+    return (
+      document.createElement("canvas").getContext("webgl") &&
+      document.createElement("canvas").getContext("webgl2")
+    );
+  } catch {
+    // ignore: WebGL not available
   }
   return false;
 }
@@ -254,8 +257,10 @@ class Term {
       if (webglSupported()) {
         this.term.loadAddon(new WebglAddon());
       }
-    } catch(e) {}
-    this.term.unicode.activeVersion = '11';
+    } catch {
+      // ignore: WebGL addon failed to load
+    }
+    this.term.unicode.activeVersion = "11";
     this.refit();
   }
 
@@ -412,7 +417,7 @@ export default {
     };
   },
   watch: {
-    active(newVal, oldVal) {
+    active(newVal, _oldVal) {
       this.triggerActive(newVal);
     },
     change: {
@@ -464,8 +469,10 @@ export default {
           return;
         } catch (e) {
           // Wait and then retry
-          await new Promise(res => {
-            window.setTimeout(() => { res(); }, timeout);
+          await new Promise((res) => {
+            window.setTimeout(() => {
+              res();
+            }, timeout);
           });
         }
       }

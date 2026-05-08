@@ -250,7 +250,7 @@ export default {
   beforeDestroy() {
     window.removeEventListener("beforeunload", this.onBrowserClose);
 
-    if (this.ticker === null) {
+    if (this.ticker !== null) {
       clearInterval(this.ticker);
       this.ticker = null;
     }
@@ -269,7 +269,7 @@ export default {
 
       this.socket.update(now, this);
     },
-    closeAllWindow(e) {
+    closeAllWindow(_e) {
       for (let i in this.windows) {
         this.windows[i] = false;
       }

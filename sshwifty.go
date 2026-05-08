@@ -20,11 +20,11 @@ package main
 import (
 	"os"
 
-	"github.com/nirui/sshwifty/application"
-	"github.com/nirui/sshwifty/application/commands"
-	"github.com/nirui/sshwifty/application/configuration"
-	"github.com/nirui/sshwifty/application/controller"
-	"github.com/nirui/sshwifty/application/log"
+	"github.com/Snuffy2/sshwifty/application"
+	"github.com/Snuffy2/sshwifty/application/commands"
+	"github.com/Snuffy2/sshwifty/application/configuration"
+	"github.com/Snuffy2/sshwifty/application/controller"
+	"github.com/Snuffy2/sshwifty/application/log"
 )
 
 func main() {

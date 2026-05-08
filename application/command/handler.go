@@ -24,8 +24,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/nirui/sshwifty/application/log"
-	"github.com/nirui/sshwifty/application/rw"
+	"github.com/Snuffy2/sshwifty/application/log"
+	"github.com/Snuffy2/sshwifty/application/rw"
 )
 
 // Errors

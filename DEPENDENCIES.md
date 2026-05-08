@@ -29,7 +29,7 @@ Major dependencies includes:
   - [Devicons](https://github.com/vorillaz/devicons), Licensed under MIT license
   - [Octicons](https://github.com/primer/octicons), Licensed under MIT license
   - [Codicons](https://github.com/microsoft/vscode-codicons), Licensed under MIT License
-  - [Font Logos (Formerly Font Linux)](https://github.com/Lukas-W/font-logos), Licensed under Unlicense license 
+  - [Font Logos (Formerly Font Linux)](https://github.com/Lukas-W/font-logos), Licensed under Unlicense license
   - [Pomicons](https://github.com/gabrielelana/pomicons), Licensed under OFL-1.1 license
   - ... and more, see [full list](https://github.com/ryanoasis/nerd-fonts/tree/master/src/glyphs)
 

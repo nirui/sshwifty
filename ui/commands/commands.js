@@ -17,7 +17,6 @@
 
 import * as subscribe from "../stream/subscribe.js";
 import Exception from "./exception.js";
-import * as presets from "./presets.js";
 
 export const NEXT_PROMPT = 1;
 export const NEXT_WAIT = 2;
@@ -133,10 +132,10 @@ const defField = {
   value: "",
   example: "",
   readonly: false,
-  suggestions(input) {
+  suggestions(_input) {
     return [];
   },
-  verify(v) {
+  verify(_v) {
     return "";
   },
 };

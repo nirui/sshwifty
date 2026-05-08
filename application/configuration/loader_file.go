@@ -25,7 +25,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/nirui/sshwifty/application/log"
+	"github.com/Snuffy2/sshwifty/application/log"
 )
 
 const (

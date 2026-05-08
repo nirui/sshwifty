@@ -21,8 +21,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/nirui/sshwifty/application/configuration"
-	"github.com/nirui/sshwifty/application/log"
+	"github.com/Snuffy2/sshwifty/application/configuration"
+	"github.com/Snuffy2/sshwifty/application/log"
 )
 
 // Consts

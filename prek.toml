@@ -1,0 +1,75 @@
+# Configuration file for `prek`, a git hook framework written in Rust.
+#:schema https://www.schemastore.org/prek.json
+
+[[repos]]
+repo = "https://github.com/pre-commit/pre-commit-hooks"
+rev = "v6.0.0"
+
+[[repos.hooks]]
+id = "trailing-whitespace"
+
+[[repos.hooks]]
+id = "end-of-file-fixer"
+
+[[repos.hooks]]
+id = "check-yaml"
+
+[[repos.hooks]]
+id = "check-json"
+
+[[repos.hooks]]
+id = "check-toml"
+
+[[repos.hooks]]
+id = "check-merge-conflict"
+
+[[repos.hooks]]
+id = "check-added-large-files"
+
+[[repos]]
+repo = "https://github.com/rhysd/actionlint"
+rev = "v1.7.12"
+
+[[repos.hooks]]
+id = "actionlint"
+additional_dependencies = [
+  "github.com/wasilibs/go-shellcheck/cmd/shellcheck@v0.11.1",
+]
+
+[[repos]]
+repo = "local"
+
+[[repos.hooks]]
+id = "gofmt"
+name = "gofmt"
+entry = "gofmt -w"
+language = "system"
+types = ["go"]
+
+# The "eslint" and "testonly" hooks below shell out to `npm`, so Node.js and
+# npm must be available on the host. CI installs them via actions/setup-node
+# in .github/workflows/linters.yml; local contributors need them installed
+# manually.
+[[repos.hooks]]
+id = "eslint"
+name = "eslint"
+entry = "npm run lint:fix"
+language = "system"
+pass_filenames = false
+
+[[repos.hooks]]
+id = "testonly"
+name = "npm testonly"
+entry = "npm run testonly"
+language = "system"
+pass_filenames = false
+
+[[repos]]
+repo = "https://github.com/tekwizely/pre-commit-golang"
+rev = "v1.0.0-rc.4"
+
+[[repos.hooks]]
+id = "go-vet-mod"  # Examines code and reports suspicious constructs
+
+[[repos.hooks]]
+id = "go-mod-tidy"  # Ensures go.mod matches source code

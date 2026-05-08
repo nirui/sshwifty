@@ -104,7 +104,7 @@ class BaseDrawer {
     this.elements = [];
   }
 
-  draw(parent, rootDim, data) {}
+  draw(_parent, _rootDim, _data) {}
 }
 
 class BarDrawer extends BaseDrawer {

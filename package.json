@@ -23,7 +23,6 @@
     "copy-webpack-plugin": "^14.0.0",
     "css-loader": "^7.1.4",
     "css-minimizer-webpack-plugin": "^8.0.0",
-    "cwebp-bin": "^8.0.0",
     "eslint": "^9.39.2",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.5",
@@ -50,8 +49,9 @@
     "style-loader": "^4.0.0",
     "svgo": "^4.0.1",
     "terser-webpack-plugin": "^5.4.0",
-    "vue": "^2.6.14",
-    "vue-loader": "^17.4.2",
+    "vue": "2.7.16",
+    "vue-loader": "^15.11.1",
+    "vue-template-compiler": "2.7.16",
     "webpack": "^5.105.4",
     "webpack-cli": "^7.0.2",
     "webpack-favicons": "^1.5.43"
@@ -60,11 +60,17 @@
     "dev": "CGO_ENABLED=0 NODE_ENV=development webpack watch --mode=development --config=webpack.config.js",
     "clean": "rm .tmp/ -rf || true",
     "generate": "npm run clean && CGO_ENABLED=0 NODE_ENV=production webpack build --mode=production --config=webpack.config.js",
-    "build": "npm run generate && CGO_ENABLED=0 go build -ldflags \"-s -w -X github.com/nirui/sshwifty/application.version=$(git describe --always --dirty='*' --tag)\"",
-    "lint": "eslint --ext .js,.vue ui",
+    "build": "npm run generate && CGO_ENABLED=0 go build -ldflags \"-s -w -X github.com/Snuffy2/sshwifty/application.version=$(git describe --always --dirty='*' --tag)\"",
+    "lint": "eslint \"ui/**/*.{js,vue}\"",
+    "lint:fix": "eslint --fix \"ui/**/*.{js,vue}\"",
     "testonly": "mocha --require @babel/register --recursive --timeout 3s ./ui/**/*_test.js && CGO_ENABLED=1 go test ./... -race -timeout 30s",
     "test": "npm run generate && npm run testonly"
   },
   "author": "",
-  "license": "AGPL-3.0-only"
+  "license": "AGPL-3.0-only",
+  "overrides": {
+    "serialize-javascript": "^7.0.5",
+    "diff": "^8.0.3",
+    "postcss": "^8.4.31"
+  }
 }

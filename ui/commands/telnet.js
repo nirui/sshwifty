@@ -15,16 +15,12 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import * as header from "../stream/header.js";
 import * as reader from "../stream/reader.js";
-import * as stream from "../stream/stream.js";
 import * as address from "./address.js";
 import * as command from "./commands.js";
 import * as common from "./common.js";
-import * as controls from "./controls.js";
 import * as event from "./events.js";
 import Exception from "./exception.js";
-import * as history from "./history.js";
 import * as presets from "./presets.js";
 import * as strings from "./string.js";
 
@@ -198,7 +194,7 @@ const initialFieldDef = {
     value: "",
     example: "telnet.nirui.org:23",
     readonly: false,
-    suggestions(input) {
+    suggestions(_input) {
       return [];
     },
     verify(d) {
@@ -232,7 +228,7 @@ const initialFieldDef = {
     value: "utf-8",
     example: common.charsetPresets.join(","),
     readonly: false,
-    suggestions(input) {
+    suggestions(_input) {
       return [];
     },
     verify(d) {
@@ -379,7 +375,7 @@ class Wizard {
           ),
         );
       },
-      initialized(streamInitialHeader) {
+      initialized(_streamInitialHeader) {
         self.step.resolve(self.stepWaitForEstablishWait(configInput.host));
       },
       async "hook.before_connected"(rd) {
@@ -428,7 +424,7 @@ class Wizard {
 
         self.step.resolve(self.stepErrorDone("Connection failed", message));
       },
-      "@inband"(rd) {},
+      "@inband"(_rd) {},
       close() {},
       "@completed"() {},
     });
@@ -490,7 +486,7 @@ class Wizard {
           { name: "Encoding" },
         ],
         self.preset,
-        (r) => {},
+        (_r) => {},
       ),
     );
   }

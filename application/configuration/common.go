@@ -20,7 +20,7 @@ package configuration
 import (
 	"time"
 
-	"github.com/nirui/sshwifty/application/network"
+	"github.com/Snuffy2/sshwifty/application/network"
 )
 
 // Common settings shared by multiple servers

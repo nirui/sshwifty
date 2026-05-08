@@ -23,9 +23,9 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/nirui/sshwifty/application/configuration"
-	"github.com/nirui/sshwifty/application/log"
-	"github.com/nirui/sshwifty/application/rw"
+	"github.com/Snuffy2/sshwifty/application/configuration"
+	"github.com/Snuffy2/sshwifty/application/log"
+	"github.com/Snuffy2/sshwifty/application/rw"
 )
 
 func testDummyFetchGen(data []byte) rw.FetchReaderFetcher {
