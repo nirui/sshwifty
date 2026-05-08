@@ -15,6 +15,15 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+/**
+ * @file Top-level stream multiplexer for the Sshwifty WebSocket connection.
+ *
+ * {@link Streams} manages the full set of stream slots, dispatches incoming
+ * frames to the correct {@link stream.Stream}, drives the echo/ping heartbeat,
+ * and exposes {@link Streams#request} so command builders can open new streams.
+ * {@link Requested} is a lightweight result holder returned by that method.
+ */
+
 import * as common from "./common.js";
 import Exception from "./exception.js";
 import * as header from "./header.js";
@@ -23,6 +32,12 @@ import * as stream from "./stream.js";
 
 export const ECHO_FAILED = -1;
 
+/**
+ * Holds the result of a {@link Streams#request} call.
+ *
+ * Bundles the allocated {@link stream.Stream} with the value returned by the
+ * command builder so the caller can track both the slot and its initial result.
+ */
 export class Requested {
   /**
    * constructor
@@ -37,13 +52,28 @@ export class Requested {
   }
 }
 
+/**
+ * Multiplexes up to {@link HEADER_MAX_DATA}+1 concurrent streams over a single
+ * reader/sender pair.
+ *
+ * Responsibilities:
+ * - Runs the main read loop ({@link Streams#serve}).
+ * - Dispatches frames to CONTROL, STREAM, CLOSE, and COMPLETED handlers.
+ * - Maintains the echo heartbeat and reports round-trip time via
+ *   `config.echoUpdater`.
+ * - Allocates idle stream slots via {@link Streams#request}.
+ * - Tears everything down gracefully on error or stop via {@link Streams#clear}.
+ */
 export class Streams {
   /**
    * constructor
    *
    * @param {reader.Reader} reader The data reader
    * @param {sender.Sender} sender The data sender
-   * @param {object} config Configuration
+   * @param {object} config Configuration object with the following shape:
+   *   - `echoInterval` {number} — milliseconds between echo probes
+   *   - `echoUpdater` {function(number)} — called with RTT ms, or ECHO_FAILED
+   *   - `cleared` {function(?Exception)} — called after all streams are torn down
    */
   constructor(reader, sender, config) {
     this.reader = reader;
@@ -378,12 +408,11 @@ export class Streams {
   }
 
   /**
-   * handle received close respond
+   * Handle a received COMPLETED acknowledgement from the remote peer, signaling
+   * that the remote has finished tearing down the stream after a CLOSE was sent.
    *
-   * @param {header.Header} hd The header
-   *
-   * @throws {Exception} when given stream is not running
-   *
+   * @param {header.Header} hd The COMPLETED frame header containing the stream ID.
+   * @throws {Exception} When the target stream slot is not in a running state.
    */
   async handleCompleted(hd) {
     if (hd.data() >= this.streams.length) {

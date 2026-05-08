@@ -82,6 +82,32 @@
 <script>
 import "./connect.css";
 
+/**
+ * @fileoverview Root connection-establishment widget. Composes the new-remote
+ * picker, the known-remotes list, and the tab-switch control into a single
+ * overlay window. Delegates connector selection and known-host management
+ * upward via emitted events so the parent can drive the wizard flow.
+ *
+ * @prop {boolean}  display             - Controls overlay visibility.
+ * @prop {boolean}  inputting           - When true, hides list panels and
+ *   shows a slotted content (e.g. the wizard fieldset) instead.
+ * @prop {Array}    presets             - Server-defined preset connections.
+ * @prop {boolean}  restrictedToPresets - Hides "New remote" when true.
+ * @prop {Array}    knowns              - Previously connected remotes.
+ * @prop {Function} knownsLauncherBuilder - Builds a shareable launch URL for a known.
+ * @prop {Function} knownsExport        - Serialises knowns to exportable data.
+ * @prop {Function} knownsImport        - Deserialises and merges imported data.
+ * @prop {Array}    connectors          - Available connector types (SSH, Telnet…).
+ * @prop {boolean}  busy                - When true, overlays the panel to block interaction.
+ *
+ * @emits display           - Forwarded from the window widget; payload: `{boolean}`.
+ * @emits connector-select  - User chose a new connector type. Payload: connector object.
+ * @emits known-select      - User clicked a known remote. Payload: known object.
+ * @emits known-remove      - User removed a known remote. Payload: `{string}` uid.
+ * @emits preset-select     - User selected a preset. Payload: preset object.
+ * @emits known-clear-session - User cleared session data for a known. Payload: `{string}` uid.
+ */
+
 import Window from "./window.vue";
 import ConnectSwitch from "./connect_switch.vue";
 import ConnectKnown from "./connect_known.vue";
@@ -136,6 +162,11 @@ export default {
       default: false,
     },
   },
+  /**
+   * @returns {{tab: string, canSelect: boolean}}
+   *   `tab` — active panel: `"new"` or `"known"`.
+   *   `canSelect` — reserved flag for future debounce logic.
+   */
   data() {
     return {
       tab: !this.restrictedToPresets ? "new" : "known",
@@ -143,6 +174,12 @@ export default {
     };
   },
   methods: {
+    /**
+     * Switches the active panel tab. No-op while the wizard is `inputting`.
+     *
+     * @param {string} to - Target tab name: `"new"` or `"known"`.
+     * @returns {void}
+     */
     switchTab(to) {
       if (this.inputting) {
         return;
@@ -150,6 +187,13 @@ export default {
 
       this.tab = to;
     },
+    /**
+     * Emits `connector-select` with the chosen connector. No-op while `inputting`.
+     *
+     * @param {Object} connector - The connector descriptor chosen by the user.
+     * @emits connector-select
+     * @returns {void}
+     */
     selectConnector(connector) {
       if (this.inputting) {
         return;
@@ -157,6 +201,13 @@ export default {
 
       this.$emit("connector-select", connector);
     },
+    /**
+     * Emits `known-select` with the chosen known-remote. No-op while `inputting`.
+     *
+     * @param {Object} known - The known-remote descriptor chosen by the user.
+     * @emits known-select
+     * @returns {void}
+     */
     selectKnown(known) {
       if (this.inputting) {
         return;
@@ -164,6 +215,13 @@ export default {
 
       this.$emit("known-select", known);
     },
+    /**
+     * Emits `known-remove` for the given uid. No-op while `inputting`.
+     *
+     * @param {string} uid - Unique identifier of the known remote to remove.
+     * @emits known-remove
+     * @returns {void}
+     */
     removeKnown(uid) {
       if (this.inputting) {
         return;
@@ -171,6 +229,13 @@ export default {
 
       this.$emit("known-remove", uid);
     },
+    /**
+     * Emits `preset-select` with the chosen preset. No-op while `inputting`.
+     *
+     * @param {Object} preset - The preset descriptor chosen by the user.
+     * @emits preset-select
+     * @returns {void}
+     */
     selectPreset(preset) {
       if (this.inputting) {
         return;
@@ -178,6 +243,13 @@ export default {
 
       this.$emit("preset-select", preset);
     },
+    /**
+     * Emits `known-clear-session` for the given uid. No-op while `inputting`.
+     *
+     * @param {string} uid - Unique identifier of the known remote whose session to clear.
+     * @emits known-clear-session
+     * @returns {void}
+     */
     clearSessionKnown(uid) {
       if (this.inputting) {
         return;

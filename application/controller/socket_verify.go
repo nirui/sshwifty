@@ -31,14 +31,27 @@ import (
 	"github.com/Snuffy2/sshwifty/application/log"
 )
 
+// socketVerification is the controller for the "/sshwifty/socket/verify"
+// endpoint. It handles client authentication via a time-windowed HMAC token
+// and returns server configuration (heartbeat interval, timeout, and preset
+// remote list) as JSON to authenticated clients.
 type socketVerification struct {
 	socket
 
-	heartbeat     string
-	timeout       string
+	// heartbeat is the server's configured heartbeat timeout in seconds,
+	// pre-formatted as a string for inclusion in the X-Heartbeat response header.
+	heartbeat string
+	// timeout is the server's configured read timeout in seconds,
+	// pre-formatted as a string for inclusion in the X-Timeout response header.
+	timeout string
+	// configRspBody is the pre-serialized JSON body containing the access
+	// configuration (presets and server message) sent to authenticated clients.
 	configRspBody []byte
 }
 
+// socketRemotePreset is the JSON-serializable representation of a single
+// preset remote connection. It is derived from configuration.Preset and
+// transmitted to the client as part of the socket access configuration.
 type socketRemotePreset struct {
 	Title    string            `json:"title"`
 	Type     string            `json:"type"`
@@ -47,11 +60,18 @@ type socketRemotePreset struct {
 	Meta     map[string]string `json:"meta"`
 }
 
+// socketAccessConfiguration is the top-level JSON envelope sent to the client
+// after successful authentication on the verification endpoint. It carries the
+// list of preset remote connections and the HTML-escaped server message.
 type socketAccessConfiguration struct {
 	Presets       []socketRemotePreset `json:"presets"`
 	ServerMessage string               `json:"server_message"`
 }
 
+// newSocketAccessConfiguration builds a socketAccessConfiguration from the
+// given slice of configured presets and a server message. The server message
+// is HTML-escaped and then Markdown-link-converted before being embedded in
+// the response.
 func newSocketAccessConfiguration(
 	remotes []configuration.Preset,
 	serverMessage string,
@@ -72,6 +92,8 @@ func newSocketAccessConfiguration(
 	}
 }
 
+// buildAccessConfigRespondBody serializes accessCfg to JSON. It panics if
+// marshaling fails, which should never occur for this well-typed struct.
 func buildAccessConfigRespondBody(accessCfg socketAccessConfiguration) []byte {
 	mData, mErr := json.Marshal(accessCfg)
 	if mErr != nil {
@@ -80,6 +102,10 @@ func buildAccessConfigRespondBody(accessCfg socketAccessConfiguration) []byte {
 	return mData
 }
 
+// newSocketVerification constructs a socketVerification controller that wraps
+// s and pre-computes the heartbeat interval, read timeout, and the JSON access
+// configuration body from srvCfg and commCfg. The configuration body is built
+// once at startup to avoid repeated serialization on every request.
 func newSocketVerification(
 	s socket,
 	srvCfg configuration.Server,
@@ -100,6 +126,10 @@ func newSocketVerification(
 	}
 }
 
+// authKey derives the expected 32-byte authentication token for this request
+// using a truncated Unix timestamp (100-second window) combined with the
+// configured shared key. When no shared key is set a well-known default string
+// is used, which effectively disables authentication.
 func (s socketVerification) authKey(r *http.Request) []byte {
 	timeMixer := strconv.FormatInt(time.Now().Unix()/100, 10)
 	if len(s.commonCfg.SharedKey) > 0 {
@@ -114,6 +144,9 @@ func (s socketVerification) authKey(r *http.Request) []byte {
 	)[:32]
 }
 
+// setServerConfigRespond appends the X-Heartbeat, X-Timeout, and (when
+// applicable) X-OnlyAllowPresetRemotes headers to hd, sets the Content-Type,
+// and writes the pre-serialized JSON configuration body to w.
 func (s socketVerification) setServerConfigRespond(
 	hd *http.Header, w http.ResponseWriter) {
 	hd.Add("X-Heartbeat", s.heartbeat)
@@ -125,6 +158,14 @@ func (s socketVerification) setServerConfigRespond(
 	w.Write(s.configRspBody)
 }
 
+// Get handles HTTP GET requests for the socket verification endpoint. When no
+// X-Key header is present and no shared key is configured, it returns the
+// server configuration immediately. When a shared key is configured and no
+// X-Key header is present, it returns ErrSocketInvalidAuthKey. When an X-Key
+// header is present, it base64-decodes the value, applies a 500ms delay to
+// slow brute-force attempts, and compares the decoded bytes against the
+// time-windowed HMAC; it returns ErrSocketAuthFailed on mismatch or the server
+// configuration on success.
 func (s socketVerification) Get(
 	w *ResponseWriter, r *http.Request, l log.Logger) error {
 	hd := w.Header()

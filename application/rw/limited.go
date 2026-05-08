@@ -22,19 +22,26 @@ import (
 	"io"
 )
 
-// Errors
+// ErrReadUntilCompletedBufferFull is returned by ReadUntilCompleted when the
+// provided buffer b is too small to hold all remaining bytes in the reader.
 var (
 	ErrReadUntilCompletedBufferFull = errors.New(
 		"cannot read more, not enough data buffer")
 )
 
-// LimitedReader reads only n bytes of data
+// LimitedReader wraps a FetchReader and allows at most n bytes to be read.
+// Once n bytes have been consumed, Completed returns true and further reads
+// return io.EOF.
 type LimitedReader struct {
+	// r is the underlying FetchReader.
 	r *FetchReader
+	// n is the number of bytes remaining before the reader is exhausted.
 	n int
 }
 
-// ReadUntilCompleted read until the reader is completed
+// ReadUntilCompleted reads from r into b until r.Completed() returns true or
+// an error occurs. It returns ErrReadUntilCompletedBufferFull if b is not
+// large enough to hold all remaining bytes.
 func ReadUntilCompleted(r *LimitedReader, b []byte) (int, error) {
 	bCur := 0
 	bLen := len(b)
@@ -64,12 +71,14 @@ func NewLimitedReader(r *FetchReader, n int) LimitedReader {
 	}
 }
 
-// Buffered exports the internal buffer
+// Buffered returns all remaining bytes by calling Fetch(Remains()). It returns
+// io.EOF when the reader is completed.
 func (l *LimitedReader) Buffered() ([]byte, error) {
 	return l.Fetch(l.Remains())
 }
 
-// Fetch fetchs max n bytes from buffer
+// Fetch returns up to n bytes from the underlying FetchReader, capped at
+// Remains(). It returns io.EOF when the reader is already completed.
 func (l *LimitedReader) Fetch(n int) ([]byte, error) {
 	if l.Completed() {
 		return nil, io.EOF
@@ -86,7 +95,8 @@ func (l *LimitedReader) Fetch(n int) ([]byte, error) {
 	return exported, eErr
 }
 
-// Read read from the LimitedReader
+// Read implements io.Reader, reading up to min(len(b), Remains()) bytes into b.
+// It returns io.EOF when the reader is completed.
 func (l *LimitedReader) Read(b []byte) (int, error) {
 	if l.Completed() {
 		return 0, io.EOF
@@ -105,8 +115,8 @@ func (l *LimitedReader) Read(b []byte) (int, error) {
 	return rLen, rErr
 }
 
-// Ditch ditchs all remaining data. Data will be written and overwritten to
-// the given buf when ditching
+// Ditch discards all remaining bytes in the reader by repeatedly reading into
+// buf until Completed returns true. It returns the first read error encountered.
 func (l *LimitedReader) Ditch(buf []byte) error {
 	for !l.Completed() {
 		_, rErr := l.Read(buf)
@@ -119,12 +129,14 @@ func (l *LimitedReader) Ditch(buf []byte) error {
 	return nil
 }
 
-// Remains returns how many bytes is waiting to be read
+// Remains returns the number of bytes that can still be read before the reader
+// is completed.
 func (l LimitedReader) Remains() int {
 	return l.n
 }
 
-// Completed returns whether or not current reader is completed
+// Completed returns true when all n bytes have been consumed and no further
+// reads are permitted.
 func (l LimitedReader) Completed() bool {
 	return l.n <= 0
 }

@@ -16,6 +16,14 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
+ * @file Connection history manager for the Sshwifty UI.
+ *
+ * {@link History} stores, retrieves, and searches past connection records
+ * (host, credentials, session data). Records are persisted via a caller-
+ * supplied `saver` callback and are capped at `maxItems` entries.
+ */
+
+/**
  * Extract needed data
  *
  * @param {Array<string>} kept The keys of of the data to be kept
@@ -48,12 +56,15 @@ function extractSelectedData(kept, input) {
 }
 
 /**
- * constructor
+ * Return whether a named string field within `data` contains `valContains`
+ * as a substring. Non-string fields always return `false`.
  *
- * @param {object} data to be searched
- * @param {string} metaName name of the meta
- * @param {string} valContains target string to search
- *
+ * @private
+ * @param {object} data Record data object to inspect.
+ * @param {string} metaName Name of the field within `data`.
+ * @param {string} valContains Substring to search for.
+ * @returns {boolean} `true` when the field is a string and contains the
+ *   target substring.
  */
 function metaContains(data, metaName, valContains) {
   switch (typeof data[metaName]) {
@@ -65,13 +76,21 @@ function metaContains(data, metaName, valContains) {
   }
 }
 
+/**
+ * Manages connection history records across sessions.
+ *
+ * Records are stored as plain objects and optionally serialized by a
+ * caller-supplied `saver` function (e.g. writing to `localStorage`). The list
+ * is ordered by recency and pruned to `maxItems` on every save.
+ */
 export class History {
   /**
    * constructor
    *
-   * @param {Array<object>} records
-   * @param {function} saver
-   * @param {number} maxItems
+   * @param {Array<object>} records Initial history records (may be empty).
+   * @param {function} saver Called with `(history, exportedRecords)` whenever
+   *   the record list changes.
+   * @param {number} maxItems Maximum number of records to retain.
    *
    */
   constructor(records, saver, maxItems) {
@@ -273,12 +292,14 @@ export class History {
   }
 
   /**
-   * Search for partly matched results
+   * Search history records for entries whose type matches and whose named
+   * data field contains the keyword as a substring.
    *
-   * @param {string} type of the history record
-   * @param {string} metaName name of the meta data
-   * @param {string} keyword keyword to search
-   * @param {number} max max results
+   * @param {string} type Command type string to filter by (e.g. `"SSH"`).
+   * @param {string} metaName Name of the data field to search within.
+   * @param {string} keyword Substring to look for in the data field.
+   * @param {number} max Maximum number of results to return; pass `-1` for all.
+   * @returns {Array<object>} Matching history records (raw internal format).
    */
   search(type, metaName, keyword, max) {
     let maxResults = max > this.records.length ? this.records.length : max;

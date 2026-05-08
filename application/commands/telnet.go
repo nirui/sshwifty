@@ -15,6 +15,10 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+// Package commands – telnet.go implements the Telnet command, which
+// establishes a raw TCP connection to a remote host and bidirectionally relays
+// data between the browser client and the remote server over the stream
+// protocol.
 package commands
 
 import (
@@ -37,16 +41,23 @@ var (
 		"unable to acquire remote connection handle")
 )
 
-// Error codes
+// TelnetRequestErrorBadRemoteAddress is the stream error code returned during
+// Bootup when the remote address cannot be parsed.
 const (
 	TelnetRequestErrorBadRemoteAddress = command.StreamError(0x01)
 )
 
+// telnetDefaultPortString is the default TCP port appended to preset hosts
+// that do not already include an explicit port number.
 const (
 	telnetDefaultPortString = "23"
 )
 
-// Server signal codes
+// Server-to-client stream marker constants.
+// TelnetServerRemoteBand carries inbound data from the remote server.
+// TelnetServerHookOutputBeforeConnecting forwards hook stdout to the client.
+// TelnetServerDialFailed signals that the TCP dial failed.
+// TelnetServerDialConnected signals that the TCP connection is established.
 const (
 	TelnetServerRemoteBand                 = 0x00
 	TelnetServerHookOutputBeforeConnecting = 0x01
@@ -54,19 +65,34 @@ const (
 	TelnetServerDialConnected              = 0x03
 )
 
+// telnetClient implements command.FSMMachine for a Telnet session. The remote
+// goroutine dials the TCP endpoint and forwards received data; the client FSM
+// state forwards client frames to the TCP connection.
 type telnetClient struct {
-	l             log.Logger
-	hooks         command.Hooks
-	w             command.StreamResponder
-	cfg           command.Configuration
-	bufferPool    *command.BufferPool
-	baseCtx       context.Context
+	// l is the logger for this session.
+	l log.Logger
+	// hooks holds hook instances for connection lifecycle events.
+	hooks command.Hooks
+	// w is the stream responder for sending data to the browser client.
+	w command.StreamResponder
+	// cfg holds the network dial configuration.
+	cfg command.Configuration
+	// bufferPool is the shared buffer pool for this session.
+	bufferPool *command.BufferPool
+	// baseCtx is cancelled when the session should be torn down.
+	baseCtx context.Context
+	// baseCtxCancel cancels baseCtx; it is wrapped with sync.OnceFunc.
 	baseCtxCancel func()
-	remoteChan    chan net.Conn
-	remoteConn    net.Conn
-	closeWait     sync.WaitGroup
+	// remoteChan delivers the established net.Conn from the remote goroutine.
+	remoteChan chan net.Conn
+	// remoteConn caches the received net.Conn after first retrieval.
+	remoteConn net.Conn
+	// closeWait is decremented when the remote goroutine exits.
+	closeWait sync.WaitGroup
 }
 
+// newTelnet is the command.Command factory for the Telnet command. It returns a
+// fully initialised telnetClient ready for Bootup.
 func newTelnet(
 	l log.Logger,
 	hooks command.Hooks,
@@ -89,6 +115,9 @@ func newTelnet(
 	}
 }
 
+// parseTelnetConfig is the configuration.PresetReloader for the Telnet command.
+// It normalises the preset host by appending the default Telnet port when no
+// explicit port is present.
 func parseTelnetConfig(p configuration.Preset) (configuration.Preset, error) {
 	oldHost := p.Host
 
@@ -104,6 +133,8 @@ func parseTelnetConfig(p configuration.Preset) (configuration.Preset, error) {
 	return p, nil
 }
 
+// telnetMaxHostnameLen is the maximum byte length accepted when parsing the
+// remote address hostname field during Bootup.
 const (
 	telnetMaxHostnameLen = 255
 )
@@ -126,6 +157,10 @@ func (d *telnetClient) Bootup(
 	return d.client, command.NoFSMError()
 }
 
+// remote runs in a dedicated goroutine for the lifetime of the Telnet session.
+// It executes the before-connecting hooks, dials the remote TCP endpoint, sends
+// TelnetServerDialConnected, and then reads inbound data to forward to the
+// client. On exit it signals HeaderClose and closes the remoteChan.
 func (d *telnetClient) remote(addr string) {
 	u := d.bufferPool.Get()
 	defer d.bufferPool.Put(u)
@@ -198,6 +233,10 @@ func (d *telnetClient) remote(addr string) {
 	}
 }
 
+// getRemote returns the established net.Conn, blocking on remoteChan if the
+// remote goroutine has not yet delivered it. Subsequent calls return the cached
+// value. It returns ErrTelnetUnableToReceiveRemoteConn if the channel was
+// closed before a connection was delivered.
 func (d *telnetClient) getRemote() (net.Conn, error) {
 	if d.remoteConn != nil {
 		return d.remoteConn, nil
@@ -212,6 +251,9 @@ func (d *telnetClient) getRemote() (net.Conn, error) {
 	return d.remoteConn, nil
 }
 
+// client is the FSMState for the Telnet command's main event loop. It forwards
+// all incoming stream data directly to the remote TCP connection without
+// interpreting it.
 func (d *telnetClient) client(
 	f *command.FSM,
 	r *rw.LimitedReader,

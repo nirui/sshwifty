@@ -15,11 +15,30 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+/**
+ * @file Single-slot async pub/sub primitive used throughout the stream layer.
+ *
+ * {@link Subscribe} acts as a rendezvous point: a producer calls
+ * {@link Subscribe#resolve} or {@link Subscribe#reject}, and a consumer awaits
+ * {@link Subscribe#subscribe}. Pending events are queued when no consumer is
+ * waiting.
+ */
+
 import Exception from "./exception.js";
 
+/** @private @type {number} Pending-queue entry type for a rejection. */
 const typeReject = 0;
+/** @private @type {number} Pending-queue entry type for a resolution. */
 const typeResolve = 1;
 
+/**
+ * Asynchronous single-consumer pub/sub channel.
+ *
+ * Producers call {@link Subscribe#resolve} or {@link Subscribe#reject} to push
+ * values. The consumer calls {@link Subscribe#subscribe} to receive the next
+ * value, blocking until one is available. When no more values will be produced,
+ * the channel can be shut down with {@link Subscribe#disable}.
+ */
 export class Subscribe {
   /**
    * constructor
@@ -33,7 +52,10 @@ export class Subscribe {
   }
 
   /**
-   * Returns how many resolve/reject in the pending
+   * Returns how many resolve/reject events are in the pending queue, including
+   * any currently-registered waiter.
+   *
+   * @returns {number} Count of queued and active pending events.
    */
   pendings() {
     return (

@@ -27,25 +27,34 @@ import (
 	"github.com/Snuffy2/sshwifty/application/rw"
 )
 
-// Configuration contains configuration data needed to run command
+// Configuration holds the network-level settings needed to execute outbound
+// connections on behalf of a command, including the dialer function and the
+// maximum duration allowed for establishing a connection.
 type Configuration struct {
-	Dial        network.Dial
+	// Dial is the function used to open outbound network connections.
+	Dial network.Dial
+	// DialTimeout is the maximum duration permitted for a single dial attempt.
 	DialTimeout time.Duration
 }
 
-// Commander command control
+// Commander manages the set of registered commands and produces Handler
+// instances for new client sessions.
 type Commander struct {
 	commands Commands
 }
 
-// New creates a new Commander
+// New creates a new Commander backed by the given set of registered commands.
 func New(cs Commands) Commander {
 	return Commander{
 		commands: cs,
 	}
 }
 
-// New Adds a new client
+// New creates and returns a Handler for a new client session. The Handler
+// reads frames from receiver, writes responses to sender (guarded by
+// senderLock), and dispatches commands to the registered handlers. receiveDelay
+// and sendDelay introduce artificial latency between frames to help with
+// flow control.
 func (c Commander) New(
 	cfg Configuration,
 	receiver rw.FetchReader,

@@ -130,6 +130,28 @@
 <script>
 import "./connect_known.css";
 
+/**
+ * @fileoverview Lists previously connected remotes and server-defined presets,
+ * and provides import/export functionality for the known-remotes store.
+ *
+ * The component accepts the raw `knowns` array from the parent, converts it
+ * into an internal list with copy-link state, and plays a brief CSS animation
+ * when entries are added. Preset entries can be disabled when
+ * `restrictedToPresets` is true and the preset lacks a host.
+ *
+ * @prop {Array}    presets             - Server-defined preset connections.
+ * @prop {boolean}  restrictedToPresets - When true, only fully-specified presets are selectable.
+ * @prop {Array}    knowns              - Previously connected remote descriptors.
+ * @prop {Function} launcherBuilder     - Builds a shareable URL for a known remote.
+ * @prop {Function} knownsExport        - Returns the serialisable known-remotes payload.
+ * @prop {Function} knownsImport        - Merges a deserialised known-remotes payload.
+ *
+ * @emits select         - User chose a known remote. Payload: known data object.
+ * @emits select-preset  - User chose a preset. Payload: preset object.
+ * @emits remove         - User removed a known remote. Payload: `{string}` uid.
+ * @emits clear-session  - User cleared session data. Payload: `{string}` uid.
+ */
+
 export default {
   props: {
     presets: {
@@ -157,6 +179,12 @@ export default {
       default: () => [],
     },
   },
+  /**
+   * @returns {{knownList: Array, reloaded: boolean, busy: boolean}}
+   *   `knownList` — internal copy of knowns in reverse insertion order with copy-link state.
+   *   `reloaded` — briefly true after the list grows, triggering a CSS reload animation.
+   *   `busy` — true while an async clipboard or file operation is in progress.
+   */
   data() {
     return {
       knownList: [],
@@ -188,6 +216,14 @@ export default {
     this.reload(this.knowns);
   },
   methods: {
+    /**
+     * Rebuilds the internal `knownList` from the raw knowns array, reversing
+     * the order so the most-recent connection appears first, and resets each
+     * entry's copy-link state.
+     *
+     * @param {Array} knownList - The updated knowns array from the parent.
+     * @returns {void}
+     */
     reload(knownList) {
       this.knownList = [];
 
@@ -199,6 +235,14 @@ export default {
         });
       }
     },
+    /**
+     * Emits `select` with the known-remote data object.
+     * No-op while a clipboard or file operation is in progress.
+     *
+     * @param {Object} known - The known remote data object.
+     * @emits select
+     * @returns {void}
+     */
     select(known) {
       if (this.busy) {
         return;
@@ -206,6 +250,15 @@ export default {
 
       this.$emit("select", known);
     },
+    /**
+     * Returns whether a preset should be rendered as non-interactive.
+     *
+     * A preset is disabled when `restrictedToPresets` is true and the preset
+     * does not specify a host (i.e. requires the user to fill in the address).
+     *
+     * @param {Object} preset - The preset descriptor.
+     * @returns {boolean} True if the preset should be disabled.
+     */
     presetDisabled(preset) {
       if (!this.restrictedToPresets || preset.preset.host().length > 0) {
         return false;
@@ -213,6 +266,14 @@ export default {
 
       return true;
     },
+    /**
+     * Emits `select-preset` with the chosen preset.
+     * No-op while busy or if the preset is disabled.
+     *
+     * @param {Object} preset - The preset descriptor chosen by the user.
+     * @emits select-preset
+     * @returns {void}
+     */
     selectPreset(preset) {
       if (this.busy || this.presetDisabled(preset)) {
         return;
@@ -220,6 +281,17 @@ export default {
 
       this.$emit("select-preset", preset);
     },
+    /**
+     * Builds a launch URL for the known remote and copies it to the clipboard.
+     *
+     * Shows intermediate "Copying" / "Copied!" / "Failed" states on the button.
+     * Falls back to setting the anchor `href` so the user can still follow the
+     * link manually if clipboard access is denied. Resets the label after 2 s.
+     *
+     * @param {{data: Object, copying: boolean, copyStatus: string}} known - Internal known-list entry.
+     * @param {MouseEvent} ev - The originating click event (used to update href on failure).
+     * @returns {Promise<void>}
+     */
     async launcher(known, ev) {
       if (known.copying || this.busy) {
         return;
@@ -228,8 +300,8 @@ export default {
       ev.preventDefault();
 
       this.busy = true;
-      known.copying = true;
-      known.copyStatus = "Copying";
+      this.$set(known, "copying", true);
+      this.$set(known, "copyStatus", "Copying");
 
       let lnk = this.launcherBuilder(known.data);
 
@@ -237,22 +309,30 @@ export default {
         await navigator.clipboard.writeText(lnk);
 
         (() => {
-          known.copyStatus = "Copied!";
+          this.$set(known, "copyStatus", "Copied!");
         })();
       } catch (e) {
         (() => {
-          known.copyStatus = "Failed";
+          this.$set(known, "copyStatus", "Failed");
           ev.target.setAttribute("href", lnk);
         })();
       }
 
       setTimeout(() => {
-        known.copyStatus = "Copy link";
-        known.copying = false;
+        this.$set(known, "copyStatus", "Copy link");
+        this.$set(known, "copying", false);
       }, 2000);
 
       this.busy = false;
     },
+    /**
+     * Emits `remove` with the uid of the known remote to delete.
+     * No-op while busy.
+     *
+     * @param {string} uid - Unique identifier of the known remote to remove.
+     * @emits remove
+     * @returns {void}
+     */
     remove(uid) {
       if (this.busy) {
         return;
@@ -260,6 +340,14 @@ export default {
 
       this.$emit("remove", uid);
     },
+    /**
+     * Emits `clear-session` with the uid of the known remote whose persisted
+     * session data should be cleared. No-op while busy.
+     *
+     * @param {string} uid - Unique identifier of the known remote.
+     * @emits clear-session
+     * @returns {void}
+     */
     clearSession(uid) {
       if (this.busy) {
         return;
@@ -267,6 +355,12 @@ export default {
 
       this.$emit("clear-session", uid);
     },
+    /**
+     * Serialises all known remotes to a base64-encoded JSON file and triggers a
+     * browser download. Shows an alert if serialisation or download fails.
+     *
+     * @returns {void}
+     */
     exportHosts() {
       let el = null;
 
@@ -299,6 +393,13 @@ export default {
 
       document.body.removeChild(el);
     },
+    /**
+     * Opens a hidden `<input type="file">` picker and reads the selected file
+     * as base64-encoded JSON, then delegates to `knownsImport` to merge the
+     * entries. Shows an alert if file reading or parsing fails.
+     *
+     * @returns {void}
+     */
     importHosts() {
       const self = this;
 

@@ -22,15 +22,18 @@ import (
 	"time"
 )
 
-// HookType is a type of Hook
+// HookType is the string identifier for a lifecycle hook event. It is used as
+// the map key in the Hooks configuration to associate commands with events.
 type HookType string
 
-// Defined Hook Types
+// HOOK_BEFORE_CONNECTING is the hook type fired immediately before an outbound
+// connection attempt is made, allowing operators to run pre-flight scripts.
 const (
 	HOOK_BEFORE_CONNECTING HookType = "before_connecting"
 )
 
-// verifyHookName returns the HookType of given `name`
+// verify returns nil if h is a recognised HookType, or a descriptive error
+// listing the supported types if it is not.
 func (h HookType) verify() error {
 	switch h {
 	case "before_connecting":
@@ -46,13 +49,17 @@ func (h HookType) verify() error {
 	}
 }
 
-// HookCommand contains a single Hook command
+// HookCommand is a single executable command and its arguments, represented as
+// a string slice where element 0 is the executable path.
 type HookCommand []string
 
-// Hooks contains registered Hooks
+// Hooks maps each HookType to the ordered list of commands to run when that
+// hook fires. Multiple commands may be registered for the same type.
 type Hooks map[HookType][]HookCommand
 
-// verify verifies all settings in current Hooks
+// verify validates all HookType keys and their command lists, returning a
+// descriptive error if any key is unsupported or any command list is empty or
+// contains an empty command.
 func (h Hooks) verify() error {
 	for k, v := range h {
 		if err := k.verify(); err != nil {
@@ -74,8 +81,12 @@ func (h Hooks) verify() error {
 	return nil
 }
 
-// HookSettings contains Hook settings
+// HookSettings bundles the hook command registry with the shared execution
+// timeout. It is derived from a Configuration and passed into the command layer
+// via Common.
 type HookSettings struct {
+	// Timeout is the maximum duration any single hook invocation may run.
 	Timeout time.Duration
-	Hooks   Hooks
+	// Hooks is the map of hook types to their ordered command lists.
+	Hooks Hooks
 }

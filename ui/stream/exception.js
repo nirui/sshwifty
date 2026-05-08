@@ -15,6 +15,18 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+/**
+ * @file Stream-layer exception type. Extends the built-in Error with a
+ * `temporary` flag so callers can distinguish transient failures (which may
+ * be retried) from permanent ones (which require connection teardown).
+ */
+
+/**
+ * Stream-layer error that carries a temporality flag.
+ *
+ * Callers should inspect {@link Exception#temporary} to decide whether to
+ * retry the operation or abort the connection.
+ */
 export default class Exception extends Error {
   /**
    * constructor

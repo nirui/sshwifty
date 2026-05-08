@@ -17,11 +17,18 @@ package configuration
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-// Preset contains data of a static remote host
+// Preset describes a pre-configured remote endpoint displayed in the Sshwifty
+// UI. Each Preset is associated with a command type (e.g. "SSH" or "Telnet")
+// and may carry command-specific metadata in the Meta map.
 type Preset struct {
-	Title    string
-	Type     string
-	Host     string
+	// Title is the human-readable label shown in the UI tab.
+	Title string
+	// Type identifies the command that handles this preset (e.g. "SSH").
+	Type string
+	// Host is the address (and optional port) of the remote endpoint.
+	Host string
+	// TabColor is an optional CSS colour string used to tint the UI tab.
 	TabColor string
-	Meta     map[string]string
+	// Meta holds command-specific key/value options (e.g. SSH username).
+	Meta map[string]string
 }

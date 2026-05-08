@@ -44,6 +44,22 @@ import "./tab_window.css";
 import Window from "./window.vue";
 import TabList from "./tab_list.vue";
 
+/**
+ * @fileoverview Overlay window variant that presents the full tab list in a
+ * floating panel (used on small screens or when the user opens the "Opened tabs"
+ * panel from the toolbar). Automatically hides itself when all tabs are closed.
+ *
+ * @prop {boolean} display   - Controls overlay visibility.
+ * @prop {number}  tab       - Index of the currently active tab.
+ * @prop {Array}   tabs      - Array of tab descriptors (same shape as `tab_list.vue`).
+ * @prop {string}  tabsClass - Additional CSS class forwarded to the tab list.
+ *
+ * @emits display - Forwarded from the window widget; payload: `{boolean}`.
+ * @emits current - Forwarded from tab-list; payload: `{number}` new active index.
+ * @emits retap   - Forwarded from tab-list; payload: `{number}` index.
+ * @emits close   - Forwarded from tab-list; payload: `{number}` index.
+ */
+
 export default {
   components: {
     window: Window,

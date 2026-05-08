@@ -1,3 +1,7 @@
+// Package command – hooks.go defines the Hook interface, its parameter and
+// output abstractions, the registry that maps HookTypes to Hook slices, and the
+// Hooks aggregate that executes all registered hooks for a given event with a
+// shared timeout.
 package command
 
 import (
@@ -10,9 +14,13 @@ import (
 	"github.com/Snuffy2/sshwifty/application/log"
 )
 
-// HookParameters contains parameters needed to run a hook
+// HookParameters is a string-to-string map of named values passed to a hook
+// when it is executed. Parameter names are arbitrary but conventions are
+// established by each hook event type (e.g. "Remote Address").
 type HookParameters map[string]string
 
+// NewHookParameters creates an empty HookParameters with the given initial
+// capacity to avoid unnecessary reallocations when inserting known keys.
 func NewHookParameters(initialCapacity int) HookParameters {
 	return make(HookParameters, initialCapacity)
 }
@@ -29,7 +37,8 @@ func (p HookParameters) Items() int {
 	return len(p)
 }
 
-// HookParameterIterator Iterates through HookParameters
+// HookParameterIterator is a callback invoked for each name/value pair in a
+// HookParameters map by the Iter method.
 type HookParameterIterator func(name string, value string)
 
 // Iter iterate through all items contained in current HookParameters
@@ -39,19 +48,25 @@ func (p HookParameters) Iter(iter HookParameterIterator) {
 	}
 }
 
-// Hook represents the instance of a Hook
+// Hook is the interface that all hook implementations must satisfy. Run is
+// called with a context (which carries the execution deadline), the event
+// parameters, and an output sink. It must return nil on success; any returned
+// error is collected and reported by Hooks.Run.
 type Hook interface {
 	Run(ctx context.Context, params HookParameters, output HookOutput) error
 }
 
-// HookOutput is a controller given by the Hook executer to allow it to output
-// running information during the run
+// HookOutput is the sink provided to a Hook implementation so it can stream
+// informational output back to the connected client while it runs. Out receives
+// normal (stdout-equivalent) output; Err receives diagnostic (stderr-equivalent)
+// output, which is also logged at INFO level.
 type HookOutput interface {
 	Out(b []byte) (wLen int, wErr error)
 	Err(b []byte) (wLen int, wErr error)
 }
 
-// HookOutputWriter wraps a Write function to implement io.Writer
+// HookOutputWriter is a function type that adapts a write callback to
+// io.Writer, allowing it to be passed as exec.Cmd.Stdout or exec.Cmd.Stderr.
 type HookOutputWriter func(b []byte) (wLen int, wErr error)
 
 // Write implements io.Writer
@@ -59,9 +74,13 @@ func (w HookOutputWriter) Write(b []byte) (int, error) {
 	return w(b)
 }
 
-// DefaultHookOutput is the default implementation of a HookOutput
+// DefaultHookOutput is the standard HookOutput implementation: normal output is
+// forwarded via out to the client stream, while error output is written to the
+// application log at INFO level and silently discarded from the wire.
 type DefaultHookOutput struct {
+	// log is used to record stderr output from the hook process.
 	log log.Logger
+	// out sends stdout bytes from the hook to the client.
 	out HookOutputWriter
 }
 
@@ -87,21 +106,25 @@ func (d DefaultHookOutput) Err(b []byte) (wLen int, wErr error) {
 	return len(b), nil
 }
 
-// HookConfiguration contains configuration needed for a Hook run
+// HookConfiguration holds the runtime limits applied to each hook invocation.
 type HookConfiguration struct {
+	// Timeout is the maximum duration a hook execution may run before the
+	// context is cancelled.
 	Timeout time.Duration
 }
 
-// hookTypes contains registered Hooks
+// hookTypes maps each HookType to the slice of Hook instances registered for it.
 type hookTypes map[configuration.HookType][]Hook
 
-// acquire fetches all Hook registered under `t`
+// acquire returns the slice of hooks registered under t, and whether any were
+// found. The returned slice must not be modified.
 func (h *hookTypes) acquire(t configuration.HookType) (p []Hook, got bool) {
 	p, got = (*h)[t]
 	return
 }
 
-// Register register a Hook `p`
+// register appends hook p to the list of hooks for type t, allocating the
+// list if this is the first registration for that type.
 func (h *hookTypes) register(t configuration.HookType, p Hook) {
 	ps, found := (*h)[t]
 	if !found {
@@ -111,13 +134,18 @@ func (h *hookTypes) register(t configuration.HookType, p Hook) {
 	(*h)[t] = ps
 }
 
-// Hooks contains all registered hooks
+// Hooks aggregates all registered Hook instances grouped by HookType together
+// with the shared timeout configuration. Use NewHooks to construct one from
+// a configuration.HookSettings value.
 type Hooks struct {
+	// hooks maps each HookType to the ordered list of Hook instances.
 	hooks hookTypes
-	cfg   HookConfiguration
+	// cfg holds the runtime limits applied to each hook invocation.
+	cfg HookConfiguration
 }
 
-// createHookForCommand creates a Hook based on given `command`
+// createHookForCommand wraps the given command slice in an ExecHook, adapting
+// the command configuration format to the Hook interface.
 func createHookForCommand(command []string) Hook {
 	return NewExecHook(command)
 }
@@ -139,12 +167,16 @@ func NewHooks(cfg configuration.HookSettings) Hooks {
 	}
 }
 
-// Constants for Hooks.Run
+// hooksExecDeadlineFormat is the time format used to inject the absolute
+// deadline timestamp into hook parameters as the "Deadline" key.
 const (
 	hooksExecDeadlineFormat = time.RFC3339
 )
 
-// Run runs Hooks of given type `t`
+// Run executes all hooks registered under type t in order, injecting a
+// "Deadline" parameter and enforcing the configured timeout via a derived
+// context. Errors from individual hooks are collected and joined; the first
+// hook failure does not prevent subsequent hooks from running.
 func (h *Hooks) Run(
 	ctx context.Context,
 	t configuration.HookType,

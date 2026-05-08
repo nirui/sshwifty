@@ -23,13 +23,19 @@ import (
 	"time"
 )
 
-// Writer will write logs to the underlaying writer
+// Writer is a Logger implementation that formats each message with a prefix
+// containing the log level, RFC1123 timestamp, and the hierarchical context
+// path, and writes it to the underlying io.Writer. All four severity levels are
+// active, including Debug.
 type Writer struct {
+	// c is the accumulated context path, e.g. "Root > Server > Request".
 	c string
+	// w is the output destination.
 	w io.Writer
 }
 
-// NewWriter creates a new Writer
+// NewWriter creates a Writer that writes to w with the given initial context
+// label.
 func NewWriter(context string, w io.Writer) Writer {
 	return Writer{
 		c: context,
@@ -37,17 +43,18 @@ func NewWriter(context string, w io.Writer) Writer {
 	}
 }
 
-// Context build a new Sub context
+// Context returns a child Writer with name appended to the context path.
 func (w Writer) Context(name string) Logger {
 	return NewWriter(w.c+" > "+name, w.w)
 }
 
-// TitledContext build a new Sub context
+// TitledContext returns a child Writer with a formatted name appended to the
+// context path.
 func (w Writer) TitledContext(name string, params ...any) Logger {
 	return NewWriter(w.c+" > "+fmt.Sprintf(name, params...), w.w)
 }
 
-// Write writes default error
+// Write satisfies io.Writer by logging b at the "DEF" severity level.
 func (w Writer) Write(b []byte) (int, error) {
 	_, wErr := w.write("DEF", string(b))
 
@@ -58,6 +65,9 @@ func (w Writer) Write(b []byte) (int, error) {
 	return len(b), nil
 }
 
+// write formats and emits a single log line with the given prefix tag (e.g.
+// "INF", "DBG"), the current RFC1123 timestamp, the context path, and the
+// message. It returns the number of bytes written and any write error.
 func (w Writer) write(
 	prefix string, msg string, params ...any) (int, error) {
 	return fmt.Fprintf(w.w, "["+prefix+"] "+

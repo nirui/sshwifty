@@ -15,6 +15,10 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+// Package commands – address.go defines the Address wire type used by SSH and
+// Telnet commands to represent a remote endpoint. It handles four address
+// families (loopback, IPv4, IPv6, hostname) and provides serialisation and
+// deserialisation against the binary wire format.
 package commands
 
 import (
@@ -50,10 +54,12 @@ var (
 		"invalid host address")
 )
 
-// AddressType Type of the address
+// AddressType identifies which of the four supported address families an
+// Address uses on the wire.
 type AddressType byte
 
-// Address types
+// LoopbackAddr, IPv4Addr, IPv6Addr, and HostNameAddr are the four wire-level
+// address type codes carried in the address header byte.
 const (
 	LoopbackAddr AddressType = 0x00
 	IPv4Addr     AddressType = 0x01
@@ -61,19 +67,26 @@ const (
 	HostNameAddr AddressType = 0x03
 )
 
-// Address size limits
+// MaxHostNameLen is the maximum number of bytes a hostname address may contain.
 const (
 	MaxHostNameLen = 255
 )
 
-// Address data
+// Address represents a parsed remote endpoint consisting of a TCP port number,
+// an address family, and the raw address bytes. Use ParseAddress or NewAddress
+// to construct one.
 type Address struct {
+	// port is the TCP port number for the remote endpoint.
 	port uint16
+	// kind identifies the address family.
 	kind AddressType
+	// data holds the address bytes (4 for IPv4, 16 for IPv6, n for hostname).
 	data []byte
 }
 
-// Variables for ParseAddress
+// hostNameVerifier is the compiled regular expression used to validate hostname
+// address data. Only alphanumeric characters, dots, underscores, and hyphens
+// are permitted.
 var (
 	hostNameVerifier = regexp.MustCompile("^([0-9A-Za-z_.\\-]+)$")
 )
@@ -167,7 +180,8 @@ func ParseAddress(reader rw.ReaderFunc, buf []byte) (Address, error) {
 	}, nil
 }
 
-// NewAddress creates a new Address
+// NewAddress constructs an Address directly from its components without
+// reading from the wire. data must match the size expected for addrType.
 func NewAddress(addrType AddressType, data []byte, port uint16) Address {
 	return Address{
 		port: port,
@@ -191,7 +205,9 @@ func (a Address) Port() uint16 {
 	return a.port
 }
 
-// Marshal writes address data to the given b
+// Marshal serialises the Address into b using the wire format described in
+// ParseAddress. It returns the number of bytes written or an error if b is too
+// small to hold the encoded form.
 func (a Address) Marshal(b []byte) (int, error) {
 	bLen := len(b)
 

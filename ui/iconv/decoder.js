@@ -48,14 +48,28 @@ import * as common from "./common.js";
 // }
 
 /**
- * Decode a stream that was encoded with specified `charset`, and output the
- * decoded string with `output`
+ * @file iconv/decoder.js
+ * @description Charset-aware stream decoder backed by iconv-lite. Consumes raw
+ * byte arrays and emits decoded strings to a caller-supplied output callback.
+ */
+
+/**
+ * Streaming charset decoder.
  *
- * @param {function} output a callback to output decoded stream
- * @param {string} charset the charset which the stream is encoded in
- *
+ * Wraps an iconv-lite decode stream for the given `charset`. Decoded string
+ * chunks are delivered to `output` via the stream `"data"` event. Errors from
+ * both decoding and the output callback are silently swallowed to keep the
+ * session alive in the presence of malformed data.
  */
 export class IconvDecoder {
+  /**
+   * Creates a new `IconvDecoder` and opens the underlying iconv decode stream.
+   *
+   * @param {function(string): void} output - Callback invoked with each decoded
+   *   string chunk produced by the decoder.
+   * @param {string} charset - The source charset (e.g. `"UTF-8"`, `"Shift-JIS"`).
+   *   Must be a value from {@link module:iconv/common.charset}.
+   */
   constructor(output, charset) {
     this.out = output;
     this.decoder = common.Iconv.decodeStream(charset);
@@ -70,10 +84,13 @@ export class IconvDecoder {
   }
 
   /**
-   * Write encoded string into current decoder
+   * Writes a raw byte buffer into the decoder stream for charset conversion.
    *
-   * @param {Uint8Array} b the encoded stream
+   * The decoded string output is delivered asynchronously to the `output`
+   * callback. Decoding errors (e.g. invalid byte sequences) are silently ignored.
    *
+   * @param {Uint8Array} b - Raw bytes encoded in the session charset.
+   * @returns {void}
    */
   write(b) {
     try {
@@ -84,8 +101,12 @@ export class IconvDecoder {
   }
 
   /**
-   * Closes current decoder
+   * Flushes and closes the underlying decode stream.
    *
+   * After calling `close`, any subsequent `write` calls will have no effect.
+   * Errors during stream termination are silently ignored.
+   *
+   * @returns {void}
    */
   close() {
     try {

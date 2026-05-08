@@ -23,27 +23,32 @@ import (
 	"net"
 )
 
-// Errors
+// ErrAccessControlDialTargetHostNotAllowed is returned by AccessControlDial
+// when the requested address is not in the AllowedHost set.
 var (
 	ErrAccessControlDialTargetHostNotAllowed = errors.New(
 		"unable to dial to the specified remote host due to restriction")
 )
 
-// AllowedHosts contains a map of allowed remote hosts
+// AllowedHosts is a set of permitted host:port strings. It implements
+// AllowedHost and is used to enforce the OnlyAllowPresetRemotes restriction.
 type AllowedHosts map[string]struct{}
 
-// Allowed returns whether or not given host is allowed
+// Allowed reports whether host is in the allow-set.
 func (a AllowedHosts) Allowed(host string) bool {
 	_, ok := a[host]
 	return ok
 }
 
-// AllowedHost returns whether or not give host is allowed
+// AllowedHost is the interface checked by AccessControlDial before delegating
+// each dial attempt. Implementations return true when the address is permitted.
 type AllowedHost interface {
 	Allowed(host string) bool
 }
 
-// AccessControlDial creates an access controlled Dial
+// AccessControlDial wraps dial with an access-control check. Before each
+// connection attempt it calls allowed.Allowed(address); if the address is not
+// allowed it returns ErrAccessControlDialTargetHostNotAllowed without dialing.
 func AccessControlDial(allowed AllowedHost, dial Dial) Dial {
 	return func(
 		ctx context.Context,

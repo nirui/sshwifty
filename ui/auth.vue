@@ -70,9 +70,28 @@
 </template>
 
 <script>
+/**
+ * @file auth.vue
+ * @description Authentication wall component. Renders a passphrase form that
+ * is shown when the Sshwifty backend requires a passphrase before allowing
+ * access. Emits an `"auth"` event with the passphrase on valid submission and
+ * reflects server-returned errors through the `error` prop.
+ */
 export default {
   directives: {
+    /**
+     * `v-focus` directive: moves browser focus to the bound element on insert
+     * when the binding value is truthy.
+     */
     focus: {
+      /**
+       * Called after the element is inserted into the DOM.
+       *
+       * @param {HTMLElement} el - The element the directive is bound to.
+       * @param {{ value: boolean }} binding - Directive binding; focus is applied
+       *   only when `binding.value` is truthy.
+       * @returns {void}
+       */
       inserted(el, binding) {
         if (!binding.value) {
           return;
@@ -83,6 +102,12 @@ export default {
     },
   },
   props: {
+    /**
+     * Server-returned authentication error message. When non-empty the error is
+     * displayed in the form and `submitting` is reset to allow retrying.
+     *
+     * @type {string}
+     */
     error: {
       type: String,
       default: "",
@@ -104,6 +129,14 @@ export default {
   },
   mounted() {},
   methods: {
+    /**
+     * Validates the passphrase field and emits an `"auth"` event to the parent.
+     *
+     * Guards against empty submissions and duplicate in-flight requests via the
+     * `submitting` flag. Clears `passphraseErr` before emitting.
+     *
+     * @returns {void}
+     */
     auth() {
       if (this.passphrase.length <= 0) {
         this.passphraseErr = "Passphrase cannot be empty";

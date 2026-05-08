@@ -15,8 +15,24 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+/**
+ * @file Typed event bus used by SSH and Telnet command instances.
+ *
+ * {@link Events} validates that all required event handlers are registered at
+ * construction time. Events prefixed with `@` are "placeholders" — they must
+ * be filled in later via {@link Events#place} before they can be fired.
+ */
+
 import Exception from "./exception.js";
 
+/**
+ * Strict typed event emitter for command lifecycle events.
+ *
+ * At construction, every event name in `events` must have a corresponding
+ * function in `callbacks`. Names prefixed with `@` are deferred placeholders
+ * that must be filled with {@link Events#place} before {@link Events#fire}
+ * is called for them.
+ */
 export class Events {
   /**
    * constructor

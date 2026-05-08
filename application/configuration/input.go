@@ -23,7 +23,9 @@ import (
 	"time"
 )
 
-// serverInput contains configuration input from the user
+// serverInput holds raw user-supplied values for a single HTTP server instance
+// before they have been validated and converted to concrete types. Integer
+// timeouts are expressed in seconds; delays are expressed in milliseconds.
 type serverInput struct {
 	ListenInterface       string // Interface to listen to
 	ListenPort            uint16 // Port to listen
@@ -38,7 +40,9 @@ type serverInput struct {
 	ServerMessage         string // Server message displayed on the Home page
 }
 
-// concretize creates a valid Server configuration from current serverInput
+// concretize converts the raw serverInput into a normalised Server by applying
+// default values, converting integer seconds/milliseconds to time.Duration, and
+// calling Server.normalize.
 func (f *serverInput) concretize() Server {
 	return Server{
 		ListenInterface:       f.ListenInterface,
@@ -55,10 +59,13 @@ func (f *serverInput) concretize() Server {
 	}.normalize()
 }
 
-// serverInputs contains a group of serverInput
+// serverInputs is an ordered list of serverInput values, each corresponding to
+// one HTTP server definition in the configuration source.
 type serverInputs []serverInput
 
-// concretize creates configuration for all Server based on current serverInputs
+// concretize validates and converts every serverInput in f into a Server. It
+// returns an error if the slice is empty (at least one server is required) or
+// if any individual server fails verification.
 func (f serverInputs) concretize() ([]Server, error) {
 	if len(f) <= 0 {
 		return nil, fmt.Errorf("at least one Server must be specified")
@@ -79,7 +86,8 @@ func (f serverInputs) concretize() ([]Server, error) {
 	return ss, nil
 }
 
-// presetInput contains user input for a preset
+// presetInput holds raw user-supplied values for a single preset endpoint
+// before Meta values have been parsed through the String scheme resolver.
 type presetInput struct {
 	Title    string
 	Type     string
@@ -88,7 +96,9 @@ type presetInput struct {
 	Meta     Meta
 }
 
-// concretize creates a preset based on current presetInput
+// concretize resolves all Meta values through the String scheme resolver and
+// returns a concrete Preset. It returns an error if any Meta value cannot be
+// parsed.
 func (f presetInput) concretize() (Preset, error) {
 	m, err := f.Meta.Concretize()
 	if err != nil {
@@ -103,11 +113,12 @@ func (f presetInput) concretize() (Preset, error) {
 	}, nil
 }
 
-// presetInputs contains a group of presetInput
+// presetInputs is an ordered list of presetInput values corresponding to the
+// preset entries in the configuration source.
 type presetInputs []presetInput
 
-// concretize creates configuration for all Presets based on current
-// presetInputs
+// concretize converts each presetInput in f into a Preset, collecting the
+// first error encountered with a human-readable index and title.
 func (f presetInputs) concretize() ([]Preset, error) {
 	ps := make([]Preset, 0, len(f))
 	for i, p := range f {
@@ -122,7 +133,9 @@ func (f presetInputs) concretize() ([]Preset, error) {
 	return ps, nil
 }
 
-// commonInput contains input for common settings
+// commonInput is the top-level raw configuration struct decoded from a JSON
+// file or environment variables. All numeric timeouts are in seconds or
+// milliseconds and are converted to time.Duration by concretize.
 type commonInput struct {
 	// Host name
 	HostName string
@@ -158,7 +171,9 @@ type commonInput struct {
 	OnlyAllowPresetRemotes bool
 }
 
-// concretize creates Configuration based on current commonInput
+// concretize validates and converts the raw commonInput into a Configuration,
+// applying defaults for zero-valued numeric fields and propagating errors from
+// hook validation and server/preset concretisation.
 func (f commonInput) concretize() (Configuration, error) {
 	if err := f.Hooks.verify(); err != nil {
 		return Configuration{}, err

@@ -34,8 +34,21 @@
 </template>
 
 <script>
+/**
+ * @file loading.vue
+ * @description Full-screen loading/error splash shown during application
+ * bootstrap. Displays an animated spinner and "Preparing client application"
+ * while `error` is empty; switches to an error cross and the error message
+ * text once `error` becomes non-empty.
+ */
 export default {
   props: {
+    /**
+     * Fatal initialisation error message. An empty string renders the spinner;
+     * any non-empty value switches the view to the error state.
+     *
+     * @type {string}
+     */
     error: {
       type: String,
       default: "",

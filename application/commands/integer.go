@@ -15,6 +15,9 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+// Package commands – integer.go defines a compact variable-length 16-bit
+// unsigned integer type used in the command wire protocol. Values 0–127 encode
+// in one byte; values 128–16383 encode in two bytes using a continuation bit.
 package commands
 
 import (
@@ -47,18 +50,24 @@ var (
 //   - 11111111 01000000: 255
 type Integer uint16
 
+// integerHasNextBit is the continuation flag in the high bit of each encoded
+// byte; when set it indicates a second byte follows.
+// integerValueCutter masks the seven data bits in each encoded byte.
 const (
 	integerHasNextBit  = 0x80
 	integerValueCutter = 0x7f
 )
 
-// Consts
+// MaxInteger is the largest value that can be represented by the Integer type
+// (14 bits). MaxIntegerBytes is the maximum number of bytes its encoding may
+// occupy.
 const (
 	MaxInteger      = 0x3fff
 	MaxIntegerBytes = 2
 )
 
-// ByteSize returns how many bytes current integer will be encoded into
+// ByteSize returns the number of bytes required to encode the integer: 1 for
+// values 0–127, 2 for values 128–16383.
 func (i *Integer) ByteSize() int {
 	if *i > integerValueCutter {
 		return 2
@@ -67,12 +76,14 @@ func (i *Integer) ByteSize() int {
 	return 1
 }
 
-// Int returns a int of current Integer
+// Int converts the Integer to a plain int.
 func (i *Integer) Int() int {
 	return int(*i)
 }
 
-// Marshal build serialized data of the integer
+// Marshal encodes the integer into b using the variable-length format. It
+// returns ErrIntegerMarshalTooLarge if the value exceeds MaxInteger and
+// ErrIntegerMarshalNotEnoughBuffer if b is shorter than ByteSize.
 func (i *Integer) Marshal(b []byte) (int, error) {
 	bLen := len(b)
 
@@ -96,7 +107,9 @@ func (i *Integer) Marshal(b []byte) (int, error) {
 	return 2, nil
 }
 
-// Unmarshal read data and parse the integer
+// Unmarshal reads bytes from reader and decodes a variable-length integer into
+// i. It reads up to MaxIntegerBytes bytes, stopping as soon as the continuation
+// bit is clear.
 func (i *Integer) Unmarshal(reader rw.ReaderFunc) error {
 	buf := [1]byte{}
 

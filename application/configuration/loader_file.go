@@ -28,10 +28,15 @@ import (
 	"github.com/Snuffy2/sshwifty/application/log"
 )
 
+// fileTypeName is the loader name reported when configuration is loaded from a
+// JSON file.
 const (
 	fileTypeName = "File"
 )
 
+// loadFile opens filePath, JSON-decodes it into a commonInput, and returns the
+// resulting Configuration. It returns the fileTypeName string along with the
+// configuration or the first error encountered.
 func loadFile(filePath string) (string, Configuration, error) {
 	f, fErr := os.Open(filePath)
 	if fErr != nil {

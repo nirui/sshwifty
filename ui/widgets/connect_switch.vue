@@ -32,6 +32,17 @@
 <script>
 import "./connect_switch.css";
 
+/**
+ * @fileoverview Tab-bar component that switches the connect panel between the
+ * "New remote" and "Known remotes" views. Renders as a two-item `<ul>` and
+ * shows the count of known remotes as a badge on the second tab.
+ *
+ * @prop {string} tab          - Currently active tab: `"new"` or `"known"`.
+ * @prop {number} knownsLength - Number of known remotes to display in the badge.
+ *
+ * @emits switch - User clicked a tab. Payload: `{string}` the target tab name.
+ */
+
 export default {
   props: {
     tab: {
@@ -44,6 +55,13 @@ export default {
     },
   },
   methods: {
+    /**
+     * Emits the `switch` event with the target tab name.
+     *
+     * @param {string} to - The tab to switch to: `"new"` or `"known"`.
+     * @emits switch
+     * @returns {void}
+     */
     switchTab(to) {
       this.$emit("switch", to);
     },

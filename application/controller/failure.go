@@ -23,6 +23,9 @@ import (
 	"github.com/Snuffy2/sshwifty/application/log"
 )
 
+// serveFailure writes an HTTP error response by rendering the embedded
+// "error.html" static page with the status code carried by err. It returns any
+// write error produced by the underlying static-page handler.
 func serveFailure(
 	err Error,
 	w http.ResponseWriter,

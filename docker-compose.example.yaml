@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   sshwifty:
     image: sshwifty:dev
@@ -13,9 +11,3 @@ services:
       - "127.0.0.1:8182:8182/tcp"
     stdin_open: true
     tty: true
-    # deploy:
-    #   replicas: 3
-    #   resources:
-    #     limits:
-    #       cpus: '0.3'
-    #       memory: 600M

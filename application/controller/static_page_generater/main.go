@@ -15,6 +15,15 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+// Package main implements the static page generator tool invoked by
+// "go generate" in the parent controller package. It reads every regular file
+// from a source distribution folder, optionally gzip-compresses each file's
+// content, serializes the bytes into a Go source literal, and writes one
+// *_generated.go file per asset into a destination sub-package. It also writes
+// a list file (static_pages.go) that maps asset names to their generated
+// accessor functions. When the NODE_ENV environment variable is set to
+// "development", it emits a development-mode list that reads files from disk
+// at runtime rather than embedding them as literals.
 package main
 
 import (
@@ -32,9 +41,15 @@ import (
 )
 
 const (
+	// parentPackage is the Go import path of the controller package that the
+	// generated sub-package belongs to. It is used when writing import
+	// directives into the static page list file.
 	parentPackage = "github.com/Snuffy2/sshwifty/application/controller"
 )
 
+// Template constants used to generate the static page list file and the
+// individual per-asset Go source files. Each constant is a Go text/template
+// string that is rendered with a slice of parsedFile values as its data.
 const (
 	staticListHeader = `// Sshwifty - A Web SSH client
 //
@@ -201,48 +216,83 @@ func {{ .GOVariableName }}() (
 `
 )
 
-const (
-	templateStarts = "//go:generate"
-)
-
+// parsedFile holds all metadata and content needed to emit both the per-asset
+// generated Go file and the entry in the static page list.
 type parsedFile struct {
-	Name            string
-	GOVariableName  string
-	GOFileName      string
-	GOPackage       string
-	Path            string
-	Data            string
-	Type            string
-	FileStart       int
-	FileEnd         int
+	// Name is the original filename as it appears in the source distribution
+	// folder and as the map key in the generated list file.
+	Name string
+	// GOVariableName is the exported Go identifier used for this file's
+	// accessor function (e.g. "STATIC42").
+	GOVariableName string
+	// GOFileName is the basename of the generated .go file for this asset.
+	GOFileName string
+	// GOPackage is the Go package name of the generated sub-package.
+	GOPackage string
+	// Path is the absolute filesystem path of the source file.
+	Path string
+	// Data is the Go quoted-string literal containing the (optionally
+	// compressed) raw bytes of the file.
+	Data string
+	// Type is reserved and currently unused.
+	Type string
+	// FileStart is the byte offset within Data where the uncompressed content
+	// begins (always 0).
+	FileStart int
+	// FileEnd is the byte offset within Data where the uncompressed content
+	// ends (equal to the uncompressed file size).
+	FileEnd int
+	// CompressedStart is the byte offset within Data where the gzip-compressed
+	// content begins (equal to FileEnd when compression was applied).
 	CompressedStart int
-	CompressedEnd   int
-	ContentType     string
-	Date            time.Time
+	// CompressedEnd is the byte offset within Data where the gzip-compressed
+	// content ends (equal to the total length of Data).
+	CompressedEnd int
+	// ContentType is the MIME type derived from the file extension.
+	ContentType string
+	// Date records the time at which the generator ran, embedded in the
+	// generated file header and the creation timestamp.
+	Date time.Time
 }
 
+// buildListFile renders the production static page list template to w using
+// data as template input. It returns an error if template execution fails.
 func buildListFile(w io.Writer, data interface{}) error {
 	tpl := template.Must(template.New(
 		"StaticPageList").Parse(staticListTemplate))
 	return tpl.Execute(w, data)
 }
 
+// buildListFileDev renders the development-mode static page list template to
+// w. The resulting file reads assets from disk at runtime instead of embedding
+// them as byte literals. It returns an error if template execution fails.
 func buildListFileDev(w io.Writer, data interface{}) error {
 	tpl := template.Must(template.New(
 		"StaticPageList").Parse(staticListTemplateDev))
 	return tpl.Execute(w, data)
 }
 
+// buildDataFile renders the per-asset Go source template to w using data as
+// template input. The output is a single .go file containing one accessor
+// function that returns the asset's byte slice and metadata. It returns an
+// error if template execution fails.
 func buildDataFile(w io.Writer, data interface{}) error {
 	tpl := template.Must(template.New(
 		"StaticPageData").Parse(staticPageTemplate))
 	return tpl.Execute(w, data)
 }
 
+// byteToQuotedString converts b into a Go double-quoted string literal
+// suitable for embedding verbatim in generated source code.
 func byteToQuotedString(b []byte) string {
 	return fmt.Sprintf("%q", b)
 }
 
+// getMimeTypeByExtension returns the MIME type string for the given file
+// extension (including the leading dot). It overrides several common
+// extensions that the standard mime package either does not know about or maps
+// to incorrect types, falling back to mime.TypeByExtension for everything
+// else.
 func getMimeTypeByExtension(ext string) string {
 	switch ext {
 	case ".ico":
@@ -262,6 +312,10 @@ func getMimeTypeByExtension(ext string) string {
 	}
 }
 
+// compressContent gzip-compresses content at the best-compression level and
+// appends the result to compressed. It panics if the gzip writer cannot be
+// created or if any write fails, as these indicate unrecoverable build-time
+// errors.
 func compressContent(compressed *bytes.Buffer, content []byte) {
 	compressor, compressorBuildErr := gzip.NewWriterLevel(
 		compressed, gzip.BestCompression)
@@ -279,6 +333,12 @@ func compressContent(compressed *bytes.Buffer, content []byte) {
 	}
 }
 
+// parseFile reads the file at filePath, determines its MIME type from name's
+// extension, optionally gzip-compresses the content (skipping compression for
+// images, web fonts, and plain text), and returns a parsedFile populated with
+// all metadata required to render the generation templates. id is used to
+// produce the numeric suffix of the Go variable name (e.g. id=42 → "STATIC42").
+// It panics if the file cannot be read.
 func parseFile(
 	id int,
 	name string,
@@ -327,6 +387,11 @@ func parseFile(
 	}
 }
 
+// main is the entry point for the static page generator. It expects exactly
+// two positional arguments: the path to the source distribution folder
+// containing the compiled front-end assets, and the path to the destination
+// list file (static_pages.go). It panics with a usage message on invalid
+// arguments or I/O errors.
 func main() {
 	if len(os.Args) < 3 {
 		panic("Usage: <Source Folder> <(Destination) List File>")

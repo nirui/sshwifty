@@ -25,7 +25,10 @@ import (
 	"github.com/Snuffy2/sshwifty/application/network"
 )
 
-// Configuration contains configuration of the application
+// Configuration is the top-level application configuration produced by a
+// Loader. It aggregates global settings, server definitions, preset endpoints,
+// hook rules, and optional SOCKS5 proxy credentials. Use Verify to validate
+// the values before using the configuration.
 type Configuration struct {
 	HostName               string
 	SharedKey              string
@@ -58,7 +61,10 @@ func (c Configuration) Verify() error {
 	return nil
 }
 
-// Dialer builds a Dialer
+// Dialer constructs and returns the network.Dial function for this
+// configuration. When a SOCKS5 proxy is specified it wraps a plain TCP dialer.
+// When OnlyAllowPresetRemotes is true it additionally wraps the dialer in an
+// access-control layer that restricts connections to preset hosts.
 func (c Configuration) Dialer() network.Dial {
 	d := network.TCPDial()
 	if len(c.Socks5) > 0 {
@@ -77,7 +83,8 @@ func (c Configuration) Dialer() network.Dial {
 	return d
 }
 
-// hookSettings returns Hooks settings
+// hookSettings converts the configuration's Hooks and HookTimeout fields into
+// a HookSettings value suitable for passing to the command layer.
 func (c Configuration) hookSettings() HookSettings {
 	return HookSettings{
 		Timeout: c.HookTimeout,
@@ -85,7 +92,8 @@ func (c Configuration) hookSettings() HookSettings {
 	}
 }
 
-// Common returns common settings
+// Common derives the Common settings struct from the Configuration, building
+// the Dialer and HookSettings in the process.
 func (c Configuration) Common() Common {
 	return Common{
 		HostName:               c.HostName,
@@ -98,7 +106,8 @@ func (c Configuration) Common() Common {
 	}
 }
 
-// DecideDialTimeout will return a reasonable timeout for dialing
+// DecideDialTimeout returns the effective dial timeout clamped to the given
+// maximum. If DialTimeout is zero or negative it falls through to max.
 func (c Common) DecideDialTimeout(max time.Duration) time.Duration {
 	return clampRange(c.DialTimeout, max, 0)
 }

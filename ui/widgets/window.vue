@@ -36,6 +36,24 @@
 </template>
 
 <script>
+/**
+ * @fileoverview Generic floating overlay window widget. Renders a `.window1`
+ * div that toggles the `display` and `flashClass` CSS classes based on an
+ * internal `displaying` boolean. Exposes `show()` / `hide()` methods driven by
+ * the `display` prop watcher and a close icon that calls `hide()` directly.
+ *
+ * All overlay panels (connect, status, tab-window) wrap their content in this
+ * component to get consistent show/hide behaviour and a styled close button.
+ *
+ * @prop {string}  id         - HTML id applied to the root element.
+ * @prop {boolean} display    - External signal to show (true) or hide (false) the window.
+ * @prop {string}  flashClass - CSS class added alongside `.display` when the window is shown,
+ *   used to trigger a flash/entry animation.
+ *
+ * @emits display - Emitted whenever the visibility state changes.
+ *   Payload: `{boolean}` — true when shown, false when hidden.
+ */
+
 export default {
   props: {
     id: {
@@ -51,6 +69,11 @@ export default {
       default: "",
     },
   },
+  /**
+   * @returns {{displaying: boolean}}
+   *   `displaying` — internal visibility flag; true while the overlay is shown.
+   *   Driven by `show()` / `hide()` and mirrored to the template via CSS classes.
+   */
   data() {
     return {
       displaying: false,
@@ -62,11 +85,24 @@ export default {
     },
   },
   methods: {
+    /**
+     * Makes the overlay visible and emits `display` with `true`.
+     *
+     * @emits display - Payload: `{true}`.
+     * @returns {void}
+     */
     show() {
       this.displaying = true;
 
       this.$emit("display", this.displaying);
     },
+    /**
+     * Hides the overlay and emits `display` with `false`.
+     * Also called when the user clicks the built-in close icon.
+     *
+     * @emits display - Payload: `{false}`.
+     * @returns {void}
+     */
     hide() {
       this.displaying = false;
 

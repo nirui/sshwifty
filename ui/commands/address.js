@@ -15,17 +15,40 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+/**
+ * @file Network address encoding/decoding for the Sshwifty command protocol.
+ *
+ * Defines the {@link Address} class that marshals IPv4, IPv6, hostname, and
+ * loopback addresses into the wire format expected by the backend, plus helper
+ * functions {@link parseHostPort} for parsing user-supplied host:port strings.
+ *
+ * Address type constants (LOOPBACK, IPV4, IPV6, HOSTNAME) are exported for
+ * use by consumers that need to discriminate address types at runtime.
+ */
+
 import * as reader from "../stream/reader.js";
 import * as common from "./common.js";
 import Exception from "./exception.js";
 
+/** @type {number} Loopback address type identifier (no address data). */
+/** @type {number} Loopback address type identifier (no address data). */
 export const LOOPBACK = 0x00;
+/** @type {number} IPv4 address type identifier (4-byte address data). */
 export const IPV4 = 0x01;
+/** @type {number} IPv6 address type identifier (16-byte address data). */
 export const IPV6 = 0x02;
+/** @type {number} Hostname address type identifier (length-prefixed ASCII). */
 export const HOSTNAME = 0x03;
 
+/** @type {number} Maximum hostname byte length accepted by the protocol. */
 export const MAX_ADDR_LEN = 0xff;
 
+/**
+ * Represents a network address (loopback, IPv4, IPv6, or hostname) together
+ * with a port number. Supports both encoding to the wire format via
+ * {@link Address#buffer} and decoding from the stream via the static
+ * {@link Address.read} factory.
+ */
 export class Address {
   /**
    * Read builds an Address from data readed from the reader
@@ -87,24 +110,27 @@ export class Address {
   }
 
   /**
-   * Return the address type
+   * Return the address type.
    *
+   * @returns {number} One of LOOPBACK, IPV4, IPV6, or HOSTNAME.
    */
   type() {
     return this.addrType;
   }
 
   /**
-   * Return the address data
+   * Return the raw address bytes.
    *
+   * @returns {Uint8Array|null} Address bytes, or null for LOOPBACK addresses.
    */
   address() {
     return this.addrData;
   }
 
   /**
-   * Return the port data
+   * Return the port number.
    *
+   * @returns {number} TCP/UDP port (0–65535).
    */
   port() {
     return this.addrPort;

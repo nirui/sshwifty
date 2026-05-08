@@ -112,19 +112,60 @@ import { consoleScreenKeys } from "./screen_console_keys.js";
 import "./screen_console.css";
 import "@xterm/xterm/css/xterm.css";
 
+/**
+ * @fileoverview xterm.js-backed terminal emulator screen component.
+ *
+ * Manages the full lifecycle of an xterm.js `Terminal` instance: font loading
+ * (with fallback and background retry), WebGL acceleration (when available),
+ * an async data-receiver loop, and a floating toolbar for special-key injection
+ * and font-size adjustment.
+ *
+ * The component communicates with the backend over the `control` prop interface
+ * which must expose `send(data)`, `sendBinary(data)`, `receive()`, `resize({rows,cols})`,
+ * `echo()`, and `color()`.
+ *
+ * @prop {boolean} active    - When true, the terminal is focused and fitted to the viewport.
+ * @prop {Object}  control   - Backend control interface for the open connection.
+ * @prop {Object}  change    - Indicator object watched for viewport-change triggers (deep).
+ * @prop {boolean} toolbar   - When true, the special-key toolbar is rendered.
+ * @prop {Object}  viewPort  - Viewport size descriptor; deep-watched to trigger a refit.
+ *
+ * @emits warning - A non-fatal warning occurred. Payload: `{text: string, toDismiss: boolean}`.
+ * @emits info    - An informational message. Payload: `{text: string, toDismiss: boolean}`.
+ * @emits updated - Emitted each time new data is written to the terminal.
+ * @emits stopped - The receiver loop ended. Payload: `{Error}` the stop reason.
+ */
+
+/** @type {string} Preferred monospace font families loaded from a remote CDN. */
 const termTypeFaces = "Hack, PureNerdFont";
+/** @type {string} Local fallback font family used while remote fonts are loading. */
 const termFallbackTypeFace = '"Cascadia Code" , monospace';
+/** @type {number} Milliseconds to wait for each remote font before falling back. */
 const termTypeFaceLoadTimeout = 3000;
+/** @type {string} Warning message emitted when the remote font is unavailable on first attempt. */
 const termTypeFaceLoadError =
   "Remote font " +
   termTypeFaces +
   " is unavailable, using " +
   termFallbackTypeFace +
   " instead until the remote font is loaded";
+/** @type {number} Default terminal font size in pixels. */
 const termDefaultFontSize = 16;
+/** @type {number} Minimum allowed font size in pixels. */
 const termMinFontSize = 8;
+/** @type {number} Maximum allowed font size in pixels. */
 const termMaxFontSize = 36;
 
+/**
+ * Detects whether the current browser environment supports WebGL and WebGL2.
+ *
+ * Checks for the global `WebGLRenderingContext` and `WebGL2RenderingContext`
+ * constructors and then attempts to obtain contexts from a temporary canvas.
+ * Returns false defensively on any exception (e.g. headless environments).
+ *
+ * @private
+ * @returns {boolean|CanvasRenderingContext2D} Truthy when WebGL is available, false otherwise.
+ */
 function webglSupported() {
   try {
     if (typeof window !== "object") {
@@ -146,7 +187,24 @@ function webglSupported() {
   return false;
 }
 
+/**
+ * Thin wrapper around an xterm.js `Terminal` that binds it to the connection
+ * `control` interface and adds font-size management, fit/refit, and safe
+ * closed-state guards on every operation.
+ *
+ * @private
+ */
 class Term {
+  /**
+   * Creates the xterm.js Terminal, loads the FitAddon, and wires data/binary/
+   * key/resize event handlers to the control interface.
+   *
+   * Resize events are debounced by `resizeDelayInterval` ms to avoid flooding
+   * the backend with intermediate dimensions while the user resizes the window.
+   *
+   * @param {Object} control - Connection control interface exposing `send`,
+   *   `sendBinary`, `echo`, `resize`, and `color` methods.
+   */
   constructor(control) {
     const resizeDelayInterval = 500;
 
@@ -245,6 +303,16 @@ class Term {
     });
   }
 
+  /**
+   * Mounts the terminal into `root`, loads all addons, and performs an initial
+   * refit. No-op when already closed.
+   *
+   * Attempts to load the WebglAddon for GPU-accelerated rendering; silently
+   * falls back to the canvas renderer if loading fails.
+   *
+   * @param {HTMLElement} root - The container element to render the terminal into.
+   * @returns {void}
+   */
   init(root) {
     if (this.closed) {
       return;
@@ -264,6 +332,16 @@ class Term {
     this.refit();
   }
 
+  /**
+   * Dispatches a synthetic DOM event into the xterm.js textarea input element.
+   *
+   * Used by the toolbar to inject special keyboard events (function keys,
+   * control sequences, etc.) that cannot easily be typed on mobile devices.
+   * Errors are silently swallowed to avoid disrupting the UI.
+   *
+   * @param {Event} event - The DOM event to dispatch.
+   * @returns {void}
+   */
   dispatch(event) {
     if (this.closed) {
       return;
@@ -275,6 +353,12 @@ class Term {
     }
   }
 
+  /**
+   * Writes a UTF-8 string to the terminal. No-op when closed.
+   *
+   * @param {string} d - The string data to write.
+   * @returns {void}
+   */
   writeStr(d) {
     if (this.closed) {
       return;
@@ -286,6 +370,12 @@ class Term {
     }
   }
 
+  /**
+   * Updates the terminal's font family and triggers a refit. No-op when closed.
+   *
+   * @param {string} value - CSS font-family string to apply.
+   * @returns {void}
+   */
   setFont(value) {
     if (this.closed) {
       return;
@@ -294,6 +384,12 @@ class Term {
     this.refit();
   }
 
+  /**
+   * Increases the font size by 2 px up to `termMaxFontSize`, then refits.
+   * No-op when closed or already at maximum.
+   *
+   * @returns {void}
+   */
   fontSizeUp() {
     if (this.closed) {
       return;
@@ -306,6 +402,12 @@ class Term {
     this.refit();
   }
 
+  /**
+   * Decreases the font size by 2 px down to `termMinFontSize`, then refits.
+   * No-op when closed or already at minimum.
+   *
+   * @returns {void}
+   */
   fontSizeDown() {
     if (this.closed) {
       return;
@@ -318,6 +420,11 @@ class Term {
     this.refit();
   }
 
+  /**
+   * Focuses the terminal and triggers a refit. No-op when closed.
+   *
+   * @returns {void}
+   */
   focus() {
     if (this.closed) {
       return;
@@ -330,6 +437,11 @@ class Term {
     }
   }
 
+  /**
+   * Blurs (removes focus from) the terminal. No-op when closed.
+   *
+   * @returns {void}
+   */
   blur() {
     if (this.closed) {
       return;
@@ -341,6 +453,12 @@ class Term {
     }
   }
 
+  /**
+   * Recalculates the terminal dimensions to fill its container element.
+   * No-op when closed; errors are silently ignored (e.g. during hidden-state transitions).
+   *
+   * @returns {void}
+   */
   refit() {
     if (this.closed) {
       return;
@@ -352,10 +470,21 @@ class Term {
     }
   }
 
+  /**
+   * Returns whether the terminal has been destroyed.
+   *
+   * @returns {boolean} True after `destroy()` has been called.
+   */
   destroyed() {
     return this.closed;
   }
 
+  /**
+   * Permanently disposes the xterm.js Terminal and marks the instance as closed.
+   * All subsequent method calls become no-ops. Safe to call multiple times.
+   *
+   * @returns {void}
+   */
   destroy() {
     if (this.closed) {
       return;
@@ -375,6 +504,15 @@ class Term {
 
 export default {
   filters: {
+    /**
+     * Converts a key label string into an HTML fragment that wraps each
+     * segment of a `+`-delimited chord in a keyboard-key icon `<span>`.
+     *
+     * Example: `"Ctrl+C"` → `<span ...>Ctrl</span>+<span ...>C</span>`.
+     *
+     * @param {string} key - Human-readable key label, e.g. `"Ctrl+Alt+Del"`.
+     * @returns {string} HTML string safe for use with `v-html`.
+     */
     specialKeyHTML(key) {
       const head = '<span class="tb-key-icon icon icon-keyboardkey1">',
         tail = "</span>";
@@ -404,6 +542,20 @@ export default {
       default: () => null,
     },
   },
+  /**
+   * @returns {{
+   *   screenKeys: Array,
+   *   term: Term,
+   *   typefaces: string,
+   *   runner: Promise|null,
+   *   eventHandlers: {keydown: null, keyup: null}
+   * }}
+   *   `screenKeys` — grouped toolbar key descriptors from `consoleScreenKeys`.
+   *   `term` — the active `Term` wrapper (created eagerly from the `control` prop).
+   *   `typefaces` — CSS font-family string shown in the console element style.
+   *   `runner` — promise for the active data-receiver loop; null when not running.
+   *   `eventHandlers` — reserved slots for global keyboard handler references (unused currently).
+   */
   data() {
     return {
       screenKeys: consoleScreenKeys,
@@ -448,6 +600,14 @@ export default {
     this.deinit();
   },
   methods: {
+    /**
+     * Attempts to load all listed remote font families (normal and bold weights)
+     * using FontFaceObserver and returns a promise that resolves when all are ready.
+     *
+     * @param {string} typefaces - Comma-separated CSS font-family names to observe.
+     * @param {number} timeout - Milliseconds to wait per font before rejecting.
+     * @returns {Promise<void[]>} Resolves when all font faces have loaded.
+     */
     loadRemoteFont(typefaces, timeout) {
       const tfs = typefaces.split(",");
       let observers = [];
@@ -461,6 +621,18 @@ export default {
       }
       return Promise.all(observers);
     },
+    /**
+     * Retries `loadRemoteFont` indefinitely on failure, waiting `timeout` ms
+     * between each attempt, and calls `onSuccess` with the result on first success.
+     *
+     * Used to switch the terminal back to the preferred font after it initially
+     * fell back to a local typeface.
+     *
+     * @param {string} typefaces - Comma-separated CSS font-family names.
+     * @param {number} timeout - Retry interval in milliseconds.
+     * @param {function(void[]): void} onSuccess - Callback invoked on successful load.
+     * @returns {Promise<void>}
+     */
     async retryLoadRemoteFont(typefaces, timeout, onSuccess) {
       const self = this;
       for (;;) {
@@ -477,6 +649,18 @@ export default {
         }
       }
     },
+    /**
+     * Loads remote fonts and then initialises the xterm.js terminal in `root`.
+     *
+     * If the remote font fails to load on the first attempt, falls back to
+     * `termFallbackTypeFace`, emits a `warning` via `callbacks.warn`, and
+     * starts a background retry loop that switches back when the font loads.
+     *
+     * @param {HTMLElement} root - Container element for the terminal.
+     * @param {{warn: function(string, boolean): void, info: function(string, boolean): void}} callbacks
+     *   Notification callbacks — `warn(msg, toDismiss)` and `info(msg, toDismiss)`.
+     * @returns {Promise<void>}
+     */
     async openTerm(root, callbacks) {
       const self = this;
       try {
@@ -505,9 +689,23 @@ export default {
         callbacks.warn(termTypeFaceLoadError, true);
       });
     },
+    /**
+     * Activates or deactivates the terminal based on a boolean flag.
+     *
+     * @param {boolean} active - True to activate (focus + fit), false to deactivate (blur).
+     * @returns {void}
+     */
     triggerActive(active) {
       active ? this.activate() : this.deactivate();
     },
+    /**
+     * Full component initialisation: opens the terminal, triggers active state,
+     * and starts the data-receiver loop.
+     *
+     * @emits warning - If the remote font could not be loaded immediately.
+     * @emits info    - Reserved for future informational messages.
+     * @returns {Promise<void>}
+     */
     async init() {
       let self = this;
 
@@ -536,21 +734,51 @@ export default {
       self.triggerActive(this.active);
       self.runRunner();
     },
+    /**
+     * Tears down the component: stops the receiver loop, deactivates, and destroys
+     * the xterm.js terminal instance.
+     *
+     * @returns {Promise<void>}
+     */
     async deinit() {
       await this.closeRunner();
       await this.deactivate();
       this.term.destroy();
     },
+    /**
+     * Triggers a terminal refit to match the current container dimensions.
+     *
+     * @returns {void}
+     */
     fit() {
       this.term.refit();
     },
+    /**
+     * Focuses the terminal and refits it to the container.
+     *
+     * @returns {void}
+     */
     activate() {
       this.term.focus();
       this.fit();
     },
+    /**
+     * Removes focus from the terminal.
+     *
+     * @returns {Promise<void>}
+     */
     async deactivate() {
       this.term.blur();
     },
+    /**
+     * Starts the async receiver loop that reads data from `control.receive()`
+     * and writes it to the terminal. Emits `updated` after each write and
+     * `stopped` with the error when the loop ends.
+     *
+     * No-op if the runner is already active.
+     *
+     * @returns {void}
+     */
     runRunner() {
       if (this.runner !== null) {
         return;
@@ -570,6 +798,13 @@ export default {
         }
       })();
     },
+    /**
+     * Awaits the running receiver loop and clears the `runner` reference.
+     *
+     * Safe to call when no runner is active (no-op).
+     *
+     * @returns {Promise<void>}
+     */
     async closeRunner() {
       if (this.runner === null) {
         return;
@@ -580,6 +815,16 @@ export default {
 
       await runner;
     },
+    /**
+     * Injects a special key into the terminal by dispatching synthetic
+     * `keydown` and `keyup` events.
+     *
+     * Used by the on-screen toolbar to send function keys, control sequences,
+     * and navigation keys that are difficult to type on mobile devices.
+     *
+     * @param {KeyboardEventInit} key - The KeyboardEvent init dict describing the key to send.
+     * @returns {void}
+     */
     sendSpecialKey(key) {
       if (!this.term) {
         return;
@@ -588,9 +833,19 @@ export default {
       this.term.dispatch(new KeyboardEvent("keydown", key));
       this.term.dispatch(new KeyboardEvent("keyup", key));
     },
+    /**
+     * Increases the terminal font size by 2 px (delegated to `Term.fontSizeUp`).
+     *
+     * @returns {void}
+     */
     fontSizeUp() {
       this.term.fontSizeUp();
     },
+    /**
+     * Decreases the terminal font size by 2 px (delegated to `Term.fontSizeDown`).
+     *
+     * @returns {void}
+     */
     fontSizeDown() {
       this.term.fontSizeDown();
     },

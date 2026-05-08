@@ -24,7 +24,9 @@ import (
 	"time"
 )
 
-// Server contains configuration of a HTTP server
+// Server holds the fully resolved configuration for a single HTTP(S) listener.
+// Use serverInput.concretize() to produce a normalised Server; use verify() to
+// validate one before passing it to the server layer.
 type Server struct {
 	ListenInterface       string
 	ListenPort            uint16
@@ -39,7 +41,8 @@ type Server struct {
 	ServerMessage         string
 }
 
-// IsTLS returns whether or not TLS should be used
+// IsTLS returns true when both TLSCertificateFile and TLSCertificateKeyFile are
+// non-empty, indicating that the server should use HTTPS.
 func (s Server) IsTLS() bool {
 	return len(s.TLSCertificateFile) > 0 && len(s.TLSCertificateKeyFile) > 0
 }
@@ -57,8 +60,8 @@ func (s Server) verify() error {
 	return nil
 }
 
-// defaultListenInterface returns the default listening interface if the
-// interface was unspecified
+// defaultListenInterface returns ListenInterface when non-empty, or the
+// loopback address 127.0.0.1 when ListenInterface was left unspecified.
 func (s Server) defaultListenInterface() string {
 	if len(s.ListenInterface) <= 0 {
 		return net.IPv4(127, 0, 0, 1).String()
@@ -66,8 +69,8 @@ func (s Server) defaultListenInterface() string {
 	return s.ListenInterface
 }
 
-// defaultListenPort returns the default listening port if the port was
-// unspecified
+// defaultListenPort returns ListenPort when non-zero, or the protocol-specific
+// default: 443 for TLS and 80 for plain HTTP.
 func (s Server) defaultListenPort() uint16 {
 	if s.ListenPort > 0 {
 		return s.ListenPort
@@ -78,14 +81,19 @@ func (s Server) defaultListenPort() uint16 {
 	return 80
 }
 
-// Predefined variables for normalization
+// serverMinValidSecond is the minimum acceptable value for any timeout field; it
+// prevents pathological configurations with zero or sub-second timeouts.
+// maxHeartbeatTimeoutProportion caps the heartbeat timeout at 70% of the read
+// timeout to ensure heartbeats fire before the read timeout can close the
+// connection.
 const (
 	serverMinValidSecond          = 1 * time.Second
 	maxHeartbeatTimeoutProportion = 0.7
 )
 
-// normalize fills current Server with valid settings. If a setting is
-// unspecified, it will be set with a reasonable default
+// normalize fills unspecified Server fields with safe defaults and clamps all
+// timeout values within acceptable bounds. It returns a new Server with all
+// fields populated.
 func (s Server) normalize() Server {
 	initialTimeout := atLeast(
 		setZeroUintToDefault(s.InitialTimeout, 10*time.Second),

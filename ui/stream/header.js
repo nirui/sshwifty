@@ -15,22 +15,48 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+/**
+ * @file Binary protocol header definitions for the Sshwifty stream layer.
+ *
+ * Provides constants for header types (CONTROL, STREAM, CLOSE, COMPLETED) and
+ * the {@link Header}, {@link Stream}, and {@link InitialStream} classes that
+ * encode and decode the single- and two-byte framing headers used on the wire.
+ */
+
 import Exception from "./exception.js";
 
+/** @type {number} Header type byte for control frames. */
+/** @type {number} Header type byte for control frames. */
 export const CONTROL = 0x00;
+/** @type {number} Header type byte for stream data frames. */
 export const STREAM = 0x40;
+/** @type {number} Header type byte for stream-close frames. */
 export const CLOSE = 0x80;
+/** @type {number} Header type byte for stream-completed acknowledgement frames. */
 export const COMPLETED = 0xc0;
 
+/** @type {number} Control sub-type: echo/ping request. */
 export const CONTROL_ECHO = 0x00;
+/** @type {number} Control sub-type: ask remote to pause stream sending. */
 export const CONTROL_PAUSESTREAM = 0x01;
+/** @type {number} Control sub-type: ask remote to resume stream sending. */
 export const CONTROL_RESUMESTREAM = 0x02;
 
+/** @private @type {number} Bitmask that isolates the two type bits of a header byte. */
 const headerHeaderCutter = 0xc0;
+/** @private @type {number} Bitmask that isolates the six data bits of a header byte. */
 const headerDataCutter = 0x3f;
 
+/** @type {number} Maximum value that can be stored in a single-byte header's data field. */
 export const HEADER_MAX_DATA = headerDataCutter;
 
+/**
+ * Single-byte control/close/completed frame header.
+ *
+ * The byte is split into two fields:
+ * - bits 7-6: frame type (CONTROL / STREAM / CLOSE / COMPLETED)
+ * - bits 5-0: data payload (stream ID or control sub-type length)
+ */
 export class Header {
   /**
    * constructor
@@ -85,12 +111,23 @@ export class Header {
   }
 }
 
+/** @type {number} Byte length of a stream sub-header (marker + length). */
 export const STREAM_HEADER_BYTE_LENGTH = 2;
+/** @type {number} Maximum payload length encoded in one stream sub-header. */
 export const STREAM_MAX_LENGTH = 0x1fff;
+/** @type {number} Maximum marker value (3 bits). */
 export const STREAM_MAX_MARKER = 0x07;
 
+/** @private @type {number} Bitmask for the lower 5 bits of the first stream header byte (length MSBs). */
 const streamHeaderLengthFirstByteCutter = 0x1f;
 
+/**
+ * Two-byte stream data sub-header that follows a STREAM-type frame header.
+ *
+ * Layout of the two bytes:
+ * - byte 1 bits 7-5: marker (3-bit application-level signal)
+ * - byte 1 bits 4-0 + byte 2: 13-bit payload length (big-endian)
+ */
 export class Stream {
   /**
    * constructor
@@ -162,6 +199,14 @@ export class Stream {
   }
 }
 
+/**
+ * Two-byte sub-header for the initial stream request / response frame.
+ *
+ * Encodes the command ID (4 bits), a success flag (1 bit), and a data field
+ * (11 bits) into the same two-byte space used by {@link Stream}.
+ *
+ * @extends Stream
+ */
 export class InitialStream extends Stream {
   /**
    * Return how large the data can be

@@ -15,6 +15,12 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+/**
+ * @file Shared utilities for the command layer: address parsing (IPv4, IPv6,
+ * hostname), string/binary conversions, and character-set helpers used by the
+ * SSH and Telnet command modules.
+ */
+
 import * as buffer from "buffer";
 import Exception from "./exception.js";
 import * as iconv from "../iconv/common.js";
@@ -96,11 +102,13 @@ export function isHex(d) {
 /**
  * Test whether or not given string is a valid hostname as far as the Sshwifty
  * client consider. This function will return true if the string contains only
- * printable charactors
+ * printable charactors (Latin-1 printable range with a few gaps excluded).
  *
+ * @private
  * @param {string} d Input data
  *
- * @returns {boolean} Return true if given string is all hex, false otherwise
+ * @returns {boolean} `true` when all characters are in the accepted printable
+ *   range, `false` if any control or disallowed character is found.
  *
  */
 function isHostname(d) {
@@ -294,14 +302,15 @@ export function parseHostname(d) {
 }
 
 /**
- * Parse address
+ * Attempt to parse a bare address string (no port) as IPv4, then IPv6, then
+ * hostname. Returns the first successful result.
  *
- * @param {string} d address
- *
- * @returns {Uint8Array} Parsed Address
- *
- * @throws {Exception} When the address is invalid
- *
+ * @private
+ * @param {string} d Address string without port.
+ * @returns {{ type: string, data: Uint8Array }} Parsed address with a
+ *   discriminant `type` of `"IPv4"`, `"IPv6"`, or `"Hostname"` and the
+ *   corresponding byte representation.
+ * @throws {Exception} When the string cannot be parsed as any address type.
  */
 function parseAddr(d) {
   try {
@@ -328,6 +337,18 @@ function parseAddr(d) {
   };
 }
 
+/**
+ * Split a `host:port` string into its components and parse the host.
+ *
+ * Handles IPv6 bracket notation (`[::1]:22`), bare IPv4/hostname with an
+ * implicit default port, and explicit port suffixes. The returned object
+ * contains the address type tag, the parsed address bytes, and the port.
+ *
+ * @param {string} d Host:port string supplied by the user.
+ * @param {number} defPort Default port to use when no port is present.
+ * @returns {{ type: string, addr: Uint8Array, port: number }} Parsed result.
+ * @throws {Exception} When the string is malformed.
+ */
 export function splitHostPort(d, defPort) {
   let hps = d.lastIndexOf(":"),
     fhps = d.indexOf(":"),

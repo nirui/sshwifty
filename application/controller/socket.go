@@ -38,28 +38,44 @@ import (
 	"github.com/Snuffy2/sshwifty/application/rw"
 )
 
-// Errors
+// Errors returned by the socket controller during WebSocket upgrade and
+// message processing.
 var (
+	// ErrSocketInvalidAuthKey is returned when the client omits the X-Key
+	// header but a shared key is configured, indicating authentication is
+	// required.
 	ErrSocketInvalidAuthKey = NewError(
 		http.StatusForbidden,
 		"To use Websocket interface, a valid Auth Key must be provided")
 
+	// ErrSocketAuthFailed is returned when the X-Key value provided by the
+	// client does not match the time-windowed HMAC derived from the shared key.
 	ErrSocketAuthFailed = NewError(
 		http.StatusForbidden,
 		"Authentication has failed with provided Auth Key")
 
+	// ErrSocketUnableToGenerateKey is returned when the server cannot generate
+	// a cryptographic key due to an entropy failure.
 	ErrSocketUnableToGenerateKey = NewError(
 		http.StatusInternalServerError,
 		"Unable to generate crypto key")
 
+	// ErrSocketInvalidDataPackage is returned when a received WebSocket frame
+	// carries an out-of-range or otherwise malformed length prefix.
 	ErrSocketInvalidDataPackage = NewError(
 		http.StatusBadRequest, "Invalid data package")
 )
 
 const (
+	// socketGCMStandardNonceSize is the byte length of the nonce used with
+	// AES-GCM for encrypting and authenticating WebSocket data frames.
 	socketGCMStandardNonceSize = 12
 )
 
+// socket is the controller for the "/sshwifty/socket" WebSocket endpoint. It
+// upgrades HTTP connections to WebSocket, performs AES-GCM-based handshake
+// authentication, and then hands the framed connection to the command layer for
+// proxying SSH and other protocol traffic.
 type socket struct {
 	baseController
 
@@ -71,6 +87,10 @@ type socket struct {
 	socketBufferPool *command.BufferPool
 }
 
+// hashCombineSocketKeys computes an HMAC-SHA-512 digest of addedKey using
+// privateKey as the HMAC secret. It is used to derive session keys and
+// verification tokens from a combination of user-supplied and server-side
+// secret material.
 func hashCombineSocketKeys(addedKey string, privateKey string) []byte {
 	h := hmac.New(sha512.New, []byte(privateKey))
 
@@ -79,6 +99,9 @@ func hashCombineSocketKeys(addedKey string, privateKey string) []byte {
 	return h.Sum(nil)
 }
 
+// newSocketCtl constructs a socket controller initialized with the given common
+// and server configurations, command set, lifecycle hooks, and a pre-allocated
+// buffer pool for encrypting WebSocket frames.
 func newSocketCtl(
 	commonCfg configuration.Common,
 	cfg configuration.Server,
@@ -96,10 +119,14 @@ func newSocketCtl(
 	}
 }
 
+// websocketWriter wraps a *websocket.Conn and adapts it to the io.Writer
+// interface by sending every Write call as a single binary WebSocket message.
 type websocketWriter struct {
 	*websocket.Conn
 }
 
+// Write sends b as a binary WebSocket message. It returns the length of b on
+// success, or (0, err) if the underlying WriteMessage call fails.
 func (w websocketWriter) Write(b []byte) (int, error) {
 	wErr := w.WriteMessage(websocket.BinaryMessage, b)
 
@@ -110,11 +137,17 @@ func (w websocketWriter) Write(b []byte) (int, error) {
 	return len(b), nil
 }
 
+// socketPackageWriter is an io.Writer that fragments and encrypts data through
+// a caller-supplied packager function before forwarding it to the underlying
+// websocketWriter. It is used to apply AES-GCM framing to outbound WebSocket
+// messages.
 type socketPackageWriter struct {
 	w        websocketWriter
 	packager func(w websocketWriter, b []byte) error
 }
 
+// Write passes b through the packager function and reports the number of bytes
+// consumed. It returns (0, err) if the packager encounters an error.
 func (s socketPackageWriter) Write(b []byte) (int, error) {
 	packageWriteErr := s.packager(s.w, b)
 
@@ -125,6 +158,10 @@ func (s socketPackageWriter) Write(b []byte) (int, error) {
 	return len(b), nil
 }
 
+// buildWebsocketUpgrader constructs a websocket.Upgrader configured with the
+// handshake timeout from cfg. The origin check always returns true, allowing
+// cross-origin WebSocket connections. Upgrade errors are silently swallowed by
+// the Error hook to avoid double-writing to the response.
 func buildWebsocketUpgrader(cfg configuration.Server) websocket.Upgrader {
 	return websocket.Upgrader{
 		HandshakeTimeout: cfg.InitialTimeout,
@@ -141,6 +178,8 @@ func buildWebsocketUpgrader(cfg configuration.Server) websocket.Upgrader {
 	}
 }
 
+// Options handles HTTP OPTIONS requests for the socket endpoint by setting the
+// CORS headers required to allow cross-origin WebSocket upgrade negotiation.
 func (s socket) Options(
 	w *ResponseWriter, r *http.Request, l log.Logger) error {
 	w.Header().Add("Access-Control-Allow-Origin", "*")
@@ -148,6 +187,9 @@ func (s socket) Options(
 	return nil
 }
 
+// buildWSFetcher returns a FetchReaderFetcher that reads the next binary
+// WebSocket message from c. It loops past any non-binary frames and returns
+// an error if ReadMessage fails or a non-binary message type is received.
 func (s socket) buildWSFetcher(c *websocket.Conn) rw.FetchReaderFetcher {
 	return func() ([]byte, error) {
 		for {
@@ -165,11 +207,17 @@ func (s socket) buildWSFetcher(c *websocket.Conn) rw.FetchReaderFetcher {
 	}
 }
 
+// generateNonce fills nonce[:socketGCMStandardNonceSize] with cryptographically
+// random bytes using crypto/rand. It returns an error if the read fails.
 func (s socket) generateNonce(nonce []byte) error {
 	_, rErr := io.ReadFull(rand.Reader, nonce[:socketGCMStandardNonceSize])
 	return rErr
 }
 
+// increaseNonce increments the big-endian counter stored in nonce by one,
+// carrying over into higher-order bytes as needed. This advances the AES-GCM
+// nonce so that each encrypted frame uses a unique nonce without requiring
+// additional random bytes.
 func (s socket) increaseNonce(nonce []byte) {
 	for i := len(nonce); i > 0; i-- {
 		nonce[i-1]++
@@ -180,6 +228,11 @@ func (s socket) increaseNonce(nonce []byte) {
 	}
 }
 
+// createCipher builds two independent AES-GCM AEAD instances—one for reading
+// and one for writing—from the same key material. Separate instances are used
+// so that the read and write nonce counters can advance independently. It
+// returns (readAEAD, writeAEAD, nil) on success, or (nil, nil, err) if any
+// AES or GCM initialization step fails.
 func (s socket) createCipher(key []byte) (cipher.AEAD, cipher.AEAD, error) {
 	readCipher, readCipherErr := aes.NewCipher(key)
 	if readCipherErr != nil {
@@ -206,13 +259,24 @@ func (s socket) createCipher(key []byte) (cipher.AEAD, cipher.AEAD, error) {
 	return gcmRead, gcmWrite, nil
 }
 
+// mixerKey derives a per-request mixer value by hashing the client's
+// User-Agent against a combination of the shared key and configured hostname.
+// The result is used as a component of the cipher key and as the "X-Key"
+// response value sent back to the client during socket verification.
 func (s socket) mixerKey(r *http.Request) []byte {
 	return hashCombineSocketKeys(
 		r.UserAgent(), s.commonCfg.SharedKey+"+"+s.commonCfg.HostName)
 }
 
+// keyTimeTruncater is the divisor applied to the Unix timestamp before it is
+// incorporated into the cipher key, creating a time window of approximately
+// 100 seconds during which the same key is valid.
 const keyTimeTruncater = 100
 
+// buildCipherKey derives a 16-byte AES key for the current request by hashing
+// a truncated Unix timestamp against the mixer key and the shared key. The
+// time truncation means the key rotates every keyTimeTruncater seconds,
+// limiting the window in which a captured key remains useful.
 func (s socket) buildCipherKey(r *http.Request) [16]byte {
 	key := [16]byte{}
 	copy(key[:], hashCombineSocketKeys(
@@ -222,6 +286,12 @@ func (s socket) buildCipherKey(r *http.Request) [16]byte {
 	return key
 }
 
+// Get handles HTTP GET requests by upgrading the connection to WebSocket,
+// performing the AES-GCM nonce exchange and key derivation, and then running
+// the command executor loop that proxies SSH and other protocol traffic. It
+// returns a controller Error if the upgrade, nonce exchange, cipher setup, or
+// command initialization fails. Once the command loop is running, errors are
+// handled internally and this method returns the result of cmdExec.Handle.
 func (s socket) Get(
 	w *ResponseWriter, r *http.Request, l log.Logger) error {
 	// Error will not be returned when Websocket already handled

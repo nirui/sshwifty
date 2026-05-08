@@ -15,6 +15,15 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+/**
+ * @file Variable-length integer encoding used by the Sshwifty command protocol.
+ *
+ * Encodes integers up to {@link MAX} (0x3FFF) into 1 or 2 bytes using a
+ * continuation-bit scheme: if bit 7 of the first byte is set, a second byte
+ * follows. {@link Integer} provides both {@link Integer#marshal} (encode) and
+ * {@link Integer#unmarshal} (decode from a reader) operations.
+ */
+
 import * as reader from "../stream/reader.js";
 import Exception from "./exception.js";
 
@@ -24,11 +33,19 @@ export const MAX_BYTES = 2;
 const integerHasNextBit = 0x80;
 const integerValueCutter = 0x7f;
 
+/**
+ * Variable-length encoded integer for the command protocol.
+ *
+ * Values ≤ 0x7F are stored in one byte; values up to {@link MAX} (0x3FFF) use
+ * two bytes with a continuation bit. Use {@link Integer#marshal} to encode and
+ * {@link Integer#unmarshal} to decode from a stream reader.
+ */
 export class Integer {
   /**
    * constructor
    *
-   * @param {number} num Integer number
+   * @param {number} num Initial integer value (used as the starting accumulator
+   *   for unmarshal; pass `0` when decoding).
    *
    */
   constructor(num) {
@@ -59,10 +76,13 @@ export class Integer {
   }
 
   /**
-   * Parse the reader to build an Integer
+   * Decode an integer from the reader in-place, accumulating into `this.num`.
    *
-   * @param {reader.Reader} rd Data reader
+   * Reads up to {@link MAX_BYTES} bytes. Stops when a byte with the
+   * continuation bit clear is encountered.
    *
+   * @param {reader.Reader} rd Data reader to consume bytes from.
+   * @returns {Promise<void>} Resolves when decoding is complete.
    */
   async unmarshal(rd) {
     for (let i = 0; i < MAX_BYTES; i++) {

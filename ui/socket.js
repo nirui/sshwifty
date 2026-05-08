@@ -21,20 +21,39 @@ import * as sender from "./stream/sender.js";
 import * as streams from "./stream/streams.js";
 import * as xhr from "./xhr.js";
 
+/**
+ * @file socket.js
+ * @description Manages the encrypted WebSocket connection to the Sshwifty
+ * backend. Provides the {@link Dial} class that handles low-level WebSocket
+ * lifecycle and GCM stream encryption, and the {@link Socket} class that
+ * integrates it with the multiplexed stream layer.
+ */
+
 export const ECHO_FAILED = streams.ECHO_FAILED;
 
+/** @type {number} Maximum adaptive sender delay in milliseconds. */
 const maxSenderDelay = 200;
+/** @type {number} Minimum adaptive sender delay in milliseconds. */
 const minSenderDelay = 30;
 
+/**
+ * Manages WebSocket connection setup and the AES-GCM encrypted framing layer.
+ *
+ * Each `Dial` instance holds the target address, dial timeout, and a key
+ * provider. Calling {@link Dial#dial} establishes the WebSocket, negotiates
+ * nonces, and returns an encrypted reader/sender pair.
+ *
+ * @private
+ */
 class Dial {
   /**
-   * constructor
+   * Creates a new Dial instance.
    *
-   * @param {string} address Address to the Websocket server
-   * @param {number} Dial timeout
-   * @param {object} privateKey String key that will be used to encrypt and
-   *                            decrypt socket traffic
-   *
+   * @param {{ webSocket: string, keepAlive: string }} address - WebSocket URL
+   *   and its HTTP keep-alive counterpart.
+   * @param {number} timeout - Connection timeout in milliseconds.
+   * @param {{ fetch: function(): Promise<Uint8Array> }} privateKey - Key provider
+   *   whose `fetch()` method returns the raw AES key bytes.
    */
   constructor(address, timeout, privateKey) {
     this.address = address;
@@ -44,13 +63,16 @@ class Dial {
   }
 
   /**
-   * Connect to the remote server
+   * Opens a raw WebSocket connection to `address.webSocket` and resolves once
+   * the connection is established, or rejects after `timeout` ms.
    *
-   * @param {string} address Target URL address
-   * @param {number} timeout Connect timeout
+   * Also starts a keep-alive XHR interval against `address.keepAlive` to
+   * prevent idle connection drops from intermediary proxies.
    *
-   * @returns {Promise<WebSocket>} When connection is established
-   *
+   * @param {{ webSocket: string, keepAlive: string }} address - Target URLs.
+   * @param {number} timeout - Maximum wait time in milliseconds before closing
+   *   the socket and rejecting the promise.
+   * @returns {Promise<WebSocket>} Resolves with the open WebSocket instance.
    */
   connect(address, timeout) {
     const self = this;
@@ -113,16 +135,18 @@ class Dial {
   }
 
   /**
-   * Build an socket encrypt and decrypt key string
+   * Retrieves the raw key bytes from the key provider.
    *
+   * @returns {Promise<Uint8Array>} The raw key material returned by the provider.
    */
   async buildKeyString() {
     return this.privateKey.fetch();
   }
 
   /**
-   * Build encrypt and decrypt key
+   * Derives and imports an AES-GCM `CryptoKey` from the key provider output.
    *
+   * @returns {Promise<CryptoKey>} The imported AES-GCM key ready for encrypt/decrypt.
    */
   async buildKey() {
     let kStr = await this.buildKeyString();
@@ -131,13 +155,19 @@ class Dial {
   }
 
   /**
-   * Connect to the server
+   * Establishes the full encrypted session: opens the WebSocket, performs
+   * nonce exchange, imports the AES-GCM key, and wires up the encrypted
+   * reader and sender.
    *
-   * @param {object} callbacks Callbacks
+   * The returned object's `reader` operates on the decrypted stream; the
+   * `sender` wraps outbound data in AES-GCM frames before transmission.
    *
-   * @returns {object} A pair of ReadWriter which can be used to read and
-   *                   send data to the underlaying websocket connection
-   *
+   * @param {{ inbound: function(Blob): void, inboundUnpacked: function(Uint8Array): void,
+   *   outbound: function(Uint8Array): void }} callbacks - Traffic-monitoring hooks
+   *   called for raw inbound blobs, their unpacked byte arrays, and outbound frames.
+   * @returns {Promise<{ reader: reader.Multiple, sender: sender.Sender, ws: WebSocket }>}
+   *   The encrypted reader/sender pair and the underlying WebSocket.
+   * @throws {Error} If the WebSocket connection or nonce exchange fails.
    */
   async dial(callbacks) {
     let ws = await this.connect(this.address, this.timeout);
@@ -268,15 +298,21 @@ class Dial {
   }
 }
 
+/**
+ * High-level WebSocket session manager.
+ *
+ * Wraps {@link Dial} and the multiplexed {@link streams.Streams} layer.
+ * Caches the active stream handler so subsequent `get()` calls return the
+ * same instance without re-dialing.
+ */
 export class Socket {
   /**
-   * constructor
+   * Creates a new Socket.
    *
-   * @param {string} address Address of the WebSocket server
-   * @param {object} privateKey String key that will be used to encrypt and
-   *                            decrypt socket traffic
-   * @param {number} timeout Dial timeout
-   * @param {number} echoInterval Echo interval
+   * @param {{ webSocket: string, keepAlive: string }} address - Backend URLs.
+   * @param {{ fetch: function(): Promise<Uint8Array> }} privateKey - Key provider.
+   * @param {number} timeout - Dial timeout in milliseconds.
+   * @param {number} echoInterval - Echo heartbeat interval in milliseconds.
    */
   constructor(address, privateKey, timeout, echoInterval) {
     this.dial = new Dial(address, timeout, privateKey);
@@ -285,12 +321,18 @@ export class Socket {
   }
 
   /**
-   * Return a stream handler
+   * Returns the active multiplexed stream handler, dialing if not yet connected.
    *
-   * @param {object} callbacks A group of callbacks to call when needed
+   * Implements back-pressure by tracking raw inbound vs. unpacked byte counts:
+   * when the ratio exceeds `receiveToPauseFactor` the stream is paused, and
+   * resumed once decryption catches up.
    *
-   * @returns {Promise<streams.Streams>} The stream manager
-   *
+   * @param {{ connecting: function(): void, connected: function(): void,
+   *   failed: function(Error): void, close: function(Error|null): void,
+   *   traffic: function(number, number): void,
+   *   echo: function(number): void }} callbacks - Lifecycle and traffic callbacks.
+   * @returns {Promise<streams.Streams>} The active stream manager.
+   * @throws {Error} Re-throws any dial failure after calling `callbacks.failed`.
    */
   async get(callbacks) {
     let self = this;

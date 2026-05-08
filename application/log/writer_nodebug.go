@@ -22,20 +22,25 @@ import (
 	"io"
 )
 
-// NonDebugWriter will write logs to the underlaying writer
+// NonDebugWriter is a Writer variant that suppresses Debug-level messages.
+// Info, Warning, and Error output is forwarded to the underlying io.Writer
+// unchanged; Context and TitledContext return new NonDebugWriter instances
+// so the suppression is inherited by child loggers.
 type NonDebugWriter struct {
 	Writer
 }
 
-// NewNonDebugWriter creates a new Writer with debug output disabled
+// NewNonDebugWriter creates a NonDebugWriter that writes to w under the given
+// initial context label.
 func NewNonDebugWriter(context string, w io.Writer) NonDebugWriter {
 	return NonDebugWriter{
 		Writer: NewWriter(context, w),
 	}
 }
 
-// NewDebugOrNonDebugWriter creates debug or nondebug log depends on
-// given `useDebug`
+// NewDebugOrNonDebugWriter returns a Writer when useDebug is true or a
+// NonDebugWriter when false, allowing callers to select the log verbosity at
+// runtime without branching everywhere.
 func NewDebugOrNonDebugWriter(
 	useDebug bool, context string, w io.Writer) Logger {
 	if useDebug {
@@ -44,12 +49,14 @@ func NewDebugOrNonDebugWriter(
 	return NewNonDebugWriter(context, w)
 }
 
-// Context build a new Sub context
+// Context returns a child NonDebugWriter with name appended to the context
+// path, preserving debug suppression in the child.
 func (w NonDebugWriter) Context(name string) Logger {
 	return NewNonDebugWriter(w.c+" > "+name, w.w)
 }
 
-// TitledContext build a new Sub context with specified formatted title
+// TitledContext returns a child NonDebugWriter with a formatted name appended
+// to the context path, preserving debug suppression in the child.
 func (w NonDebugWriter) TitledContext(
 	name string,
 	params ...any,
@@ -57,5 +64,5 @@ func (w NonDebugWriter) TitledContext(
 	return NewNonDebugWriter(w.c+" > "+fmt.Sprintf(name, params...), w.w)
 }
 
-// Debug write an debug message
+// Debug is a no-op in NonDebugWriter; debug messages are silently discarded.
 func (w NonDebugWriter) Debug(msg string, params ...any) {}

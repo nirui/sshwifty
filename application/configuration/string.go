@@ -26,12 +26,19 @@ import (
 	"strings"
 )
 
+// environRenamePrefix is the sentinel value prefix that, when found at the
+// start of an environment variable's value, causes GetEnv to treat the
+// remainder as the name of a second variable to look up instead.
+// environRenamePrefixLen caches the length of the prefix.
 const (
 	environRenamePrefix    = "SSHWIFTY_ENV_RENAMED:"
 	environRenamePrefixLen = len(environRenamePrefix)
 )
 
-// GetEnv returns the environment variable by given `name`
+// GetEnv looks up the environment variable named name. If the variable's value
+// starts with SSHWIFTY_ENV_RENAMED: the remainder is treated as an alias and
+// the alias variable is returned instead, supporting secret injection via
+// environment variable indirection.
 func GetEnv(name string) string {
 	if v := os.Getenv(name); !strings.HasPrefix(v, environRenamePrefix) {
 		return v
@@ -40,10 +47,20 @@ func GetEnv(name string) string {
 	}
 }
 
-// String represents a config string
+// String is a configuration string that may contain a URI scheme to indicate
+// how its value should be resolved. Plain strings are returned as-is; strings
+// beginning with "file://", "environment://", or "literal://" are resolved
+// through their respective sources.
 type String string
 
-// Parse parses current string and return the parsed result
+// Parse resolves the configuration string and returns the final string value.
+// Supported schemes:
+//   - file://path    reads the file at path and returns its contents as a string.
+//   - environment://name returns the value of the named environment variable.
+//   - literal://value returns value verbatim, preserving any embedded "://" sequences.
+//
+// Strings without a recognised scheme are returned unchanged. Unknown schemes
+// return an error.
 func (s String) Parse() (string, error) {
 	ss := string(s)
 	sSchemeLeadIdx := strings.Index(ss, "://")

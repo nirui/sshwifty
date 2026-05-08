@@ -15,27 +15,33 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+// Package log defines the Logger interface used throughout the application and
+// provides two concrete implementations: Writer (full logging) and
+// NonDebugWriter (debug messages suppressed), plus Ditch (all messages
+// silently discarded).
 package log
 
-// Ditch ditch all logs
+// Ditch is a no-op Logger implementation that discards every log message and
+// write. It is useful in tests or when a logger must be provided but output is
+// not desired.
 type Ditch struct{}
 
-// NewDitch creates a new Ditch
+// NewDitch creates and returns a Ditch logger.
 func NewDitch() Ditch {
 	return Ditch{}
 }
 
-// Context build a new Sub context
+// Context returns the same Ditch logger; no sub-context is created.
 func (w Ditch) Context(name string) Logger {
 	return w
 }
 
-// TitledContext build a new Sub context with specified formatted title
+// TitledContext returns the same Ditch logger; no sub-context is created.
 func (w Ditch) TitledContext(name string, params ...any) Logger {
 	return w
 }
 
-// Write writes default error
+// Write discards b and reports success to satisfy io.Writer.
 func (w Ditch) Write(b []byte) (int, error) {
 	return len(b), nil
 }

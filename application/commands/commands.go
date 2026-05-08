@@ -15,11 +15,15 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+// Package commands registers all built-in protocol commands (Telnet and SSH)
+// and exposes the factory function used to initialise the command dispatch
+// table at startup.
 package commands
 
 import "github.com/Snuffy2/sshwifty/application/command"
 
-// New creates a new commands group
+// New creates and returns the fully populated command.Commands array with
+// Telnet at index 0 and SSH at index 1, ready to be passed to a Commander.
 func New() command.Commands {
 	return command.Commands{
 		command.Register("Telnet", newTelnet, parseTelnetConfig),

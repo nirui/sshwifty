@@ -15,6 +15,25 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+/**
+ * @file xhr.js
+ * @description Minimal XHR helpers for HTTP requests used by the Sshwifty
+ * authentication and keep-alive flows. Wraps XMLHttpRequest in Promises and
+ * exposes `get` and `options` convenience exports.
+ */
+
+/**
+ * Sends an asynchronous XHR request and returns a promise that resolves with
+ * the completed `XMLHttpRequest` object, or rejects on network/timeout error.
+ *
+ * @private
+ * @param {string} method - HTTP method (e.g. `"GET"`, `"OPTIONS"`).
+ * @param {string} url - Target URL.
+ * @param {Object.<string, string>} headers - Map of request header name → value.
+ * @returns {Promise<XMLHttpRequest>} Resolves with the finished XHR instance,
+ *   giving callers access to status, response text, and headers.
+ * @throws Will reject if the request encounters a network error or times out.
+ */
 function send(method, url, headers) {
   return new Promise((res, rej) => {
     let authReq = new XMLHttpRequest();
@@ -45,10 +64,25 @@ function send(method, url, headers) {
   });
 }
 
+/**
+ * Issues an HTTP GET request.
+ *
+ * @param {string} url - Target URL.
+ * @param {Object.<string, string>} headers - Additional request headers.
+ * @returns {Promise<XMLHttpRequest>} Resolves with the completed XHR instance.
+ */
 export function get(url, headers) {
   return send("GET", url, headers);
 }
 
+/**
+ * Issues an HTTP OPTIONS request, used as a keep-alive ping for the backend
+ * WebSocket endpoint to prevent idle connection drops by proxies.
+ *
+ * @param {string} url - Target URL.
+ * @param {Object.<string, string>} headers - Additional request headers.
+ * @returns {Promise<XMLHttpRequest>} Resolves with the completed XHR instance.
+ */
 export function options(url, headers) {
   return send("OPTIONS", url, headers);
 }

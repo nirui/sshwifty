@@ -16,6 +16,11 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
+ * @file Shared low-level utilities for the stream layer: random-number
+ * generation and binary buffer helpers used by the protocol encoder/decoder.
+ */
+
+/**
  * Get one unsafe random number
  *
  * @param {number} min Min value (included)

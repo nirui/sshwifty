@@ -22,14 +22,19 @@ import (
 	"net"
 )
 
-// Dial dial to remote machine
+// Dial is the function signature used throughout the application to open
+// outbound network connections. It mirrors net.Dialer.DialContext, accepting
+// a context for cancellation, a network type (e.g. "tcp"), and a host:port
+// address string.
 type Dial func(
 	ctx context.Context,
 	network string,
 	address string,
 ) (net.Conn, error)
 
-// TCPDial build a TCP dialer
+// TCPDial returns a Dial that opens plain TCP connections using a default
+// net.Dialer. When ctx is nil it falls back to Dial (no context), otherwise
+// it uses DialContext.
 func TCPDial() Dial {
 	dial := net.Dialer{}
 	return func(

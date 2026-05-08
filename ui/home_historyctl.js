@@ -15,8 +15,27 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+/**
+ * @file home_historyctl.js
+ * @description Factory for the connection history controller used by the
+ * `home` Vue component. Persists known remotes to `localStorage` under the
+ * `"sshwifty-knowns"` key and migrates the legacy `"knowns"` key on first run.
+ */
+
 import { History } from "./commands/history.js";
 
+/**
+ * Builds and returns a {@link History} instance backed by `localStorage`.
+ *
+ * Performs a one-time migration of the legacy `"knowns"` key to
+ * `"sshwifty-knowns"` (see inline TODO). Loads the existing record set, then
+ * wires a save callback that serialises the history to JSON and syncs the
+ * `connector.knowns` reactive property whenever the history changes.
+ *
+ * @param {{ connector: { knowns: Array } }} ctx - The home component instance,
+ *   used to keep `connector.knowns` in sync with the persisted history.
+ * @returns {History} The initialised history instance with up to 64 entries.
+ */
 export function build(ctx) {
   let rec = [];
 

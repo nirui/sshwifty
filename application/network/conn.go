@@ -15,12 +15,17 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+// Package network provides network connection utilities for Sshwifty, including
+// timeout-enforcing net.Conn wrappers, TCP and SOCKS5 dialers, and an
+// access-control dialer that restricts outbound connections to an allow-list.
 package network
 
 import (
 	"time"
 )
 
+// emptyTime is the zero value of time.Time used to represent "no deadline" in
+// SetDeadline/SetReadDeadline/SetWriteDeadline calls.
 var (
 	emptyTime = time.Time{}
 )

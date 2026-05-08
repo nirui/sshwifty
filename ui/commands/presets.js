@@ -15,6 +15,16 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+/**
+ * @file Preset configuration management for the Sshwifty UI.
+ *
+ * Presets are pre-filled connection profiles loaded from server configuration.
+ * {@link Preset} wraps a single profile and validates its structure;
+ * {@link Presets} holds the full collection and provides filtered lookup.
+ * Use {@link emptyPreset} to obtain a blank default preset when no server
+ * configuration is present.
+ */
+
 import Exception from "./exception.js";
 
 /**
@@ -30,10 +40,11 @@ const presetItem = {
 };
 
 /**
- * Verify Preset Item Meta
+ * Verify that every value in `preset.meta` is a string.
  *
- * @param {object} preset
- *
+ * @private
+ * @param {object} preset Preset object containing a `meta` dictionary.
+ * @throws {Exception} When any meta value is not a string.
  */
 function verifyPresetItemMeta(preset) {
   for (let i in preset.meta) {
@@ -52,14 +63,15 @@ function verifyPresetItemMeta(preset) {
 }
 
 /**
- * Parse and verify the given preset, return a valid preset
+ * Parse and validate a raw preset object against the `presetItem` template,
+ * filling in defaults for missing optional fields.
  *
- * @param {object} item
- *
- * @throws {Exception} when invalid data is given
- *
- * @return {object}
- *
+ * @private
+ * @param {object} item Raw preset data from server configuration.
+ * @returns {object} Validated preset object conforming to the `presetItem`
+ *   shape.
+ * @throws {Exception} When a field has the wrong type or meta values are
+ *   non-string.
  */
 function parsePresetItem(item) {
   let preset = {};
@@ -96,8 +108,10 @@ function parsePresetItem(item) {
 }
 
 /**
- * Preset data
+ * A single connection preset loaded from server configuration.
  *
+ * Provides typed accessors for preset fields and meta values, plus helpers
+ * for inserting new meta entries and listing existing keys.
  */
 export class Preset {
   /**
@@ -238,8 +252,8 @@ export function emptyPreset() {
 }
 
 /**
- * Command Preset manager
- *
+ * Collection of all preset profiles, with filtered lookup by type, host, and
+ * meta value.
  */
 export class Presets {
   /**

@@ -34,43 +34,59 @@ import (
 	"github.com/Snuffy2/sshwifty/application/log"
 )
 
-// loggerWriter writes log to given log.Logger
+// loggerWriter adapts a log.Logger to io.Writer so that the standard library's
+// http.Server error logger can route messages through the application logger.
+// Whitespace is trimmed from each write before forwarding.
 type loggerWriter struct {
+	// l is the application logger that receives the HTTP server error messages.
 	l log.Logger
 }
 
-// Write implements io.Writer
+// Write trims surrounding whitespace from b and forwards it to the logger's
+// Write method.
 func (d loggerWriter) Write(b []byte) (int, error) {
 	return d.l.Write(bytes.TrimSpace(b))
 }
 
-// Errors
+// ErrInvalidIPAddress is returned by buildListener when the configured
+// ListenInterface is not a valid IP address string.
 var (
 	ErrInvalidIPAddress = errors.New(
 		"invalid IP address")
 )
 
-// HandlerBuilder builds a HTTP handler
+// HandlerBuilder is a factory for the http.Handler used by a single server
+// instance. It receives the shared Common configuration, the per-server
+// configuration, and a logger scoped to that server.
 type HandlerBuilder func(
 	commonCfg configuration.Common,
 	cfg configuration.Server,
 	logger log.Logger) http.Handler
 
-// HandlerBuilderBuilder builds HandlerBuilder
+// HandlerBuilderBuilder returns a HandlerBuilder that has been configured with
+// the full set of registered commands. It is called once per Server.Serve
+// invocation.
 type HandlerBuilderBuilder func(command.Commands) HandlerBuilder
 
-// CloseCallback will be called when the server has closed
+// CloseCallback is called by a Serving goroutine when it exits, passing the
+// error that caused the exit (or nil on clean shutdown).
 type CloseCallback func(error)
 
-// Server represents a server
+// Server is the factory type that creates and tracks Serving instances. It
+// holds the shared logger and a WaitGroup used to wait for all servers to stop.
 type Server struct {
-	logger       log.Logger
+	// logger is the application logger used to create per-server child loggers.
+	logger log.Logger
+	// shutdownWait is decremented by each Serving goroutine when it exits.
 	shutdownWait *sync.WaitGroup
 }
 
-// Serving represents a server that is serving for requests
+// Serving wraps an active http.Server and the shared WaitGroup. Its Close
+// method triggers a graceful shutdown.
 type Serving struct {
-	server       http.Server
+	// server is the underlying HTTP server being served.
+	server http.Server
+	// shutdownWait is the shared WaitGroup decremented on server exit.
 	shutdownWait *sync.WaitGroup
 }
 
@@ -82,7 +98,10 @@ func New(logger log.Logger) Server {
 	}
 }
 
-// Serve starts serving
+// Serve constructs an http.Server with the given configuration, starts a
+// listener goroutine, and returns the Serving handle immediately. closeCallback
+// is invoked from the goroutine when it exits. handlerBuilder is called to
+// produce the HTTP handler for this server instance.
 func (s Server) Serve(
 	commonCfg configuration.Common,
 	cfg configuration.Server,
@@ -113,11 +132,13 @@ func (s Server) Serve(
 	return ss
 }
 
-// Wait waits until all server is closed
+// Wait blocks until all Serving goroutines started by this Server have exited.
 func (s Server) Wait() {
 	s.shutdownWait.Wait()
 }
 
+// buildListener resolves the IP/port pair, opens a TCP listener, and wraps it
+// in a listener that enforces per-connection timeouts.
 func (s *Serving) buildListener(
 	ip string,
 	port uint16,
@@ -183,7 +204,8 @@ func (s *Serving) run(
 	return err
 }
 
-// Close close the server
+// Close initiates a graceful shutdown of the server by calling
+// http.Server.Shutdown with a background context.
 func (s *Serving) Close() error {
 	return s.server.Shutdown(context.TODO())
 }

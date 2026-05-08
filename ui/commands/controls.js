@@ -15,8 +15,23 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+/**
+ * @file Command control registry.
+ *
+ * {@link Controls} maps command-type strings (e.g. `"SSH"`, `"Telnet"`) to
+ * their respective control objects. Each control object is expected to expose
+ * the interface used by the command's wizard to send data, resize the terminal,
+ * and build the live session UI.
+ */
+
 import Exception from "./exception.js";
 
+/**
+ * Registry that maps command type names to their control interface objects.
+ *
+ * Populated once at startup with all registered controls; individual commands
+ * look up their own control via {@link Controls#get}.
+ */
 export class Controls {
   /**
    * constructor

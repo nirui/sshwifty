@@ -15,6 +15,9 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+// Package application provides the top-level application lifecycle management
+// for Sshwifty, including startup, signal handling, configuration loading, and
+// graceful shutdown with optional restart on SIGHUP.
 package application
 
 import (
@@ -33,29 +36,37 @@ import (
 	"github.com/Snuffy2/sshwifty/application/server"
 )
 
-// ProccessSignaller send signal to the running application
+// ProccessSignaller is a channel used to send OS signals to the running
+// application, triggering shutdown or restart behavior.
 type ProccessSignaller chan os.Signal
 
-// ProcessSignallerBuilder builds a ProccessSignaler
+// ProcessSignallerBuilder is a factory function that returns a new OS signal
+// channel. Callers may substitute a custom builder for testing purposes.
 type ProcessSignallerBuilder func() chan os.Signal
 
-// DefaultProccessSignallerBuilder the default ProccessSignallerBuilder
+// DefaultProccessSignallerBuilder returns the default ProcessSignallerBuilder,
+// which creates a buffered channel of size 1 for receiving OS signals.
 func DefaultProccessSignallerBuilder() chan os.Signal {
 	return make(chan os.Signal, 1)
 }
 
 var (
+	// screenLineWipper is written to the screen output to clear the current
+	// line before printing shutdown messages (e.g., to erase the ^C glyph).
 	screenLineWipper = []byte("\r")
 )
 
-// Application contains data required for the application, and yes I don't like
-// to write comments
+// Application holds the dependencies required to run the Sshwifty application,
+// including the output writer for banner/status messages and the structured
+// logger used throughout the lifetime of the process.
 type Application struct {
+	// screen is the writer used for banner output and user-facing status lines.
 	screen io.Writer
+	// logger is the structured logger routed to the output writer.
 	logger log.Logger
 }
 
-// New creates a new Application
+// New creates a new Application with the given screen writer and logger.
 func New(screen io.Writer, logger log.Logger) Application {
 	return Application{
 		screen: screen,
@@ -63,8 +74,11 @@ func New(screen io.Writer, logger log.Logger) Application {
 	}
 }
 
-// Run execute the application. It will return when the application is finished
-// running
+// run performs a single execution cycle: loads configuration, starts all
+// configured servers, and blocks until an OS signal arrives. It returns
+// (true, nil) when a SIGHUP is received, indicating that the caller should
+// restart; (false, nil) for clean shutdown signals; and (false, err) when an
+// error forces an early exit.
 func (a Application) run(
 	cLoader configuration.Loader,
 	closeSigBuilder ProcessSignallerBuilder,
@@ -156,8 +170,10 @@ func (a Application) run(
 	}
 }
 
-// Run execute the application. It will return when the application is finished
-// running
+// Run executes the application loop. It prints the startup banner, redirects
+// the standard library logger to the application logger, then repeatedly calls
+// run until a non-restart signal is received or a fatal error occurs. It
+// returns the first non-nil error encountered, or nil on clean exit.
 func (a Application) Run(
 	cLoader configuration.Loader,
 	closeSigBuilder ProcessSignallerBuilder,

@@ -16,6 +16,15 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
+ * @file Tab-color management for Sshwifty command sessions.
+ *
+ * Provides {@link RGB} for raw color values, {@link Color} for a static custom
+ * color, {@link DispensedColor} for a randomly allocated color that can be
+ * returned to the pool, and {@link Colors} as the pool manager that dispenses
+ * and reclaims colors to keep concurrent session tabs visually distinct.
+ */
+
+/**
  * Converts color number to a hex string
  *
  * @param {number} num color value
@@ -82,13 +91,19 @@ function makeValidHex(hex) {
   }
 }
 
+/**
+ * Immutable RGB color value.
+ *
+ * Stores red, green, and blue channel values as numbers (0–255) and can
+ * render them as a CSS hex string via {@link RGB#hex}.
+ */
 export class RGB {
   /**
    * constructor
    *
-   * @param {number} r value of Red channel
-   * @param {number} g value of Green channel
-   * @param {number} b value of Blue channel
+   * @param {number} r value of Red channel (0–255)
+   * @param {number} g value of Green channel (0–255)
+   * @param {number} b value of Blue channel (0–255)
    *
    */
   constructor(r, g, b) {
@@ -97,6 +112,11 @@ export class RGB {
     this.b = b;
   }
 
+  /**
+   * Return the color as a CSS hex string.
+   *
+   * @returns {string} Six-character hex color prefixed with `#` (e.g. `#1a2b3c`).
+   */
   hex() {
     return "#" + numToHex(this.r) + numToHex(this.g) + numToHex(this.b);
   }
@@ -129,30 +149,50 @@ function getRandColor(from, to) {
   );
 }
 
+/**
+ * A static (non-pooled) color created from a user-supplied hex value.
+ *
+ * Unlike {@link DispensedColor}, forgetting a `Color` is a no-op because it
+ * was never allocated from the shared pool.
+ */
 export class Color {
   /**
    * constructor
    *
-   * @param {RGB} color value of Red channel
+   * @param {RGB} color The RGB value for this color.
    *
    */
   constructor(color) {
     this.color = color;
   }
 
+  /**
+   * Return the CSS hex string for this color.
+   *
+   * @returns {string} Hex color string (e.g. `#1a2b3c`).
+   */
   hex() {
     return this.color.hex();
   }
 
+  /**
+   * No-op. Static colors are not pooled and need no reclamation.
+   */
   forget() {}
 }
 
+/**
+ * A randomly allocated color leased from the {@link Colors} pool.
+ *
+ * Call {@link DispensedColor#forget} when the session ends to return the color
+ * to the pool so it can be reused by future sessions.
+ */
 export class DispensedColor {
   /**
    * constructor
    *
-   * @param {RGB} color value of Red channel
-   * @param {Colors} returner the color manager
+   * @param {RGB} color The allocated RGB color.
+   * @param {Colors} returner The pool manager that allocated this color.
    *
    */
   constructor(color, returner) {
@@ -160,10 +200,18 @@ export class DispensedColor {
     this.returner = returner;
   }
 
+  /**
+   * Return the CSS hex string for this color.
+   *
+   * @returns {string} Hex color string (e.g. `#1a2b3c`).
+   */
   hex() {
     return this.color.hex();
   }
 
+  /**
+   * Return this color to the pool so it can be dispensed again.
+   */
   forget() {
     this.returner.forget(this);
   }
@@ -179,6 +227,13 @@ export class DispensedColor {
 const RAND_COLOR_MIN = 0x11; // 17
 const RAND_COLOR_MAX = 0x22; // 34
 
+/**
+ * Pool manager for session tab colors.
+ *
+ * Tracks which hex color values are currently in use and tries to avoid
+ * assigning duplicates. Colors are drawn from a narrow dark range so they
+ * contrast with foreground text without being visually overwhelming.
+ */
 export class Colors {
   /**
    * constructor
@@ -211,10 +266,9 @@ export class Colors {
   }
 
   /**
-   * Forget the specified color so it can be dispensed again
+   * Return a previously dispensed color to the pool so it can be reused.
    *
-   * @param {RGB} color value of Red channel
-   *
+   * @param {DispensedColor} color The dispensed color to release.
    */
   forget(color) {
     delete this.assignedColors[color.hex()];

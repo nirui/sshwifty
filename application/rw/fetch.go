@@ -15,30 +15,41 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+// Package rw provides low-level I/O primitives used by the command layer:
+// a buffered fetch-style reader (FetchReader), a size-limited reader
+// (LimitedReader), and helper functions for reading fixed-size byte sequences.
 package rw
 
 import "errors"
 
-// Errors
+// ErrFetchReaderNotEnoughBuffer is returned by FetchReader.Export when the
+// internal buffer does not contain the requested number of bytes.
 var (
 	ErrFetchReaderNotEnoughBuffer = errors.New(
 		"not enough buffer")
 )
 
-// FetchReaderFetcher generates data for SourceReader
+// FetchReaderFetcher is a callback that produces the next chunk of data from
+// an underlying source (e.g. a WebSocket message). It is called by FetchReader
+// when its internal buffer is exhausted.
 type FetchReaderFetcher func() ([]byte, error)
 
-// FetchReader read from the source and increase your lifespan if used correctly
+// FetchReader wraps a FetchReaderFetcher and presents a byte-by-byte or
+// chunk-by-chunk read interface. It buffers the most recently fetched chunk
+// and tracks how much of it has been consumed.
 type FetchReader struct {
 	source   FetchReaderFetcher // Source data fetcher
 	data     []byte             // Fetched source data
 	dataUsed int                // Used source data
 }
 
-// Fetch fetchs
+// Fetch is the function signature for requesting up to n bytes from a
+// FetchReader. It is passed around as a first-class value to allow callers to
+// read without holding a pointer to the reader.
 type Fetch func(n int) ([]byte, error)
 
-// FetchOneByte fetchs one byte from the Fetch, or return an error when it fails
+// FetchOneByte blocks until f returns at least one byte or an error. It retries
+// if f returns a zero-length slice with no error.
 func FetchOneByte(f Fetch) ([]byte, error) {
 	for {
 		d, dErr := f(1)
@@ -64,11 +75,13 @@ func NewFetchReader(g FetchReaderFetcher) FetchReader {
 	}
 }
 
+// dataRemain returns the number of unconsumed bytes in the internal buffer.
 func (r FetchReader) dataRemain() int {
 	return len(r.data) - r.dataUsed
 }
 
-// Remain Returns how many bytes is waiting to be readed
+// Remain returns the number of bytes currently available in the internal
+// buffer without fetching from the source.
 func (r *FetchReader) Remain() int {
 	return r.dataRemain()
 }
@@ -134,7 +147,8 @@ func (r *FetchReader) Fetch(n int) ([]byte, error) {
 	return data, nil
 }
 
-// Read implements io.Read
+// Read implements io.Reader by calling Fetch with len(b) and copying the
+// returned bytes into b.
 func (r *FetchReader) Read(b []byte) (int, error) {
 	d, dErr := r.Fetch(len(b))
 

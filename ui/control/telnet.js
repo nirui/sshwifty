@@ -15,6 +15,15 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+/**
+ * @file control/telnet.js
+ * @description Telnet session control layer. Implements the Telnet protocol
+ * option negotiation state machine in `Parser` (based on RFC 854 / the
+ * ziutek/telnet Go reference), and the `Control` class that integrates it with
+ * charset encoding/decoding and the terminal widget subscription channel.
+ * Exports the {@link Telnet} factory used by the controls registry.
+ */
+
 import * as common from "../commands/common.js";
 import Exception from "../commands/exception.js";
 import * as reader from "../stream/reader.js";
@@ -58,10 +67,27 @@ const unknownTermTypeSendData = new Uint8Array([
   77,
 ]);
 
-// Most of code of this class is directly from
-// https://github.com/ziutek/telnet/blob/master/conn.go#L122
-// Thank you!
+/**
+ * Telnet protocol option negotiation parser.
+ *
+ * Processes the raw inband byte stream from the server, extracts IAC command
+ * sequences, performs option negotiation (echo, SGA, NAWS, terminal type), and
+ * passes clean printable data to `flusher`. Most of the negotiation logic is
+ * ported from https://github.com/ziutek/telnet/blob/master/conn.go#L122.
+ *
+ * @private
+ */
 class Parser {
+  /**
+   * Creates a new Parser.
+   *
+   * @param {function(Uint8Array): void} sender - Sends raw bytes back to the server.
+   * @param {function(Uint8Array): void} flusher - Receives decoded printable data
+   *   after IAC sequences have been stripped.
+   * @param {{ setEcho: function(boolean): void,
+   *   getWindowDim: function(): { cols: number, rows: number } }} callbacks
+   *   Callbacks for propagating negotiated echo state and querying window size.
+   */
   constructor(sender, flusher, callbacks) {
     this.sender = sender;
     this.flusher = flusher;
@@ -75,10 +101,26 @@ class Parser {
     this.current = 0;
   }
 
+  /**
+   * Sends a three-byte Telnet negotiation sequence `IAC cmd option`.
+   *
+   * @param {number} cmd - Telnet command byte (WILL/WONT/DO/DONT).
+   * @param {number} option - Telnet option byte.
+   * @returns {void}
+   */
   sendNego(cmd, option) {
     return this.sender(new Uint8Array([cmdIAC, cmd, option]));
   }
 
+  /**
+   * Responds to a negotiation command with the appropriate denial/refusal.
+   *
+   * Maps `DO` → `WONT` and `WILL`/`WONT` → `DONT`.
+   *
+   * @param {number} cmd - The incoming Telnet command byte.
+   * @param {number} o - The Telnet option byte to deny.
+   * @returns {void}
+   */
   sendDeny(cmd, o) {
     switch (cmd) {
       case cmdDo:
@@ -88,6 +130,16 @@ class Parser {
     }
   }
 
+  /**
+   * Sends a combined WILL negotiation followed by a subnegotiation frame.
+   *
+   * Used for NAWS: `IAC WILL option IAC SB option <data> IAC SE`.
+   *
+   * @param {number} willCmd - WILL command byte.
+   * @param {Uint8Array} data - Subnegotiation payload.
+   * @param {number} option - Telnet option byte (e.g. `optNAWS`).
+   * @returns {void}
+   */
   sendWillSubNego(willCmd, data, option) {
     let b = new Uint8Array(6 + data.length + 2);
     b.set([cmdIAC, willCmd, option, cmdIAC, cmdSB, option], 0);
@@ -96,6 +148,13 @@ class Parser {
     return this.sender(b);
   }
 
+  /**
+   * Sends a subnegotiation frame: `IAC SB option <data> IAC SE`.
+   *
+   * @param {Uint8Array} data - Subnegotiation payload bytes.
+   * @param {number} option - Telnet option byte.
+   * @returns {void}
+   */
   sendSubNego(data, option) {
     let b = new Uint8Array(3 + data.length + 2);
     b.set([cmdIAC, cmdSB, option], 0);
@@ -104,6 +163,16 @@ class Parser {
     return this.sender(b);
   }
 
+  /**
+   * Reads and processes a terminal-type subnegotiation from the server.
+   *
+   * If the server sends `TERMINAL-TYPE SEND`, returns a deferred callback that
+   * will transmit the hardcoded `XTERM` terminal type reply. Returns `null`
+   * for any other action byte.
+   *
+   * @param {reader.Multiple} rd - Subnegotiation byte reader.
+   * @returns {Promise<function|null>} A deferred send callback, or `null`.
+   */
   async handleTermTypeSubNego(rd) {
     let action = await reader.readOne(rd);
     if (action[0] !== optTerminalTypeSend) {
@@ -115,6 +184,15 @@ class Parser {
     };
   }
 
+  /**
+   * Reads and dispatches a full Telnet subnegotiation block until `IAC SE`.
+   *
+   * Dispatches option-specific handlers (currently only `optTerminalType`) and
+   * invokes any deferred end-of-subneg callback after the `SE` byte is seen.
+   *
+   * @param {reader.Multiple} rd - Byte reader positioned just after `IAC SB`.
+   * @returns {Promise<void>}
+   */
   async handleSubNego(rd) {
     let endExec = null;
     for (;;) {
@@ -139,6 +217,19 @@ class Parser {
     }
   }
 
+  /**
+   * Processes a WILL/WONT/DO/DONT option negotiation exchange.
+   *
+   * Sends the appropriate acknowledgement only when the current option state
+   * differs from the incoming command, avoiding negotiation loops.
+   *
+   * @param {number} cmd - Incoming command byte (WILL/WONT/DO/DONT).
+   * @param {number} option - Telnet option byte being negotiated.
+   * @param {boolean} oldVal - Current known state of this option.
+   * @param {function(boolean, number): void} newVal - Callback invoked with the
+   *   new state and the command that triggered the change.
+   * @returns {void}
+   */
   handleOption(cmd, option, oldVal, newVal) {
     switch (cmd) {
       case cmdWill:
@@ -168,6 +259,16 @@ class Parser {
     }
   }
 
+  /**
+   * Reads and dispatches a single Telnet IAC command sequence.
+   *
+   * Handles WILL/WONT/DO/DONT option commands, escaped IAC bytes, Go-Ahead,
+   * and subnegotiations. Unknown commands throw an `Exception`.
+   *
+   * @param {reader.Multiple} rd - Byte reader positioned just after the IAC byte.
+   * @returns {Promise<void>}
+   * @throws {Exception} When an unrecognised command byte is encountered.
+   */
   async handleCmd(rd) {
     let d = await reader.readOne(rd);
     switch (d[0]) {
@@ -248,11 +349,28 @@ class Parser {
     this.sendDeny(d[0], o[0]);
   }
 
+  /**
+   * Initiates NAWS (window-size) negotiation by sending `IAC WILL NAWS`.
+   *
+   * Marks `nawsAccpeted` so that subsequent NAWS DO commands trigger
+   * subnegotiation instead of a fresh WILL.
+   *
+   * @returns {void}
+   */
   requestWindowResize() {
     this.options.nawsAccpeted = true;
     this.sendNego(cmdWill, optNAWS);
   }
 
+  /**
+   * Continuously reads from the internal reader, dispatching IAC commands and
+   * flushing printable data chunks to `flusher` until the reader closes.
+   *
+   * Silently swallows all errors (closed reader, unknown commands) to avoid
+   * crashing the session when the remote sends malformed sequences.
+   *
+   * @returns {Promise<void>}
+   */
   async run() {
     try {
       for (;;) {
@@ -271,16 +389,47 @@ class Parser {
     }
   }
 
+  /**
+   * Feeds a new data buffer into the parser's internal multiplexed reader.
+   *
+   * @param {reader.Buffer} rd - Buffer to enqueue for parsing.
+   * @param {function(): void} cb - Callback invoked when this buffer is fully consumed.
+   * @returns {void}
+   */
   feed(rd, cb) {
     this.reader.feed(rd, cb);
   }
 
+  /**
+   * Closes the parser's internal reader, unblocking any pending `run()` iteration.
+   *
+   * @returns {void}
+   */
   close() {
     this.reader.close();
   }
 }
 
+/**
+ * Runtime control object for an active Telnet session.
+ *
+ * Owns the `Parser` for Telnet option negotiation and the charset encode/decode
+ * pipeline. Provides the same control interface as the SSH `Control` (echo,
+ * resize, send, receive, close) so the terminal widget is protocol-agnostic.
+ *
+ * @private
+ */
 class Control {
+  /**
+   * Creates a new Telnet Control.
+   *
+   * @param {{ charset: string, send: function(Uint8Array): void,
+   *   close: function(): void,
+   *   events: { place: function(string, function): void },
+   *   tabColor: string }} data - Session configuration from the connector.
+   * @param {{ hex: function(): string, forget: function(): void }} color - Color
+   *   token allocated for this tab's background accent.
+   */
   constructor(data, color) {
     this.background = color;
     this.charset = data.charset;
@@ -330,10 +479,27 @@ class Control {
     });
   }
 
+  /**
+   * Returns whether the terminal should perform local echo.
+   *
+   * Driven by the server's ECHO option negotiation; defaults to `true` until
+   * the server sends `WILL ECHO`.
+   *
+   * @returns {boolean} `true` when the terminal should echo characters locally.
+   */
   echo() {
     return this.localEchoEnabled;
   }
 
+  /**
+   * Updates the tracked window dimensions and initiates NAWS negotiation with
+   * the Telnet server.
+   *
+   * No-ops when the session is closed.
+   *
+   * @param {{ rows: number, cols: number }} dim - New terminal dimensions.
+   * @returns {void}
+   */
   resize(dim) {
     if (this.closed) {
       return;
@@ -343,20 +509,51 @@ class Control {
     this.parser.requestWindowResize();
   }
 
+  /**
+   * Marks the control as enabled (the tab is currently active/focused).
+   *
+   * @returns {void}
+   */
   enabled() {
     this.enable = true;
   }
 
+  /**
+   * Marks the control as disabled (the tab is in the background).
+   *
+   * @returns {void}
+   */
   disabled() {
     this.enable = false;
   }
 
+  /**
+   * No-op retap handler (Telnet has no toolbar toggle behaviour).
+   *
+   * @param {boolean} _isOn - Toolbar toggle state (unused).
+   * @returns {void}
+   */
   retap(_isOn) {}
 
+  /**
+   * Returns a promise that resolves with the next decoded chunk of data
+   * from the Telnet server.
+   *
+   * @returns {Promise<string>} Resolves with decoded terminal output, or rejects
+   *   when the session is terminated.
+   */
   receive() {
     return this.subs.subscribe();
   }
 
+  /**
+   * Scans `data` from `start` for the next IAC (0xFF) byte.
+   *
+   * @private
+   * @param {number} start - Offset to begin scanning from.
+   * @param {Uint8Array} enc - Buffer to scan.
+   * @returns {number} Index of the first IAC byte at or after `start`, or `-1`.
+   */
   searchNextIAC(start, data) {
     for (let i = start; i < data.length; i++) {
       if (data[i] !== cmdIAC) {
@@ -367,6 +564,17 @@ class Control {
     return -1;
   }
 
+  /**
+   * Sends an encoded byte buffer to the Telnet server, escaping any embedded
+   * IAC bytes by doubling them (as required by RFC 854).
+   *
+   * Splits the buffer at each IAC position and sends each segment individually
+   * to ensure the escaped byte is transmitted correctly.
+   *
+   * @private
+   * @param {Uint8Array} enc - Charset-encoded data to transmit.
+   * @returns {void}
+   */
   sendSeg(enc) {
     let currentLen = 0;
     while (currentLen < enc.length) {
@@ -381,6 +589,15 @@ class Control {
     }
   }
 
+  /**
+   * Sends a string to the Telnet server, encoding it with the session charset
+   * and escaping IAC bytes.
+   *
+   * No-ops when the session is already closed.
+   *
+   * @param {string} data - The text to send.
+   * @returns {void}
+   */
   send(data) {
     if (this.closed) {
       return;
@@ -388,6 +605,15 @@ class Control {
     return this.charsetEncoder.write(data);
   }
 
+  /**
+   * Sends raw binary data to the Telnet server, escaping IAC bytes, without
+   * charset encoding.
+   *
+   * No-ops when the session is already closed.
+   *
+   * @param {string} data - Binary string to transmit (e.g. special key sequences).
+   * @returns {void}
+   */
   sendBinary(data) {
     if (this.closed) {
       return;
@@ -395,10 +621,22 @@ class Control {
     return this.sendSeg(common.strToBinary(data));
   }
 
+  /**
+   * Returns the hex color string for this tab's background accent.
+   *
+   * @returns {string} CSS hex color (e.g. `"#3a7bd5"`).
+   */
   color() {
     return this.background.hex();
   }
 
+  /**
+   * Closes the underlying Telnet session by calling the closer callback exactly once.
+   *
+   * Subsequent calls are no-ops (the closer is nulled out after first invocation).
+   *
+   * @returns {void}
+   */
   close() {
     if (this.closer === null) {
       return;
@@ -409,24 +647,50 @@ class Control {
   }
 }
 
+/**
+ * Telnet protocol entry in the controls registry.
+ *
+ * Registered alongside `SSH` in `app.js` via the `Controls` constructor.
+ * Provides factory metadata and creates `Control` instances with an allocated
+ * background color token.
+ */
 export class Telnet {
   /**
-   * constructor
+   * Creates a new Telnet controls factory.
    *
-   * @param {color.Colors} c
+   * @param {import('../commands/color.js').Colors} c - Shared color pool from
+   *   which tab background colors are allocated.
    */
   constructor(c) {
     this.colors = c;
   }
 
+  /**
+   * Returns the protocol identifier used by the controls registry.
+   *
+   * @returns {string} Always `"Telnet"`.
+   */
   type() {
     return "Telnet";
   }
 
+  /**
+   * Returns the UI widget name that should be used to render this session.
+   *
+   * @returns {string} Always `"Console"`.
+   */
   ui() {
     return "Console";
   }
 
+  /**
+   * Allocates a background color and constructs a new Telnet `Control` instance.
+   *
+   * @param {{ charset: string, send: function, close: function,
+   *   events: object, tabColor: string }} data - Session configuration from
+   *   the connector.
+   * @returns {Control} The new Telnet session control object.
+   */
   build(data) {
     return new Control(data, this.colors.get(data.tabColor));
   }

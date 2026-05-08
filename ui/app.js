@@ -35,10 +35,23 @@ import { Socket } from "./socket.js";
 import * as stream from "./stream/common.js";
 import * as xhr from "./xhr.js";
 
+/**
+ * @file app.js
+ * @description Entry point for the Sshwifty Vue application. Bootstraps the
+ * root Vue instance, handles initial authentication, socket setup, viewport
+ * tracking, and page/tab state transitions.
+ */
+
+/** @type {number} Milliseconds to wait before retrying a failed backend query. */
 const backendQueryRetryDelay = 2000;
 
+/**
+ * @type {number} Maximum acceptable clock difference (ms) between the browser
+ * and the Sshwifty server before showing a time-sync error.
+ */
 const maxTimeDiff = 30000;
 
+/** @type {number} How long (ms) the tab-update asterisk indicator stays visible. */
 const updateIndicatorMaxDisplayTime = 3000;
 
 const mainTemplate = `
@@ -66,21 +79,53 @@ const mainTemplate = `
 <loading class="app-error-message" v-else :error="loadErr"></loading>
 `.trim();
 
+/** @type {string} WebSocket backend path. */
 const socksInterface = "/sshwifty/socket";
+/** @type {string} HTTP verification endpoint used to obtain a session key. */
 const socksVerificationInterface = socksInterface + "/verify";
+/**
+ * @type {number} Time bucket size (ms) used to truncate the current timestamp
+ * before mixing it into the socket key, limiting key reuse windows.
+ */
 const socksKeyTimeTruncater = 100 * 1000;
 
+/**
+ * Creates and mounts the root Vue application instance onto `rootEl`.
+ *
+ * Initialises all reactive state (page routing, socket, viewport), attaches
+ * global resize listeners, and kicks off the first authentication attempt.
+ *
+ * @param {HTMLElement} rootEl - The DOM element that Vue will be mounted onto.
+ * @returns {void}
+ */
 function startApp(rootEl) {
   const pageTitle = document.title;
 
   let uiControlColors = new ControlColors();
 
+  /**
+   * Returns the current time bucket as a string for use as an HMAC mixer.
+   *
+   * The timestamp is truncated to `socksKeyTimeTruncater` millisecond buckets so
+   * that socket keys rotate periodically without requiring sub-millisecond precision.
+   *
+   * @private
+   * @returns {string} Truncated timestamp bucket as a decimal string.
+   */
   function getCurrentKeyMixer() {
     return Number(
       Math.trunc(new Date().getTime() / socksKeyTimeTruncater),
     ).toString();
   }
 
+  /**
+   * Derives a 16-byte AES key for the WebSocket stream by HMAC-SHA-512-ing the
+   * private key with the current time bucket, then truncating to 16 bytes.
+   *
+   * @private
+   * @param {string} privateKey - The raw passphrase or server-supplied key string.
+   * @returns {Promise<Uint8Array>} Resolved with the 16-byte derived key.
+   */
   async function buildSocketKey(privateKey) {
     return new Uint8Array(
       await cipher.hmac512(
@@ -177,18 +222,47 @@ function startApp(rootEl) {
       window.removeEventListener("resize", self.viewPortUpdaters.dimResizer);
     },
     methods: {
+      /**
+       * Prepends status information to the browser tab title.
+       *
+       * @param {string} newTitleInfo - Text to prepend (e.g. "(3*)").
+       * @returns {void}
+       */
       changeTitleInfo(newTitleInfo) {
         document.title = newTitleInfo + " " + pageTitle;
       },
+      /**
+       * Restores the original page title, removing any prepended status text.
+       *
+       * @returns {void}
+       */
       resetTitleInfo() {
         document.title = pageTitle;
       },
+      /**
+       * Updates the browser URL hash without a full page navigation.
+       *
+       * @param {string} newHash - The new hash value (without the leading `#`).
+       * @returns {void}
+       */
       changeURLHash(newHash) {
         window.location.hash = newHash;
       },
+      /**
+       * Returns whether the application is currently in an error state.
+       *
+       * @returns {boolean} `true` if either `authErr` or `loadErr` is non-empty.
+       */
       isErrored() {
         return this.authErr.length > 0 || this.loadErr.length > 0;
       },
+      /**
+       * Derives a 32-byte HMAC-SHA-512 auth key from the private key and the
+       * current time truncated to 100-second buckets.
+       *
+       * @param {string} privateKey - The user-supplied passphrase.
+       * @returns {Promise<Uint8Array>} Resolved with the 32-byte auth key.
+       */
       async getSocketAuthKey(privateKey) {
         const enc = new TextEncoder(),
           rTime = Number(Math.trunc(new Date().getTime() / 100000));
@@ -205,6 +279,13 @@ function startApp(rootEl) {
           await cipher.hmac512(enc.encode(finalKey), enc.encode(rTime)),
         ).slice(0, 32);
       },
+      /**
+       * Builds the WebSocket and keep-alive HTTP URLs for the backend socket
+       * endpoint, automatically choosing `wss://` when the page is served over HTTPS.
+       *
+       * @returns {{ webSocket: string, keepAlive: string }} URL pair for the socket
+       *   and its HTTP keep-alive counterpart.
+       */
       buildBackendSocketURLs() {
         let r = {
           webSocket: "",
@@ -225,6 +306,16 @@ function startApp(rootEl) {
 
         return r;
       },
+      /**
+       * Constructs a new {@link Socket} using the backend URLs, session key, and
+       * server-supplied timing parameters.
+       *
+       * @param {object} key - Key provider object with a `fetch()` method that
+       *   returns a `Promise<Uint8Array>` of the raw AES key.
+       * @param {number} dialTimeout - Connection timeout in seconds (converted to ms internally).
+       * @param {number} heartbeatInterval - Echo heartbeat interval in seconds.
+       * @returns {Socket} Configured socket instance ready to be passed to the home view.
+       */
       buildSocket(key, dialTimeout, heartbeatInterval) {
         return new Socket(
           this.buildBackendSocketURLs(),
@@ -233,6 +324,15 @@ function startApp(rootEl) {
           heartbeatInterval * 1000,
         );
       },
+      /**
+       * Transitions the application to the `app` page by parsing the auth
+       * response, initialising presets, and building the socket.
+       *
+       * @param {{ data: string, onlyAllowPresetRemotes: boolean, timeout: number, heartbeat: number }} authResult
+       *   The raw XHR auth response object.
+       * @param {object} key - Key provider with a `fetch()` method.
+       * @returns {void}
+       */
       executeHomeApp(authResult, key) {
         let authData = JSON.parse(authResult.data);
         this.serverMessage = authData.server_message
@@ -249,6 +349,16 @@ function startApp(rootEl) {
         );
         this.page = "app";
       },
+      /**
+       * Performs authentication and stores the server-returned key for later use.
+       *
+       * Delegates the actual HTTP request to `requestAuth`, then persists the
+       * `X-Key` header value in `this.key` when the server returns one.
+       *
+       * @param {string} privateKey - The user passphrase, or an empty string for
+       *   unauthenticated (no-passphrase) mode.
+       * @returns {Promise<object>} Auth result object (see `requestAuth`).
+       */
       async doAuth(privateKey) {
         let result = await this.requestAuth(privateKey);
 
@@ -258,6 +368,20 @@ function startApp(rootEl) {
 
         return result;
       },
+      /**
+       * Issues a GET request to the verification endpoint and returns the parsed
+       * response headers and body.
+       *
+       * When a non-empty `privateKey` and a previously stored `this.key` are
+       * present, an HMAC auth token is derived and sent in the `X-Key` header.
+       *
+       * @param {string} privateKey - Passphrase used to compute the HMAC token,
+       *   or an empty string to skip token computation.
+       * @returns {Promise<{ result: number, key: string|null, timeout: string|null,
+       *   heartbeat: string|null, date: Date|null, data: string,
+       *   onlyAllowPresetRemotes: boolean }>}
+       *   Parsed auth response with HTTP status and relevant headers.
+       */
       async requestAuth(privateKey) {
         let authKey =
           !privateKey || !this.key
@@ -283,6 +407,15 @@ function startApp(rootEl) {
             h.getResponseHeader("X-OnlyAllowPresetRemotes") === "yes",
         };
       },
+      /**
+       * Performs the initial authentication attempt on page load.
+       *
+       * Handles clock-skew detection, retries on network failure (status 0),
+       * redirects to the passphrase form on 403, and boots the home app on 200.
+       * Sets `this.loadErr` on unrecoverable failures.
+       *
+       * @returns {Promise<void>}
+       */
       async tryInitialAuth() {
         try {
           let result = await this.doAuth("");
@@ -354,6 +487,15 @@ function startApp(rootEl) {
           this.loadErr = "Unable to initialize client application: " + e;
         }
       },
+      /**
+       * Handles a user-submitted passphrase from the auth form.
+       *
+       * Clears any previous auth error, attempts authentication, and on success
+       * transitions to the home app. Sets `this.authErr` on 403 or other errors.
+       *
+       * @param {string} passphrase - The passphrase entered by the user.
+       * @returns {Promise<void>}
+       */
       async submitAuth(passphrase) {
         this.authErr = "";
 
@@ -394,6 +536,16 @@ function startApp(rootEl) {
           this.authErr = "Unable to authenticate: " + e;
         }
       },
+      /**
+       * Updates the browser tab title to reflect the open tab count and whether
+       * any tab has unseen activity.
+       *
+       * When there are no open tabs, the original page title is restored.
+       *
+       * @param {Array} tabs - Current array of open session tabs.
+       * @param {boolean} updated - Whether to append the `*` update indicator.
+       * @returns {void}
+       */
       updateTabTitleInfo(tabs, updated) {
         if (tabs.length <= 0) {
           this.resetTitleInfo();
@@ -403,9 +555,26 @@ function startApp(rootEl) {
 
         this.changeTitleInfo("(" + tabs.length + (updated ? "*" : "") + ")");
       },
+      /**
+       * Called when a new session tab is opened.
+       *
+       * Delegates to `tabUpdated` so the title reflects the new count and
+       * triggers the update indicator.
+       *
+       * @param {Array} tabs - Updated array of all open session tabs.
+       * @returns {void}
+       */
       tabOpened(tabs) {
         this.tabUpdated(tabs);
       },
+      /**
+       * Called when a session tab is closed.
+       *
+       * Clears any active update indicator when the last tab is closed.
+       *
+       * @param {Array} tabs - Updated array of remaining open session tabs.
+       * @returns {void}
+       */
       tabClosed(tabs) {
         if (tabs.length > 0) {
           this.updateTabTitleInfo(tabs, this.tabUpdateIndicator !== null);
@@ -420,6 +589,15 @@ function startApp(rootEl) {
 
         this.updateTabTitleInfo(tabs, false);
       },
+      /**
+       * Called when a session tab receives new data.
+       *
+       * Resets the update indicator timer and shows the `*` suffix in the page
+       * title for `updateIndicatorMaxDisplayTime` milliseconds.
+       *
+       * @param {Array} tabs - Current array of open session tabs.
+       * @returns {void}
+       */
       tabUpdated(tabs) {
         if (this.tabUpdateIndicator) {
           clearTimeout(this.tabUpdateIndicator);
@@ -437,6 +615,15 @@ function startApp(rootEl) {
   });
 }
 
+/**
+ * Bootstraps the Sshwifty client application.
+ *
+ * Locates the `#landing` placeholder element, removes it, injects the Vue
+ * mount point with the root template, and calls {@link startApp}.  Also
+ * attaches global `unhandledrejection` and `error` listeners for debugging.
+ *
+ * @returns {void}
+ */
 function initializeClient() {
   let landingRoot = document.getElementById("landing");
 

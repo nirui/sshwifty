@@ -28,18 +28,34 @@ import (
 	"github.com/Snuffy2/sshwifty/application/log"
 )
 
+// staticData holds an embedded static file together with its optional
+// gzip-compressed variant, content type, creation timestamp, and ETag hash.
+// Files that do not benefit from compression (images, fonts) will have an
+// empty compressed slice.
 type staticData struct {
-	data        []byte
-	dataHash    string
-	compressed  []byte
-	created     time.Time
+	// data is the raw (uncompressed) content of the file.
+	data []byte
+	// dataHash is an ETag-compatible hash of data, reserved for future cache
+	// validation use.
+	dataHash string
+	// compressed is the gzip-compressed form of data. It is empty when
+	// compression was skipped for this file type.
+	compressed []byte
+	// created records when the static file was compiled into the binary.
+	created time.Time
+	// contentType is the MIME type used in the Content-Type response header.
 	contentType string
 }
 
+// hasCompressed reports whether a pre-compressed variant of this file is
+// available.
 func (s staticData) hasCompressed() bool {
 	return len(s.compressed) > 0
 }
 
+// staticFileExt returns the lowercased file extension of fileName, including
+// the leading dot (e.g. ".js"). It returns an empty string if fileName
+// contains no dot.
 func staticFileExt(fileName string) string {
 	extIdx := strings.LastIndex(fileName, ".")
 	if extIdx < 0 {
@@ -48,6 +64,11 @@ func staticFileExt(fileName string) string {
 	return strings.ToLower(fileName[extIdx:])
 }
 
+// serveStaticCacheData serves an embedded static asset identified by dataName
+// with long-lived caching headers, but rejects HTML/HTM files by returning
+// ErrNotFound so they cannot be served directly as assets (they are served
+// only by their dedicated routes). For all other file types it delegates to
+// serveStaticCachePage.
 func serveStaticCacheData(
 	dataName string,
 	fileExt string,
@@ -61,6 +82,12 @@ func serveStaticCacheData(
 	return serveStaticCachePage(dataName, w, r, l)
 }
 
+// serveStaticCachePage writes the embedded static file identified by dataName
+// to w with a long-lived public cache header ("max-age=5184000"). If the
+// client advertises gzip support and a compressed variant is available, it
+// sends the compressed form along with the appropriate Vary and
+// Content-Encoding headers. It returns ErrNotFound when dataName is not
+// present in the static page map.
 func serveStaticCachePage(
 	dataName string,
 	w http.ResponseWriter,
@@ -83,6 +110,11 @@ func serveStaticCachePage(
 	return wErr
 }
 
+// serveStaticPage writes the embedded static page identified by dataName to w
+// using the provided HTTP status code. It negotiates gzip encoding the same
+// way as serveStaticCachePage but does not set caching headers, making it
+// appropriate for HTML pages that should not be cached at the proxy layer.
+// It returns ErrNotFound when dataName is absent from the static page map.
 func serveStaticPage(
 	dataName string,
 	code int,

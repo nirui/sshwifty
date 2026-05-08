@@ -15,9 +15,26 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+/**
+ * @file Length-prefixed string encoding for the Sshwifty command protocol.
+ *
+ * {@link String} wraps a raw `Uint8Array` and can serialize itself as a
+ * variable-length integer length prefix followed by the string bytes
+ * ({@link String#buffer}), or decode itself from a stream reader
+ * ({@link String.read}). The {@link truncate} helper is provided for capping
+ * display strings in the UI.
+ */
+
 import * as reader from "../stream/reader.js";
 import * as integer from "./integer.js";
 
+/**
+ * Length-prefixed binary string for the command protocol.
+ *
+ * Wire format: `[Integer length][...bytes]`. The static {@link String.read}
+ * factory decodes from a stream reader; {@link String#buffer} encodes for
+ * sending.
+ */
 export class String {
   /**
    * Read String from given reader

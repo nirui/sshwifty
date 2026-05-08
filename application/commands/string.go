@@ -15,6 +15,9 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+// Package commands – string.go defines the String wire type used in the command
+// protocol. A String is a length-prefixed byte sequence where the length is
+// encoded as a variable-length Integer.
 package commands
 
 import (
@@ -32,13 +35,19 @@ var (
 		"not enough buffer space to marshal given string")
 )
 
-// String data
+// String is a length-prefixed byte string used in the command wire protocol.
+// The length field is stored as a variable-length Integer; data is the raw
+// byte payload.
 type String struct {
-	len  Integer
+	// len is the encoded length of the data payload.
+	len Integer
+	// data holds the string bytes, aliased into the caller's buffer.
 	data []byte
 }
 
-// ParseString build the String according to readed data
+// ParseString decodes a length-prefixed String from reader into the provided
+// scratch buffer b. It returns ErrStringParseBufferTooSmall if b cannot hold
+// the declared payload length.
 func ParseString(reader rw.ReaderFunc, b []byte) (String, error) {
 	lenData := Integer(0)
 
@@ -66,7 +75,8 @@ func ParseString(reader rw.ReaderFunc, b []byte) (String, error) {
 	}, nil
 }
 
-// NewString create a new String
+// NewString constructs a String from raw bytes d. It panics if len(d) exceeds
+// MaxInteger, which is the maximum encodable length.
 func NewString(d []byte) String {
 	dLen := len(d)
 
@@ -85,7 +95,9 @@ func (s String) Data() []byte {
 	return s.data
 }
 
-// Marshal the string to give buffer
+// Marshal encodes the String into b, writing the variable-length length prefix
+// followed by the data bytes. It returns ErrStringMarshalBufferTooSmall if b
+// is not large enough.
 func (s String) Marshal(b []byte) (int, error) {
 	bLen := len(b)
 

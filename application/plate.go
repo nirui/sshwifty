@@ -17,20 +17,26 @@
 
 package application
 
-// Plate information
+// Plate information contains static identity strings for the application.
 const (
-	Name     = "Sshwifty"
+	// Name is the short application name.
+	Name = "Sshwifty"
+	// FullName is the human-readable full application name.
 	FullName = "Sshwifty Web SSH Client"
-	Author   = "Ni Rui <ranqus@gmail.com>"
-	URL      = "https://github.com/Snuffy2/sshwifty"
+	// Author identifies the fork maintainer.
+	Author = "Snuffy2"
+	// URL is the canonical project URL.
+	URL = "https://github.com/Snuffy2/sshwifty"
 )
 
-// Banner message
+// banner is the startup message template printed to the screen on launch.
+// Positional arguments: FullName, version, Author, URL.
 const (
 	banner = "\r\n %s %s\r\n\r\n Copyright (C) %s\r\n %s\r\n\r\n"
 )
 
-// Version
+// version holds the current build version string, injected at link time.
+// It defaults to "dev" when no version is provided by the build system.
 var (
 	version = "dev"
 )

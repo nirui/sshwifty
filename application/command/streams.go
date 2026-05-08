@@ -25,7 +25,13 @@ import (
 	"github.com/Snuffy2/sshwifty/application/rw"
 )
 
-// Errors
+// ErrStreamsInvalidStreamID is returned when a stream ID exceeds HeaderMaxData.
+// ErrStreamsStreamOperateInactiveStream is returned when a tick is attempted on
+// a stream that has not been booted or has already been released.
+// ErrStreamsStreamClosingInactiveStream is returned when close is called on a
+// stream with no active FSM.
+// ErrStreamsStreamReleasingInactiveStream is returned when release is called on
+// a stream with no active FSM.
 var (
 	ErrStreamsInvalidStreamID = errors.New(
 		"stream ID is invalid")
@@ -40,19 +46,27 @@ var (
 		"releasing an inactive stream is not allowed")
 )
 
-// StreamError Stream Error signal
+// StreamError is a 16-bit error code sent to the client in stream initial
+// headers to indicate why a command could not be started.
 type StreamError uint16
 
-// Error signals
+// StreamErrorCommandUndefined indicates the requested command ID is not
+// registered. StreamErrorCommandFailedToBootup indicates the command's Bootup
+// returned a non-success FSMError.
 const (
 	StreamErrorCommandUndefined      StreamError = 0x01
 	StreamErrorCommandFailedToBootup StreamError = 0x02
 )
 
-// StreamHeader contains data of the stream header
+// StreamHeader is the two-byte sub-header that precedes each data frame within
+// an open stream. The upper 3 bits encode a marker byte and the lower 13 bits
+// encode the payload length.
 type StreamHeader [2]byte
 
-// Stream header consts
+// StreamHeaderMaxLength is the maximum payload length encodable in a
+// StreamHeader (13 bits). StreamHeaderMaxMarker is the highest marker value
+// (3 bits). streamHeaderLengthFirstByteCutter masks the length bits from the
+// first byte.
 const (
 	StreamHeaderMaxLength = 0x1fff
 	StreamHeaderMaxMarker = 0x07
@@ -90,17 +104,18 @@ func (s *StreamHeader) Set(marker byte, n uint16) {
 	s[1] = byte(n)
 }
 
-// streamInitialHeader contains header data of the first stream after stream
-// reset.
-// Unlike StreamHeader, streamInitialHeader carries no extra data
+// streamInitialHeader is the two-byte header sent when a stream slot is first
+// opened. It encodes the command ID (upper 4 bits of byte 0), a success flag
+// (bit 3 of byte 0), and an 11-bit data/error field, but no stream-level
+// marker unlike StreamHeader.
 type streamInitialHeader StreamHeader
 
-// command returns command ID of the stream
+// command extracts the 4-bit command ID from the high nibble of the first byte.
 func (s streamInitialHeader) command() byte {
 	return s[0] >> 4
 }
 
-// length returns the data of the stream header
+// data extracts the 11-bit error/data field from the initial header.
 func (s streamInitialHeader) data() uint16 {
 	r := uint16(0)
 
@@ -111,12 +126,14 @@ func (s streamInitialHeader) data() uint16 {
 	return r
 }
 
-// success returns whether or not the command is representing a success
+// success returns true when bit 3 of byte 0 is set, indicating the command
+// started successfully.
 func (s streamInitialHeader) success() bool {
 	return (s[0] & 0x08) != 0
 }
 
-// set sets header values
+// set encodes commandID (0–0x0f), data (0–0x07ff), and the success flag into
+// the two-byte header. It panics if either value exceeds its maximum.
 func (s *streamInitialHeader) set(commandID byte, data uint16, success bool) {
 	if commandID > 0x0f {
 		panic("Command ID must not greater than 0x0f")
@@ -139,7 +156,8 @@ func (s *streamInitialHeader) set(commandID byte, data uint16, success bool) {
 	(*s)[1] |= byte(dd)
 }
 
-// send sends current stream header as signal
+// signal serialises the header and writes it as a framed signal through w
+// using the given packet Header and scratch buffer buf.
 func (s *streamInitialHeader) signal(
 	w *handlerSender,
 	hd Header,
@@ -148,12 +166,18 @@ func (s *streamInitialHeader) signal(
 	return w.signal(hd, (*s)[:], buf)
 }
 
-// StreamInitialSignalSender sends stream initial signal
+// StreamInitialSignalSender encapsulates the state needed to send the initial
+// response header for a newly opened stream, signalling either success or a
+// specific StreamError to the client.
 type StreamInitialSignalSender struct {
-	w     *handlerSender
-	hd    Header
+	// w is the locked writer used to transmit the signal.
+	w *handlerSender
+	// hd is the packet-level Header (stream ID + type).
+	hd Header
+	// cmdID is the command ID being reported.
 	cmdID byte
-	buf   []byte
+	// buf is the scratch buffer used to serialise the header.
+	buf []byte
 }
 
 // Signal send signal
@@ -165,13 +189,18 @@ func (s *StreamInitialSignalSender) Signal(
 	return shd.signal(s.w, s.hd, s.buf)
 }
 
-// StreamResponder sends data through stream
+// StreamResponder provides the write surface available to a running FSMMachine.
+// It wraps the underlying sender with the stream's packet Header so that all
+// frames are automatically tagged with the correct stream ID.
 type StreamResponder struct {
+	// w is the rate-limited, lock-guarded sender.
 	w streamHandlerSender
+	// h is the packet Header that identifies this stream.
 	h Header
 }
 
-// newStreamResponder creates a new StreamResponder
+// newStreamResponder creates a StreamResponder for the given stream Header,
+// delegating writes to the provided streamHandlerSender.
 func newStreamResponder(w streamHandlerSender, h Header) StreamResponder {
 	return StreamResponder{
 		w: w,
@@ -179,6 +208,9 @@ func newStreamResponder(w streamHandlerSender, h Header) StreamResponder {
 	}
 }
 
+// write encodes a single payload segment b with marker mk into buf and writes
+// it to the wire. It caps the segment at both the buffer size and
+// StreamHeaderMaxLength. It returns the number of bytes of b consumed.
 func (w StreamResponder) write(mk byte, b []byte, buf []byte) (int, error) {
 	bufLen := len(buf)
 	bLen := len(b)
@@ -285,13 +317,22 @@ func (w StreamResponder) Signal(signal Header) error {
 	return wErr
 }
 
+// stream represents a single multiplexed stream slot. It wraps an FSM and
+// tracks whether a close signal has already been sent, preventing double-close
+// during shutdown.
 type stream struct {
-	f      FSM
+	// f is the finite-state machine driving this stream's command.
+	f FSM
+	// closed is true once the Close signal has been sent on this stream.
 	closed bool
 }
 
+// streams is the fixed-size array of all stream slots indexed by stream ID.
+// The size equals HeaderMaxData+1 (64 slots), matching the 6-bit stream ID
+// field in the packet header.
 type streams [HeaderMaxData + 1]stream
 
+// newStream creates an empty, unclosed stream slot with no active FSM.
 func newStream() stream {
 	return stream{
 		f:      emptyFSM(),
@@ -299,6 +340,7 @@ func newStream() stream {
 	}
 }
 
+// newStreams initialises all stream slots to the empty state.
 func newStreams() streams {
 	s := streams{}
 
@@ -309,6 +351,8 @@ func newStreams() streams {
 	return s
 }
 
+// get returns a pointer to the stream slot for the given id. It returns
+// ErrStreamsInvalidStreamID if id exceeds HeaderMaxData.
 func (c *streams) get(id byte) (*stream, error) {
 	if id > HeaderMaxData {
 		return nil, ErrStreamsInvalidStreamID
@@ -317,6 +361,9 @@ func (c *streams) get(id byte) (*stream, error) {
 	return &(*c)[id], nil
 }
 
+// shutdown iterates all slots and closes then releases any that are still
+// running, ensuring every active command receives a close notification before
+// the handler exits.
 func (c *streams) shutdown() {
 	cc := *c
 
@@ -333,10 +380,17 @@ func (c *streams) shutdown() {
 	}
 }
 
+// running reports whether the stream has an active FSM, meaning it has been
+// booted and not yet released.
 func (c *stream) running() bool {
 	return c.f.running()
 }
 
+// reinit reads a streamInitialHeader from r to determine the command ID and
+// initial payload, instantiates the command's FSM, boots it, and sends the
+// result back to the client. On success the stream's FSM is set and the slot
+// is marked as open. Errors from unknown commands or failed bootups are sent
+// as stream-level error signals rather than propagating as Go errors.
 func (c *stream) reinit(
 	h Header,
 	r *rw.FetchReader,
@@ -405,6 +459,9 @@ func (c *stream) reinit(
 	return nil
 }
 
+// tick reads a StreamHeader from r, wraps the remaining bytes in a
+// LimitedReader, and forwards the frame to the running FSM. It returns
+// ErrStreamsStreamOperateInactiveStream if the FSM is not running.
 func (c *stream) tick(
 	h Header,
 	r *rw.FetchReader,
@@ -428,6 +485,9 @@ func (c *stream) tick(
 	return c.f.tick(&rr, hd, b)
 }
 
+// close marks the stream as closed and delegates to the underlying FSM's close
+// method. It returns ErrStreamsStreamClosingInactiveStream if the FSM is not
+// running.
 func (c *stream) close() error {
 	if !c.f.running() {
 		return ErrStreamsStreamClosingInactiveStream
@@ -440,6 +500,8 @@ func (c *stream) close() error {
 	return c.f.close()
 }
 
+// release frees the stream's FSM resources. It returns
+// ErrStreamsStreamReleasingInactiveStream if the FSM is not running.
 func (c *stream) release() error {
 	if !c.f.running() {
 		return ErrStreamsStreamReleasingInactiveStream

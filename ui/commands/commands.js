@@ -15,6 +15,18 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+/**
+ * @file Command wizard framework for the Sshwifty UI.
+ *
+ * Defines the multi-step wizard model used by SSH, Telnet, and any future
+ * command types. Key exports:
+ * - Step factory functions: {@link prompt}, {@link wait}, {@link done}
+ * - Field helpers: {@link field}, {@link fields}, {@link fieldsWithPreset}
+ * - {@link Commands} — registry of all available command builders
+ * - {@link Builder} — wraps a command definition and exposes wizard/execute/launch
+ * - {@link Info}, {@link Preset}, {@link Result} — supporting value objects
+ */
+
 import * as subscribe from "../stream/subscribe.js";
 import Exception from "./exception.js";
 
@@ -22,14 +34,19 @@ export const NEXT_PROMPT = 1;
 export const NEXT_WAIT = 2;
 export const NEXT_DONE = 3;
 
+/**
+ * Holds the outcome of a successfully completed command wizard, including the
+ * session name, command metadata, the control interface, and the UI component
+ * identifier.
+ */
 export class Result {
   /**
    * constructor
    *
-   * @param {string} name Result type
-   * @param {Info} info Result info
-   * @param {object} control Result controller
-   * @param {string} ui User interfact this command will use
+   * @param {string} name Display name of the result (e.g. `user@host`).
+   * @param {Info} info Command info metadata.
+   * @param {object} control Live control interface for sending data and signals.
+   * @param {string} ui Identifier of the Vue component that should be mounted.
    */
   constructor(name, info, control, ui) {
     this.name = name;
@@ -39,11 +56,20 @@ export class Result {
   }
 }
 
+/**
+ * Terminal wizard step that signals the wizard is finished.
+ *
+ * Carries a success flag, optional result data on success, and an error title
+ * and message on failure.
+ *
+ * @private
+ */
 class Done {
   /**
    * constructor
    *
-   * @param {object} data Step data
+   * @param {object} data Step data with shape:
+   *   `{ success, successData, errorTitle, errorMessage }`
    *
    */
   constructor(data) {
@@ -92,11 +118,16 @@ class Done {
   }
 }
 
+/**
+ * Intermediate wizard step that asks the UI to display a loading/waiting state.
+ *
+ * @private
+ */
 class Wait {
   /**
    * constructor
    *
-   * @param {object} data Step data
+   * @param {object} data Step data with shape: `{ title, message }`
    *
    */
   constructor(data) {
@@ -245,14 +276,22 @@ export function fieldsWithPreset(
   return newFields;
 }
 
+/**
+ * Interactive wizard step that presents a form to the user.
+ *
+ * Validates and normalises field definitions, then exposes the `submit` method
+ * so the UI can deliver validated input back to the command's step handler.
+ *
+ * @private
+ */
 class Prompt {
   /**
    * constructor
    *
-   * @param {object} data Step data
-   *
-   * @throws {Exception} If the field verify is not a function while
-   *                               not null
+   * @param {object} data Step data with shape:
+   *   `{ title, message, actionText, respond, cancel, inputs }`
+   * @throws {Exception} If a field's `verify` property is present but not a
+   *   function.
    */
   constructor(data) {
     this.t = data.title;
@@ -368,13 +407,14 @@ class Prompt {
 }
 
 /**
- * Create a Wizard step
+ * Create a raw wizard step descriptor — the internal envelope used by
+ * {@link done}, {@link wait}, and {@link prompt} before it is wrapped in
+ * {@link Next}.
  *
- * @param {string} type Step type
- * @param {object} data Step data
- *
- * @returns {object} Step data
- *
+ * @private
+ * @param {string} type Step type constant (NEXT_PROMPT, NEXT_WAIT, NEXT_DONE).
+ * @param {object} data Step payload.
+ * @returns {object} Step descriptor with `type()` and `data()` accessors.
  */
 function next(type, data) {
   return {
@@ -447,11 +487,19 @@ export function prompt(title, message, actionText, respond, cancel, inputs) {
   });
 }
 
+/**
+ * Typed wrapper around a raw wizard step descriptor.
+ *
+ * Materialises the step into a concrete {@link Done}, {@link Wait}, or
+ * {@link Prompt} object via {@link Next#data}.
+ *
+ * @private
+ */
 class Next {
   /**
    * constructor
    *
-   * @param {object} data Step data
+   * @param {object} data Raw step descriptor (return value of {@link next}).
    */
   constructor(data) {
     this.t = data.type();
@@ -492,14 +540,26 @@ class Next {
   }
 }
 
+/**
+ * Drives a command's multi-step UI flow.
+ *
+ * Launches the command's internal step generator on construction, then exposes
+ * {@link Wizard#next} for the UI to consume one step at a time. When a
+ * {@link Done} step is received the wizard is automatically closed and
+ * the `done` callback is fired.
+ *
+ * @private
+ */
 class Wizard {
   /**
    * constructor
    *
-   * @param {object} built Command executer
-   * @param {subscribe.Subscribe} subs Wizard step subscriber
-   * @param {function} done Callback which will be called when the wizard
-   *                        is done
+   * @param {object} built Command executor object implementing `run()`,
+   *   `started()`, `control()`, and `close()`.
+   * @param {subscribe.Subscribe} subs Channel over which the executor pushes
+   *   wizard steps.
+   * @param {function} done Callback invoked with the final {@link Next} step
+   *   when the wizard completes or is cancelled.
    *
    */
   constructor(built, subs, done) {
@@ -571,11 +631,18 @@ class Wizard {
   }
 }
 
+/**
+ * Read-only snapshot of a command's identity metadata.
+ *
+ * Passed into command wizard/execute/launch callbacks so they can reference the
+ * command name, description, and theme color without holding a reference to the
+ * full {@link Builder}.
+ */
 export class Info {
   /**
    * constructor
    *
-   * @param {Builder} info Builder info
+   * @param {Builder} info The builder whose metadata is captured.
    *
    */
   constructor(info) {
@@ -615,11 +682,22 @@ export class Info {
   }
 }
 
+/**
+ * Wraps a raw command definition and provides the `wizard`, `execute`,
+ * `launch`, and `launcher` entry points consumed by the Sshwifty UI.
+ *
+ * Each method returns a {@link Wizard} that the UI drives by repeatedly
+ * calling {@link Wizard#next}.
+ *
+ * @private
+ */
 class Builder {
   /**
    * constructor
    *
-   * @param {object} command Command builder
+   * @param {object} command Raw command definition implementing `id()`, `name()`,
+   *   `description()`, `color()`, `wizard()`, `execute()`, `launch()`,
+   *   `launcher()`, and `represet()`.
    *
    */
   constructor(command) {
@@ -802,12 +880,16 @@ class Builder {
   }
 }
 
+/**
+ * Pairs a {@link presets.Preset} with the {@link Builder} that owns it,
+ * as returned by {@link Commands#mergePresets}.
+ */
 export class Preset {
   /**
    * constructor
    *
-   * @param {presets.Preset} preset preset
-   * @param {Builder} command executor
+   * @param {presets.Preset} preset The preset data.
+   * @param {Builder} command The command builder associated with this preset.
    *
    */
   constructor(preset, command) {
@@ -816,11 +898,18 @@ export class Preset {
   }
 }
 
+/**
+ * Registry of all available command types.
+ *
+ * Wraps each raw command definition in a {@link Builder} and exposes helper
+ * methods for listing, selecting, and merging commands with preset data.
+ */
 export class Commands {
   /**
    * constructor
    *
-   * @param {Array<object>} commands Command array
+   * @param {Array<object>} commands Array of raw command definitions (e.g.
+   *   `[new ssh.Command(), new telnet.Command()]`).
    *
    */
   constructor(commands) {

@@ -15,9 +15,34 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+/**
+ * @file home_socketctl.js
+ * @description Factory for the socket status controller object used by the
+ * `home` Vue component. The controller tracks live traffic metrics and
+ * connection latency, aggregates them into per-second and 10-second history
+ * windows, and exposes Vue-reactive properties for the status indicator and
+ * sparkline graphs.
+ */
+
 import * as history from "./history.js";
 import { ECHO_FAILED } from "./socket.js";
 
+/**
+ * Builds the reactive socket-status controller for the home view.
+ *
+ * Returns a plain object whose properties are observed by Vue. The controller
+ * accumulates inbound/outbound byte counts, flushes them into {@link history.Records}
+ * ring buffers every second and every 10 seconds, and derives the delay
+ * indicator class and human-readable description from echo measurements.
+ *
+ * @param {{ connector: { inputting: boolean } }} ctx - The home component
+ *   instance, used to reset `connector.inputting` on close/failure.
+ * @returns {{ update: function(Date): void, connecting: function(): void,
+ *   connected: function(): void, traffic: function(number, number): void,
+ *   echo: function(number): void, close: function(Error|null): void,
+ *   failed: function(Error): void, classStyle: string, windowClass: string,
+ *   message: string, status: object }} The socket status controller object.
+ */
 export function build(ctx) {
   const connectionStatusNotConnected = "Sshwifty is ready to connect";
   const connectionStatusConnecting =
@@ -43,6 +68,13 @@ export function build(ctx) {
     "Experiencing bad connection delay, operation may freeze at any moment. " +
     "Consider to pause your input until remote is responsive";
 
+  /**
+   * Creates a 32-element pre-allocated history buffer filled with zero-value
+   * sentinel entries for use as a sparkline ring buffer.
+   *
+   * @private
+   * @returns {Array<{ data: number, class: string }>} A 32-entry zeroed buffer.
+   */
   const buildEmptyHistory = () => {
     let r = [];
 
@@ -69,6 +101,17 @@ export function build(ctx) {
     delayPerInterval = 0;
 
   return {
+    /**
+     * Ticks the traffic and delay aggregation windows.
+     *
+     * Should be called once per second from the home component's `setInterval`
+     * ticker. Flushes per-second counters into 10-second accumulators and
+     * pushes averaged samples into the history ring buffers at the appropriate
+     * cadence.
+     *
+     * @param {Date} time - Current timestamp used to determine flush boundaries.
+     * @returns {void}
+     */
     update(time) {
       if (isClosed) {
         return;
@@ -125,6 +168,13 @@ export function build(ctx) {
       outbound: 0,
       outboundHistory: outboundHistory.get(),
     },
+    /**
+     * Transitions the status indicator to the "connecting" state.
+     *
+     * Sets the indicator class to `"working"` and clears any error styling.
+     *
+     * @returns {void}
+     */
     connecting() {
       isClosed = false;
 
@@ -133,6 +183,14 @@ export function build(ctx) {
       this.windowClass = "";
       this.status.description = connectionStatusConnecting;
     },
+    /**
+     * Transitions the status indicator to the "connected" state.
+     *
+     * Clears error styling; latency display will be updated by subsequent
+     * {@link echo} calls once the first heartbeat round-trip completes.
+     *
+     * @returns {void}
+     */
     connected() {
       isClosed = false;
 
@@ -141,10 +199,34 @@ export function build(ctx) {
       this.windowClass = "";
       this.status.description = connectionStatusConnected;
     },
+    /**
+     * Accumulates raw traffic counters for the current second window.
+     *
+     * Called by the socket layer for every inbound blob and every outbound
+     * frame. Values are flushed into the history ring buffers by `update`.
+     *
+     * @param {number} inb - Number of inbound bytes in this event.
+     * @param {number} outb - Number of outbound bytes in this event.
+     * @returns {void}
+     */
     traffic(inb, outb) {
       inboundPerSecond += inb;
       outboundPerSecond += outb;
     },
+    /**
+     * Updates the latency indicator from the latest echo round-trip time.
+     *
+     * Classifies the connection quality into four buckets (good / fair / median /
+     * heavy) based on the rolling average delay and sets `classStyle`,
+     * `windowClass`, and `status.description` accordingly.
+     *
+     * A `delay` equal to `ECHO_FAILED` indicates an unmeasurable connection and
+     * triggers the red-flash error style.
+     *
+     * @param {number} delay - Round-trip echo delay in milliseconds, or
+     *   `ECHO_FAILED` when the measurement could not be completed.
+     * @returns {void}
+     */
     echo(delay) {
       delayPerInterval += delay > 0 ? delay : 0;
       delaySamples++;
@@ -186,6 +268,15 @@ export function build(ctx) {
           connectionStatusConnected + ". " + connectionDelayHeavy;
       }
     },
+    /**
+     * Transitions the status indicator to the disconnected state.
+     *
+     * Marks all history entries as expired, resets `connector.inputting`, and
+     * applies error styling when `e` is non-null.
+     *
+     * @param {Error|null} e - The close reason, or `null` for a clean disconnect.
+     * @returns {void}
+     */
     close(e) {
       isClosed = true;
       delayHistory.expire();
@@ -208,6 +299,16 @@ export function build(ctx) {
       this.windowClass = "red";
       this.status.description = connectionStatusDisconnected + ": " + e;
     },
+    /**
+     * Transitions the status indicator to the error state when a dial attempt fails.
+     *
+     * Displays the WebSocket error code when available and applies the red-flash
+     * indicator style. Resets `connector.inputting`.
+     *
+     * @param {{ code?: number } & Error} e - The error from the failed dial, optionally
+     *   carrying a WebSocket close `code`.
+     * @returns {void}
+     */
     failed(e) {
       isClosed = true;
 

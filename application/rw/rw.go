@@ -17,10 +17,13 @@
 
 package rw
 
-// ReaderFunc function of io.Reader
+// ReaderFunc is a function type that matches the io.Reader.Read signature. It
+// is used throughout the command layer as a first-class reader argument,
+// allowing callers to pass method values without wrapping them in an interface.
 type ReaderFunc func(b []byte) (int, error)
 
-// ReadFull Read until given b is fully loaded
+// ReadFull calls r repeatedly until b is fully populated or an error occurs.
+// It mirrors io.ReadFull but works with ReaderFunc rather than io.Reader.
 func ReadFull(r ReaderFunc, b []byte) (int, error) {
 	bLen := len(b)
 	readed := 0

@@ -15,10 +15,26 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+/**
+ * @file Per-stream state machine and sender wrappers for the Sshwifty
+ * multiplexed stream protocol.
+ *
+ * A {@link Stream} owns a command slot identified by a numeric ID. It
+ * transitions through states: idle → initializing → running → shutting-down →
+ * idle. {@link Sender} and {@link InitialSender} handle framing outgoing data
+ * for a running or just-opened stream respectively.
+ */
+
 import * as common from "./common.js";
 import Exception from "./exception.js";
 import * as header from "./header.js";
 
+/**
+ * Frames and sends data for an already-open (non-initial) stream slot.
+ *
+ * Wraps the shared {@link sender.Sender} with the stream's ID so every
+ * outgoing write is automatically tagged with the correct header.
+ */
 export class Sender {
   /**
    * constructor
@@ -141,6 +157,13 @@ export class Sender {
   }
 }
 
+/**
+ * Frames and sends the single initial request for a new stream slot.
+ *
+ * Used only during stream setup — before the server has acknowledged the
+ * command. Produces an {@link header.InitialStream} sub-header that encodes
+ * the command ID and a success flag alongside the payload length.
+ */
 export class InitialSender {
   /**
    * constructor
@@ -188,6 +211,13 @@ export class InitialSender {
   }
 }
 
+/**
+ * State machine for a single multiplexed stream slot.
+ *
+ * Tracks whether the slot is idle, initializing, running, or shutting down and
+ * delegates incoming frames to the active command object. Enforces valid
+ * transitions and throws {@link Exception} for illegal operations.
+ */
 export class Stream {
   /**
    * constructor

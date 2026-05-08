@@ -42,6 +42,24 @@
 <script>
 import TabList from "./tab_list.vue";
 
+/**
+ * @fileoverview Inline tab-bar wrapper that combines a `tab-list` with a
+ * "show full list" trigger link. Used in the main application toolbar to
+ * display open connection tabs. When the tab count exceeds what the bar can
+ * show, the user can click the trigger to open the `tab_window.vue` overlay.
+ *
+ * @prop {string} id               - HTML id for the root `<div>` and derived child ids.
+ * @prop {number} tab              - Index of the currently active tab.
+ * @prop {Array}  tabs             - Array of tab descriptors.
+ * @prop {string} tabsClass        - CSS class forwarded to the tab list.
+ * @prop {string} listTriggerClass - CSS class applied to the "show full list" anchor.
+ *
+ * @emits current - Forwarded from tab-list; payload: `{number}` new active index.
+ * @emits retap   - Forwarded from tab-list; payload: `{number}` index.
+ * @emits close   - Forwarded from tab-list; payload: `{number}` index.
+ * @emits list    - User clicked the trigger; payload: the full `tabs` array.
+ */
+
 export default {
   components: {
     "tab-list": TabList,
@@ -69,6 +87,13 @@ export default {
     },
   },
   methods: {
+    /**
+     * Emits the `list` event with the current tabs array, signalling the parent
+     * to open the full-list overlay (`tab_window.vue`).
+     *
+     * @emits list - Payload: `{Array}` the current tabs array.
+     * @returns {void}
+     */
     showList() {
       this.$emit("list", this.tabs);
     },

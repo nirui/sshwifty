@@ -15,6 +15,15 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+/**
+ * @file SSH command implementation for the Sshwifty UI.
+ *
+ * Exposes {@link Command} — the public entry point registered with the command
+ * registry — and the private {@link SSH}, {@link Wizard}, and {@link Executer}
+ * classes that handle the full SSH connection lifecycle: initial handshake,
+ * fingerprint verification, credential prompting, and live session I/O.
+ */
+
 import * as reader from "../stream/reader.js";
 import * as address from "./address.js";
 import * as command from "./commands.js";
@@ -57,13 +66,24 @@ const FingerprintPromptVerifyMismatch = 0x02;
 
 const HostMaxSearchResults = 3;
 
+/**
+ * SSH command handler for a single active stream.
+ *
+ * Manages the SSH lifecycle events (fingerprint, credential, connected, etc.)
+ * by dispatching them through an {@link Events} instance. Exposes methods for
+ * sending stdin data, resize requests, and close signals.
+ *
+ * @private
+ */
 class SSH {
   /**
    * constructor
    *
-   * @param {stream.Sender} sd Stream sender
-   * @param {object} config configuration
-   * @param {object} callbacks Event callbacks
+   * @param {stream.Sender} sd Stream sender used to write to the remote.
+   * @param {object} config Parsed connection configuration (user, host, auth,
+   *   charset, credential, fingerprint).
+   * @param {object} callbacks Map of event name to handler function, passed
+   *   directly to {@link Events}.
    *
    */
   constructor(sd, config, callbacks) {
@@ -502,18 +522,30 @@ function getAuthMethodFromStr(d) {
   }
 }
 
+/**
+ * Multi-step interactive wizard for establishing an SSH connection.
+ *
+ * Drives the user through: initial prompt → (optional) fingerprint verify →
+ * (optional) credential prompt → waiting → done. Each step is pushed onto
+ * the `subs` channel for the parent {@link commands.Wizard} to consume.
+ *
+ * @private
+ */
 class Wizard {
   /**
    * constructor
    *
-   * @param {command.Info} info
-   * @param {presets.Preset} preset
-   * @param {object} session
-   * @param {Array<string>} keptSessions
-   * @param {streams.Streams} streams
-   * @param {subscribe.Subscribe} subs
-   * @param {controls.Controls} controls
-   * @param {history.History} history
+   * @param {command.Info} info Command identity metadata.
+   * @param {presets.Preset} preset Pre-filled preset (may be the empty preset).
+   * @param {object} session Session data from a previous connection (e.g.
+   *   cached credential).
+   * @param {Array<string>} keptSessions Session key names to persist across
+   *   page reloads.
+   * @param {streams.Streams} streams Active stream multiplexer.
+   * @param {subscribe.Subscribe} subs Channel for pushing wizard steps to the UI.
+   * @param {controls.Controls} controls Control registry for looking up the
+   *   SSH control object.
+   * @param {history.History} history Connection history manager.
    *
    */
   constructor(
@@ -541,18 +573,35 @@ class Wizard {
     this.history = history;
   }
 
+  /**
+   * Kick off the wizard by pushing the initial prompt step onto the channel.
+   */
   run() {
     this.step.resolve(this.stepInitialPrompt());
   }
 
+  /**
+   * Return whether the user has already submitted the initial prompt.
+   *
+   * @returns {boolean} `true` after the first form submit.
+   */
   started() {
     return this.hasStarted;
   }
 
+  /**
+   * Return the SSH control object for this wizard's session.
+   *
+   * @returns {object} The SSH control interface from {@link Controls}.
+   */
   control() {
     return this.controls;
   }
 
+  /**
+   * Cancel the wizard by pushing an error-done step with a cancellation
+   * message.
+   */
   close() {
     this.step.resolve(
       this.stepErrorDone(
@@ -562,10 +611,25 @@ class Wizard {
     );
   }
 
+  /**
+   * Build a failure done-step with the given title and message.
+   *
+   * @private
+   * @param {string} title Short error title displayed in the UI.
+   * @param {string} message Longer error description.
+   * @returns {object} A NEXT_DONE step with `success: false`.
+   */
   stepErrorDone(title, message) {
     return command.done(false, null, title, message);
   }
 
+  /**
+   * Build a success done-step wrapping the provided session result.
+   *
+   * @private
+   * @param {command.Result} data The live session result to hand to the UI.
+   * @returns {object} A NEXT_DONE step with `success: true`.
+   */
   stepSuccessfulDone(data) {
     return command.done(
       true,
@@ -575,6 +639,12 @@ class Wizard {
     );
   }
 
+  /**
+   * Build a wait step shown while the backend processes the initial request.
+   *
+   * @private
+   * @returns {object} A NEXT_WAIT step.
+   */
   stepWaitForAcceptWait() {
     return command.wait(
       "Requesting",
@@ -582,6 +652,14 @@ class Wizard {
     );
   }
 
+  /**
+   * Build a wait step shown while the TCP connection to `host` is being
+   * established.
+   *
+   * @private
+   * @param {string} host Display name of the target host.
+   * @returns {object} A NEXT_WAIT step.
+   */
   stepWaitForEstablishWait(host) {
     return command.wait(
       "Connecting to " + host,
@@ -589,6 +667,13 @@ class Wizard {
     );
   }
 
+  /**
+   * Build a generic "still connecting" wait step used after the fingerprint or
+   * credential prompt is dismissed.
+   *
+   * @private
+   * @returns {object} A NEXT_WAIT step.
+   */
   stepContinueWaitForEstablishWait() {
     return command.wait(
       "Connecting",
@@ -597,11 +682,15 @@ class Wizard {
   }
 
   /**
+   * Instantiate and return an {@link SSH} command handler, wiring all event
+   * callbacks to advance the wizard's step channel.
    *
-   * @param {stream.Sender} sender
-   * @param {object} configInput
-   * @param {object} sessionData
-   *
+   * @private
+   * @param {stream.Sender} sender The stream sender allocated for this connection.
+   * @param {object} configInput Validated form input (user, host, authentication,
+   *   charset, tabColor, fingerprint).
+   * @param {object} sessionData Mutable session object (credential cache, etc.).
+   * @returns {SSH} Configured SSH command instance.
    */
   buildCommand(sender, configInput, sessionData) {
     let self = this;
@@ -749,6 +838,13 @@ class Wizard {
     });
   }
 
+  /**
+   * Build and return the first wizard step: the SSH connection prompt form.
+   *
+   * @private
+   * @returns {object} A NEXT_PROMPT step with Host, User, Authentication,
+   *   Encoding, and Notice fields.
+   */
   stepInitialPrompt() {
     let self = this;
 
@@ -820,6 +916,20 @@ class Wizard {
     );
   }
 
+  /**
+   * Read the server fingerprint from the stream and prompt the user to accept
+   * or reject it. Automatically accepts if the fingerprint matches the stored
+   * value.
+   *
+   * @private
+   * @param {reader.Limited} rd Data reader containing the fingerprint bytes.
+   * @param {stream.Sender} sd Stream sender used to respond to the backend.
+   * @param {function(string): number} verify Called with the raw fingerprint
+   *   string; returns a `FingerprintPromptVerify*` constant.
+   * @param {function(string): void} newFingerprint Called with the accepted
+   *   fingerprint string so it can be persisted.
+   * @returns {Promise<object>} The next wizard step (wait or prompt).
+   */
   async stepFingerprintPrompt(rd, sd, verify, newFingerprint) {
     const self = this;
 
@@ -869,6 +979,15 @@ class Wizard {
     );
   }
 
+  /**
+   * Build a wait step that displays truncated hook output from the backend.
+   *
+   * @private
+   * @param {string} title Title of the wait state.
+   * @param {string} msg Raw hook output string (truncated to
+   *   {@link common.MAX_HOOK_OUTPUT_LEN}).
+   * @returns {object} A NEXT_WAIT step.
+   */
   stepHookOutputPrompt(title, msg) {
     return command.wait(
       title,
@@ -880,6 +999,21 @@ class Wizard {
     );
   }
 
+  /**
+   * If a cached credential is available, send it immediately. Otherwise prompt
+   * the user for a password or private key depending on the configured auth
+   * method.
+   *
+   * @private
+   * @param {reader.Limited} rd Data reader (unused; present for signature
+   *   uniformity with other step methods).
+   * @param {stream.Sender} sd Stream sender used to transmit the credential.
+   * @param {object} config Parsed SSH config with `auth` and `credential`.
+   * @param {function(string, boolean): void} newCredential Callback with the
+   *   submitted credential value and a flag indicating whether it came from a
+   *   preset.
+   * @returns {Promise<object>} The next wizard step (wait or credential prompt).
+   */
   async stepCredentialPrompt(rd, sd, config, newCredential) {
     const self = this;
 
@@ -954,18 +1088,28 @@ class Wizard {
   }
 }
 
+/**
+ * Non-interactive SSH executor that skips the initial prompt.
+ *
+ * Used when a connection is launched programmatically from a launcher string
+ * or a history entry rather than through the interactive wizard UI.
+ *
+ * @private
+ * @extends Wizard
+ */
 class Executer extends Wizard {
   /**
    * constructor
    *
-   * @param {command.Info} info
-   * @param {config} config
-   * @param {object} session
-   * @param {Array<string>} keptSessions
-   * @param {streams.Streams} streams
-   * @param {subscribe.Subscribe} subs
-   * @param {controls.Controls} controls
-   * @param {history.History} history
+   * @param {command.Info} info Command identity metadata.
+   * @param {object} config Pre-validated connection config (user, host,
+   *   authentication, charset, tabColor, fingerprint).
+   * @param {object} session Session data from a previous connection.
+   * @param {Array<string>} keptSessions Session key names to persist.
+   * @param {streams.Streams} streams Active stream multiplexer.
+   * @param {subscribe.Subscribe} subs Step channel.
+   * @param {controls.Controls} controls Control registry.
+   * @param {history.History} history Connection history manager.
    *
    */
   constructor(
@@ -1016,25 +1160,67 @@ class Executer extends Wizard {
   }
 }
 
+/**
+ * Public SSH command definition registered with the {@link Commands} registry.
+ *
+ * Implements the command contract: `id`, `name`, `description`, `color`,
+ * `wizard`, `execute`, `launch`, `launcher`, and `represet`. The UI uses these
+ * methods to display the command in menus, start interactive or automated
+ * sessions, and serialise/deserialise launcher strings.
+ */
 export class Command {
+  /** constructor */
   constructor() {}
 
+  /**
+   * Return the protocol command ID for SSH.
+   *
+   * @returns {number} COMMAND_ID constant (0x01).
+   */
   id() {
     return COMMAND_ID;
   }
 
+  /**
+   * Return the display name of this command.
+   *
+   * @returns {string} `"SSH"`
+   */
   name() {
     return "SSH";
   }
 
+  /**
+   * Return the human-readable description of this command.
+   *
+   * @returns {string} Short description shown in the connection picker.
+   */
   description() {
     return "Secure Shell Host";
   }
 
+  /**
+   * Return the theme color used for SSH session tabs.
+   *
+   * @returns {string} CSS color string.
+   */
   color() {
     return "#3c8";
   }
 
+  /**
+   * Create an interactive SSH wizard for the given streams session.
+   *
+   * @param {command.Info} info Command identity metadata.
+   * @param {presets.Preset} preset Pre-filled preset or empty preset.
+   * @param {object} session Session data.
+   * @param {Array<string>} keptSessions Session keys to persist.
+   * @param {streams.Streams} streams Active stream multiplexer.
+   * @param {subscribe.Subscribe} subs Step channel.
+   * @param {controls.Controls} controls Control registry.
+   * @param {history.History} history Connection history.
+   * @returns {Wizard} Configured SSH wizard instance.
+   */
   wizard(
     info,
     preset,
@@ -1057,6 +1243,19 @@ export class Command {
     );
   }
 
+  /**
+   * Create a non-interactive SSH executor from pre-validated config.
+   *
+   * @param {command.Info} info Command identity metadata.
+   * @param {object} config Pre-validated connection config.
+   * @param {object} session Session data.
+   * @param {Array<string>} keptSessions Session keys to persist.
+   * @param {streams.Streams} streams Active stream multiplexer.
+   * @param {subscribe.Subscribe} subs Step channel.
+   * @param {controls.Controls} controls Control registry.
+   * @param {history.History} history Connection history.
+   * @returns {Executer} Configured SSH executer instance.
+   */
   execute(
     info,
     config,
@@ -1079,6 +1278,21 @@ export class Command {
     );
   }
 
+  /**
+   * Parse a launcher string and create a non-interactive SSH executor.
+   *
+   * Launcher format: `user@host|AuthMethod[|charset]`
+   *
+   * @param {command.Info} info Command identity metadata.
+   * @param {string} launcher Encoded launcher string.
+   * @param {streams.Streams} streams Active stream multiplexer.
+   * @param {subscribe.Subscribe} subs Step channel.
+   * @param {controls.Controls} controls Control registry.
+   * @param {history.History} history Connection history.
+   * @returns {Executer} Configured SSH executer instance.
+   * @throws {Exception} When the launcher string is malformed or contains
+   *   invalid field values.
+   */
   launch(info, launcher, streams, subs, controls, history) {
     const d = launcher.split("|", 3);
 
@@ -1125,6 +1339,13 @@ export class Command {
     );
   }
 
+  /**
+   * Encode a config object as an SSH launcher string.
+   *
+   * @param {object} config Connection config with `user`, `host`,
+   *   `authentication`, and optionally `charset`.
+   * @returns {string} Encoded launcher string (`user@host|auth|charset`).
+   */
   launcher(config) {
     return (
       config.user +
@@ -1137,6 +1358,14 @@ export class Command {
     );
   }
 
+  /**
+   * Promote the preset's `host` field into a `Host` meta entry so the wizard
+   * can pre-populate the host input from a preset.
+   *
+   * @param {presets.Preset} preset The preset to modify.
+   * @returns {presets.Preset} The same preset instance, possibly with a new
+   *   `Host` meta entry inserted.
+   */
   represet(preset) {
     const host = preset.host();
 

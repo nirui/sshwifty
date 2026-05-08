@@ -15,6 +15,16 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+/**
+ * @file Telnet command implementation for the Sshwifty UI.
+ *
+ * Exposes {@link Command} — the public entry point registered with the command
+ * registry — and the private {@link Telnet}, {@link Wizard}, and
+ * {@link Executor} classes that handle the full Telnet connection lifecycle:
+ * initial address handshake, hook-output display, connection, and live in-band
+ * data I/O.
+ */
+
 import * as reader from "../stream/reader.js";
 import * as address from "./address.js";
 import * as command from "./commands.js";
@@ -37,13 +47,23 @@ const DEFAULT_PORT = 23;
 
 const HostMaxSearchResults = 3;
 
+/**
+ * Telnet command handler for a single active stream.
+ *
+ * Manages Telnet lifecycle events (connected, failed, in-band data) by
+ * dispatching them through an {@link Events} instance. Exposes methods for
+ * sending data and close signals.
+ *
+ * @private
+ */
 class Telnet {
   /**
    * constructor
    *
-   * @param {stream.Sender} sd Stream sender
-   * @param {object} config configuration
-   * @param {object} callbacks Event callbacks
+   * @param {stream.Sender} sd Stream sender used to write to the remote.
+   * @param {object} config Parsed connection config (host address, charset).
+   * @param {object} callbacks Map of event name to handler function, passed
+   *   directly to {@link Events}.
    *
    */
   constructor(sd, config, callbacks) {
@@ -245,18 +265,26 @@ const initialFieldDef = {
   },
 };
 
+/**
+ * Multi-step interactive wizard for establishing a Telnet connection.
+ *
+ * Drives the user through: initial host prompt → waiting → done. Simpler than
+ * the SSH wizard because there is no authentication or fingerprint step.
+ *
+ * @private
+ */
 class Wizard {
   /**
    * constructor
    *
-   * @param {command.Info} info
-   * @param {presets.Preset} preset
-   * @param {object} session
-   * @param {Array<string>} keptSessions
-   * @param {streams.Streams} streams
-   * @param {subscribe.Subscribe} subs
-   * @param {controls.Controls} controls
-   * @param {history.History} history
+   * @param {command.Info} info Command identity metadata.
+   * @param {presets.Preset} preset Pre-filled preset (may be the empty preset).
+   * @param {object} session Session data from a previous connection.
+   * @param {Array<string>} keptSessions Session key names to persist.
+   * @param {streams.Streams} streams Active stream multiplexer.
+   * @param {subscribe.Subscribe} subs Channel for pushing wizard steps to the UI.
+   * @param {controls.Controls} controls Control registry.
+   * @param {history.History} history Connection history manager.
    *
    */
   constructor(
@@ -280,18 +308,35 @@ class Wizard {
     this.history = history;
   }
 
+  /**
+   * Kick off the wizard by pushing the initial prompt step onto the channel.
+   */
   run() {
     this.step.resolve(this.stepInitialPrompt());
   }
 
+  /**
+   * Return whether the user has already submitted the initial prompt.
+   *
+   * @returns {boolean} `true` after the first form submit.
+   */
   started() {
     return this.hasStarted;
   }
 
+  /**
+   * Return the Telnet control object for this wizard's session.
+   *
+   * @returns {object} The Telnet control interface from {@link Controls}.
+   */
   control() {
     return this.controls;
   }
 
+  /**
+   * Cancel the wizard by pushing an error-done step with a cancellation
+   * message.
+   */
   close() {
     this.step.resolve(
       this.stepErrorDone(
@@ -301,10 +346,27 @@ class Wizard {
     );
   }
 
+  /**
+   * Build a failure done-step with the given title and message.
+   *
+   * @private
+   * @param {string} title Short error title.
+   * @param {string} message Longer error description.
+   * @returns {object} A NEXT_DONE step with `success: false`.
+   */
   stepErrorDone(title, message) {
     return command.done(false, null, title, message);
   }
 
+  /**
+   * Build a wait step displaying truncated hook output from the backend.
+   *
+   * @private
+   * @param {string} title Title of the wait state.
+   * @param {string} msg Raw hook output (truncated to
+   *   {@link common.MAX_HOOK_OUTPUT_LEN}).
+   * @returns {object} A NEXT_WAIT step.
+   */
   stepHookOutputPrompt(title, msg) {
     return command.wait(
       title,
@@ -316,6 +378,13 @@ class Wizard {
     );
   }
 
+  /**
+   * Build a success done-step wrapping the provided session result.
+   *
+   * @private
+   * @param {command.Result} data The live session result.
+   * @returns {object} A NEXT_DONE step with `success: true`.
+   */
   stepSuccessfulDone(data) {
     return command.done(
       true,
@@ -325,6 +394,12 @@ class Wizard {
     );
   }
 
+  /**
+   * Build a wait step shown while the backend processes the initial request.
+   *
+   * @private
+   * @returns {object} A NEXT_WAIT step.
+   */
   stepWaitForAcceptWait() {
     return command.wait(
       "Requesting",
@@ -332,6 +407,14 @@ class Wizard {
     );
   }
 
+  /**
+   * Build a wait step shown while the TCP connection to `host` is being
+   * established.
+   *
+   * @private
+   * @param {string} host Display name of the target host.
+   * @returns {object} A NEXT_WAIT step.
+   */
   stepWaitForEstablishWait(host) {
     return command.wait(
       "Connecting to " + host,
@@ -340,11 +423,14 @@ class Wizard {
   }
 
   /**
+   * Instantiate and return a {@link Telnet} command handler, wiring all event
+   * callbacks to advance the wizard's step channel.
    *
-   * @param {stream.Sender} sender
-   * @param {object} configInput
-   * @param {object} sessionData
-   *
+   * @private
+   * @param {stream.Sender} sender The stream sender allocated for this connection.
+   * @param {object} configInput Validated form input (host, charset, tabColor).
+   * @param {object} sessionData Mutable session object.
+   * @returns {Telnet} Configured Telnet command instance.
    */
   buildCommand(sender, configInput, sessionData) {
     let self = this;
@@ -430,6 +516,12 @@ class Wizard {
     });
   }
 
+  /**
+   * Build and return the first wizard step: the Telnet host prompt form.
+   *
+   * @private
+   * @returns {object} A NEXT_PROMPT step with Host and Encoding fields.
+   */
   stepInitialPrompt() {
     const self = this;
 
@@ -492,18 +584,28 @@ class Wizard {
   }
 }
 
+/**
+ * Non-interactive Telnet executor that skips the initial host prompt.
+ *
+ * Used when a connection is launched programmatically from a launcher string
+ * or a history entry.
+ *
+ * @private
+ * @extends Wizard
+ */
 class Executor extends Wizard {
   /**
    * constructor
    *
-   * @param {command.Info} info
-   * @param {object} config
-   * @param {object} session
-   * @param {Array<string>} keptSessions
-   * @param {streams.Streams} streams
-   * @param {subscribe.Subscribe} subs
-   * @param {controls.Controls} controls
-   * @param {history.History} history
+   * @param {command.Info} info Command identity metadata.
+   * @param {object} config Pre-validated connection config (host, charset,
+   *   tabColor).
+   * @param {object} session Session data.
+   * @param {Array<string>} keptSessions Session keys to persist.
+   * @param {streams.Streams} streams Active stream multiplexer.
+   * @param {subscribe.Subscribe} subs Step channel.
+   * @param {controls.Controls} controls Control registry.
+   * @param {history.History} history Connection history manager.
    *
    */
   constructor(
@@ -551,25 +653,66 @@ class Executor extends Wizard {
   }
 }
 
+/**
+ * Public Telnet command definition registered with the {@link Commands} registry.
+ *
+ * Implements the full command contract used by the Sshwifty command registry:
+ * `id`, `name`, `description`, `color`, `wizard`, `execute`, `launch`,
+ * `launcher`, and `represet`.
+ */
 export class Command {
+  /** constructor */
   constructor() {}
 
+  /**
+   * Return the protocol command ID for Telnet.
+   *
+   * @returns {number} COMMAND_ID constant (0x00).
+   */
   id() {
     return COMMAND_ID;
   }
 
+  /**
+   * Return the display name of this command.
+   *
+   * @returns {string} `"Telnet"`
+   */
   name() {
     return "Telnet";
   }
 
+  /**
+   * Return the human-readable description of this command.
+   *
+   * @returns {string} Short description shown in the connection picker.
+   */
   description() {
     return "Teletype Network";
   }
 
+  /**
+   * Return the theme color used for Telnet session tabs.
+   *
+   * @returns {string} CSS color string.
+   */
   color() {
     return "#6ac";
   }
 
+  /**
+   * Create an interactive Telnet wizard.
+   *
+   * @param {command.Info} info Command identity metadata.
+   * @param {presets.Preset} preset Pre-filled preset or empty preset.
+   * @param {object} session Session data.
+   * @param {Array<string>} keptSessions Session keys to persist.
+   * @param {streams.Streams} streams Active stream multiplexer.
+   * @param {subscribe.Subscribe} subs Step channel.
+   * @param {controls.Controls} controls Control registry.
+   * @param {history.History} history Connection history.
+   * @returns {Wizard} Configured Telnet wizard instance.
+   */
   wizard(
     info,
     preset,
@@ -592,6 +735,19 @@ export class Command {
     );
   }
 
+  /**
+   * Create a non-interactive Telnet executor from pre-validated config.
+   *
+   * @param {command.Info} info Command identity metadata.
+   * @param {object} config Pre-validated connection config.
+   * @param {object} session Session data.
+   * @param {Array<string>} keptSessions Session keys to persist.
+   * @param {streams.Streams} streams Active stream multiplexer.
+   * @param {subscribe.Subscribe} subs Step channel.
+   * @param {controls.Controls} controls Control registry.
+   * @param {history.History} history Connection history.
+   * @returns {Executor} Configured Telnet executor instance.
+   */
   execute(
     info,
     config,
@@ -614,6 +770,21 @@ export class Command {
     );
   }
 
+  /**
+   * Parse a launcher string and create a non-interactive Telnet executor.
+   *
+   * Launcher format: `host[:port][|charset]`
+   *
+   * @param {command.Info} info Command identity metadata.
+   * @param {string} launcher Encoded launcher string.
+   * @param {streams.Streams} streams Active stream multiplexer.
+   * @param {subscribe.Subscribe} subs Step channel.
+   * @param {controls.Controls} controls Control registry.
+   * @param {history.History} history Connection history.
+   * @returns {Executor} Configured Telnet executor instance.
+   * @throws {Exception} When the launcher string is malformed or contains
+   *   invalid field values.
+   */
   launch(info, launcher, streams, subs, controls, history) {
     const d = launcher.split("|", 2);
 
@@ -659,10 +830,25 @@ export class Command {
     );
   }
 
+  /**
+   * Encode a config object as a Telnet launcher string.
+   *
+   * @param {object} config Connection config with `host` and optionally
+   *   `charset`.
+   * @returns {string} Encoded launcher string (`host|charset`).
+   */
   launcher(config) {
     return config.host + "|" + (config.charset ? config.charset : "utf-8");
   }
 
+  /**
+   * Promote the preset's `host` field into a `Host` meta entry so the wizard
+   * can pre-populate the host input from a preset.
+   *
+   * @param {presets.Preset} preset The preset to modify.
+   * @returns {presets.Preset} The same preset instance, possibly with a new
+   *   `Host` meta entry inserted.
+   */
   represet(preset) {
     const host = preset.host();
 

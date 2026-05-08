@@ -28,7 +28,12 @@ import (
 	"github.com/Snuffy2/sshwifty/application/rw"
 )
 
-// Errors
+// ErrHandlerUnknownHeaderType is returned by Handle when a frame arrives with
+// a header type that does not match any of the four known types.
+// ErrHandlerControlMessageTooLong is returned when the declared control payload
+// length exceeds the read buffer.
+// ErrHandlerInvalidControlMessage is returned when a control frame carries zero
+// bytes of payload.
 var (
 	ErrHandlerUnknownHeaderType = errors.New(
 		"unknown command header type")
@@ -40,24 +45,35 @@ var (
 		"invalid control message")
 )
 
-// HandlerCancelSignal signals the cancel of the entire handling proccess
+// HandlerCancelSignal is a channel that, when closed or written to, signals
+// the handler to abort its processing loop.
 type HandlerCancelSignal chan struct{}
 
+// handlerReadBufLen is the size of the per-handler read scratch buffer. It
+// accommodates the maximum stream data payload plus a one-byte header and two
+// bytes for stream sub-headers.
 const (
 	handlerReadBufLen = HeaderMaxData + 3 // (3 = 1 Header, 2 Etc)
 )
 
+// handlerBuf is the fixed-size scratch buffer embedded in each Handler.
 type handlerBuf [handlerReadBufLen]byte
 
-// handlerSender writes handler signal
+// handlerSender serialises writes to the underlying io.Writer while supporting
+// pause/resume flow control. All writes are protected by lock; callers that
+// hold lock directly may bypass the wait via writer.
 type handlerSender struct {
-	writer   io.Writer
-	lock     *sync.Mutex
+	// writer is the underlying transport output.
+	writer io.Writer
+	// lock guards writer access and is shared with the signal condition.
+	lock *sync.Mutex
+	// needWait is true while sending is paused.
 	needWait bool
-	sign     *sync.Cond
+	// sign is broadcast when needWait transitions from true to false.
+	sign *sync.Cond
 }
 
-// pause pauses sending
+// pause suspends all Write calls on this sender until resume is called.
 func (h *handlerSender) pause() {
 	h.lock.Lock()
 	defer h.lock.Unlock()
@@ -65,7 +81,7 @@ func (h *handlerSender) pause() {
 	h.needWait = true
 }
 
-// resume resumes sending
+// resume unblocks any Write calls that are waiting due to a prior pause.
 func (h *handlerSender) resume() {
 	h.lock.Lock()
 	defer h.lock.Unlock()
@@ -74,7 +90,8 @@ func (h *handlerSender) resume() {
 	h.sign.Broadcast()
 }
 
-// signal sends handler signal
+// signal serialises hd and d into buf and writes the resulting frame. It panics
+// if buf is too small to hold the header byte plus all of d.
 func (h *handlerSender) signal(hd Header, d []byte, buf []byte) error {
 	bufLen := len(buf)
 	dLen := len(d)
@@ -93,7 +110,8 @@ func (h *handlerSender) signal(hd Header, d []byte, buf []byte) error {
 	return wErr
 }
 
-// Write sends data
+// Write implements io.Writer. It blocks while the sender is paused and then
+// delegates to the underlying writer.
 func (h *handlerSender) Write(b []byte) (int, error) {
 	h.lock.Lock()
 	defer h.lock.Unlock()
@@ -105,22 +123,27 @@ func (h *handlerSender) Write(b []byte) (int, error) {
 	return h.writer.Write(b)
 }
 
-// streamHandlerSender includes all receiver as handlerSender, but it been
-// designed to be use in streams
+// streamHandlerSender wraps a handlerSender for use in individual streams,
+// adding a configurable per-write delay to enforce send-side rate limiting.
 type streamHandlerSender struct {
 	*handlerSender
 
+	// sendDelay is the duration to sleep after each write to a stream.
 	sendDelay time.Duration
 }
 
-// Write sends data
+// Write delegates to the embedded handlerSender and then sleeps for sendDelay
+// to enforce the configured inter-frame send delay.
 func (h streamHandlerSender) Write(b []byte) (int, error) {
 	defer time.Sleep(h.sendDelay)
 
 	return h.handlerSender.Write(b)
 }
 
-// Handler client stream control
+// Handler drives the per-client protocol loop. It reads incoming frames from
+// receiver, demultiplexes them to the correct stream or control path, and
+// writes responses via sender. A Handler is not safe for concurrent use; it
+// must be driven by a single goroutine calling Handle.
 type Handler struct {
 	cfg          Configuration
 	commands     *Commands
@@ -136,6 +159,8 @@ type Handler struct {
 	streams      streams
 }
 
+// newHandler constructs and returns a fully initialised Handler. All fields
+// are set to their initial state; no goroutines are started.
 func newHandler(
 	cfg Configuration,
 	commands *Commands,
@@ -279,6 +304,9 @@ func (e *Handler) handleStream(h Header, d byte, l log.Logger) error {
 	}, l, e.hooks, e.commands, e.cfg, e.bufferPool, e.rBuf[:])
 }
 
+// handleClose processes a HeaderClose frame for stream d. It calls the stream's
+// close method and then sends a HeaderCompleted acknowledgement back to the
+// client. If the sender is paused it is temporarily resumed for the reply.
 func (e *Handler) handleClose(h Header, d byte, _ log.Logger) error {
 	st, stErr := e.streams.get(d)
 
@@ -303,6 +331,8 @@ func (e *Handler) handleClose(h Header, d byte, _ log.Logger) error {
 	return e.sender.signal(hhd, nil, e.rBuf[:])
 }
 
+// handleCompleted processes a HeaderCompleted frame for stream d, releasing the
+// stream's resources so the slot can be reused.
 func (e *Handler) handleCompleted(d byte, l log.Logger) error {
 	st, stErr := e.streams.get(d)
 
@@ -318,7 +348,11 @@ func (e *Handler) handleCompleted(d byte, l log.Logger) error {
 	return st.release()
 }
 
-// Handle starts handling
+// Handle runs the main protocol dispatch loop for the client connection. It
+// reads one frame at a time, routes it to handleControl, handleStream,
+// handleClose, or handleCompleted, and returns the first error encountered.
+// On return it ensures any paused sender is resumed and all active streams are
+// shut down.
 func (e *Handler) Handle() error {
 	defer func() {
 		if e.senderPaused {

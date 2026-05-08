@@ -151,12 +151,35 @@ import "./status.css";
 import Window from "./window.vue";
 import Chart from "./chart.vue";
 
+/**
+ * @fileoverview Connection status overlay widget. Displays latency and
+ * inbound/outbound traffic as real-time bar charts. The two traffic charts
+ * share a common y-axis scale so in/out bars are visually comparable — the
+ * `inoutBoundMax` computed via `inboundMaxColUpdated` and `outboundMaxColUpdated`
+ * is fed back to both charts as the `max` prop.
+ *
+ * @prop {boolean} display - Controls overlay visibility.
+ * @prop {Object}  status  - Live connection metrics object with fields:
+ *   `description`, `delay`, `delayHistory`, `inbound`, `inboundHistory`,
+ *   `outbound`, `outboundHistory`.
+ *
+ * @emits display - Forwarded from the window widget; payload: `{boolean}`.
+ */
+
 export default {
   components: {
     window: Window,
     chart: Chart,
   },
   filters: {
+    /**
+     * Formats a bytes-per-second value as a human-readable string with an
+     * appropriate binary unit (byte/s through tib/s), wrapped in an HTML
+     * `<span>` for the unit suffix.
+     *
+     * @param {number} n - Raw value in bytes per second.
+     * @returns {string} HTML string, e.g. `"1.23 <span>kib/s</span>"`.
+     */
     bytePerSecondString(n) {
       const bNames = ["byte/s", "kib/s", "mib/s", "gib/s", "tib/s"];
       let remain = n,
@@ -179,6 +202,14 @@ export default {
         "</span>"
       );
     },
+    /**
+     * Formats a millisecond value as a human-readable string with an appropriate
+     * time unit (ms, s, or m), wrapped in an HTML `<span>` for the unit suffix.
+     * Returns `"??"` for negative values (i.e. unmeasured delay).
+     *
+     * @param {number} n - Latency value in milliseconds.
+     * @returns {string} HTML string, e.g. `"42.00 <span>ms</span>"`, or `"??"`.
+     */
     mSecondString(n) {
       if (n < 0) {
         return "??";
@@ -226,6 +257,12 @@ export default {
       },
     },
   },
+  /**
+   * @returns {{inoutBoundMax: number, inboundMax: number, outboundMax: number}}
+   *   `inboundMax` and `outboundMax` track the latest data maxima from each traffic chart.
+   *   `inoutBoundMax` is the larger of the two and is fed back to both charts as `max`
+   *   so they share a common y-axis scale.
+   */
   data() {
     return {
       inoutBoundMax: 0,
@@ -234,12 +271,26 @@ export default {
     };
   },
   methods: {
+    /**
+     * Updates the tracked inbound maximum and recomputes the shared y-axis maximum.
+     * Called when the inbound traffic chart emits a `max` event.
+     *
+     * @param {number} d - The new inbound data maximum observed by the chart.
+     * @returns {void}
+     */
     inboundMaxColUpdated(d) {
       this.inboundMax = d;
 
       this.inoutBoundMax =
         this.inboundMax > this.outboundMax ? this.inboundMax : this.outboundMax;
     },
+    /**
+     * Updates the tracked outbound maximum and recomputes the shared y-axis maximum.
+     * Called when the outbound traffic chart emits a `max` event.
+     *
+     * @param {number} d - The new outbound data maximum observed by the chart.
+     * @returns {void}
+     */
     outboundMaxColUpdated(d) {
       this.outboundMax = d;
 

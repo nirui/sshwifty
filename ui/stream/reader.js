@@ -15,9 +15,25 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+/**
+ * @file Buffered async reader abstractions for the Sshwifty stream layer.
+ *
+ * Provides {@link Buffer} (a single in-memory read buffer), {@link Multiple}
+ * (a chain of Buffers fed asynchronously), {@link Reader} (a renewable source
+ * backed by a Subscribe channel), and {@link Limited} (a length-capped
+ * wrapper). Helper functions {@link readOne}, {@link readN},
+ * {@link readCompletely}, and {@link readUntil} build on top of these classes.
+ */
+
 import Exception from "./exception.js";
 import * as subscribe from "./subscribe.js";
 
+/**
+ * Single-shot in-memory read buffer.
+ *
+ * Wraps a `Uint8Array` and tracks how many bytes have been consumed. When the
+ * buffer is fully drained the `depleted` callback is invoked exactly once.
+ */
 export class Buffer {
   /**
    * constructor
@@ -128,6 +144,14 @@ export class Buffer {
   }
 }
 
+/**
+ * Asynchronous chain of {@link Buffer} readers.
+ *
+ * New buffers are fed via {@link Multiple#feed}; when the current buffer is
+ * exhausted the next one is awaited from the internal {@link Subscribe}
+ * channel. The `depleted` callback passed to the constructor is called each
+ * time the chain runs dry and begins waiting for a new buffer.
+ */
 export class Multiple {
   /**
    * Constructor
@@ -271,12 +295,21 @@ export class Multiple {
   }
 }
 
+/**
+ * Renewable async reader backed by a {@link Subscribe} channel.
+ *
+ * Callers push raw data buffers via {@link Reader#feed}; the reader makes them
+ * available through the async {@link Reader#export} API after optionally
+ * transforming each chunk with `bufferConverter`. The underlying
+ * {@link Multiple} instance handles sequencing across multiple chunks.
+ */
 export class Reader {
   /**
    * constructor
    *
    * @param {Multiple} multiple Source reader
-   * @param {function} bufferConverter Function convert
+   * @param {function} bufferConverter Optional transform applied to each raw
+   *   buffer before it is enqueued into the Multiple. Defaults to identity.
    *
    */
   constructor(multiple, bufferConverter) {
@@ -306,6 +339,16 @@ export class Reader {
     this.buffers.resolve(buffer);
   }
 
+  /**
+   * Returns the underlying {@link Multiple} reader, blocking until at least
+   * one byte is available in the buffer. If the multiple already has buffered
+   * data it is returned immediately; otherwise the next pending buffer is
+   * awaited from the Subscribe channel, converted, and fed into the Multiple.
+   *
+   * @private
+   * @returns {Promise<Multiple>} The underlying multiple reader ready for export.
+   * @throws {Exception} When the reader is closed.
+   */
   async reader() {
     if (this.closed) {
       throw new Exception("Reader is closed, unable to read", false);
@@ -441,14 +484,19 @@ export async function readN(reader, n) {
   return result;
 }
 
+/**
+ * Length-capped wrapper around any reader that supports `export`, `buffered`,
+ * `searchBuffer`, and `indexOf`. Prevents reading beyond a declared byte
+ * limit, which is necessary for framed protocol messages where each segment
+ * has a fixed declared length.
+ */
 export class Limited {
   /**
    * Constructor
    *
    * @param {Reader} reader the source reader
-   * @param {number} maxN max bytes to read
-   *
-   * @returns {boolean} true when the reader is completed, false otherwise
+   * @param {number} maxN max bytes to read from the source before this reader
+   *   is considered completed
    *
    */
   constructor(reader, maxN) {
@@ -554,11 +602,16 @@ export async function readCompletely(limited) {
 }
 
 /**
- * Read until given byteData is reached. This function is guaranteed to spit
- * out at least one byte
+ * Read bytes from `indexOfReader` until `byteData` is encountered or a
+ * chunk boundary is reached.
  *
- * @param {Reader} indexOfReader
- * @param {number} byteData
+ * Guaranteed to return at least one byte. The returned `found` flag is `true`
+ * when the last byte in `data` equals `byteData`.
+ *
+ * @param {Reader} indexOfReader Reader that supports `indexOf` and `buffered`.
+ * @param {number} byteData Target byte value to search for.
+ * @returns {Promise<{data: Uint8Array, found: boolean}>} Object with the bytes
+ *   read and whether the delimiter was found in this chunk.
  */
 export async function readUntil(indexOfReader, byteData) {
   let pos = await indexOfReader.indexOf(byteData),

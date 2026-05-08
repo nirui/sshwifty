@@ -15,9 +15,26 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+/**
+ * @file Buffered async sender for the Sshwifty stream layer.
+ *
+ * {@link Sender} coalesces outgoing writes into segments up to `maxSegSize`
+ * bytes and flushes them either when the internal buffer is full, after a
+ * configurable delay (`bufferFlushDelay`), or when `maxBufferedRequests` sends
+ * have accumulated — whichever comes first.
+ */
+
 import Exception from "./exception.js";
 import * as subscribe from "./subscribe.js";
 
+/**
+ * Buffered, rate-limited data sender.
+ *
+ * Outgoing data is queued via {@link Sender#send} and dispatched in batches by
+ * the internal {@link Sender#sending} loop. Callers receive a Promise that
+ * resolves when their data has been handed to the underlying transport, or
+ * rejects on failure.
+ */
 export class Sender {
   /**
    * constructor

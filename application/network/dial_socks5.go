@@ -24,13 +24,19 @@ import (
 	"golang.org/x/net/proxy"
 )
 
-// socks5Dial dials to a SOCKS5 server
+// socks5Dial bridges the application's Dial function type to the proxy.Dialer
+// and proxy.ContextDialer interfaces required by golang.org/x/net/proxy. A
+// context is captured at construction time and reused for Dial calls that do
+// not accept one.
 type socks5Dial struct {
+	// dialer is the underlying Dial function, typically a TCP dialer.
 	dialer Dial
-	ctx    context.Context
+	// ctx is the context propagated to Dial calls.
+	ctx context.Context
 }
 
-// Dial implements proxy.Dialer
+// Dial implements proxy.Dialer by delegating to the captured Dial function with
+// the stored context.
 func (s socks5Dial) Dial(
 	network string,
 	address string,
@@ -38,7 +44,8 @@ func (s socks5Dial) Dial(
 	return s.dialer(s.ctx, network, address)
 }
 
-// Dial implements proxy.ContextDialer
+// DialContext implements proxy.ContextDialer by delegating to the captured
+// Dial function with the supplied context.
 func (s socks5Dial) DialContext(
 	ctx context.Context,
 	network string,
@@ -47,7 +54,11 @@ func (s socks5Dial) DialContext(
 	return s.dialer(ctx, network, address)
 }
 
-// BuildSocks5Dial builds a Socks5 dialer
+// BuildSocks5Dial returns a Dial that routes connections through the SOCKS5
+// proxy at socks5Address. If userName or password are non-empty, proxy
+// authentication is configured. The underlying TCP connections are established
+// via dial (typically TCPDial). It prefers DialContext over Dial when the
+// proxy implementation supports it.
 func BuildSocks5Dial(
 	socks5Address string,
 	userName string,

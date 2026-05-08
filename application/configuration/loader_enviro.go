@@ -26,15 +26,22 @@ import (
 	"github.com/Snuffy2/sshwifty/application/log"
 )
 
+// environTypeName is the loader name reported when configuration is loaded from
+// environment variables.
 const (
 	environTypeName = "Environment Variable"
 )
 
+// parseJsonStringArray parses s as a JSON array of strings, returning the
+// resulting slice or a JSON decode error.
 func parseJsonStringArray(s string) (r []string, err error) {
 	err = json.Unmarshal([]byte(s), &r)
 	return
 }
 
+// parseEnvUint reads the environment variable named env, trims whitespace, and
+// parses it as an unsigned integer of bitSize bits. It returns a descriptive
+// error if the variable is missing, empty, or not a valid integer.
 func parseEnvUint(env string, bitSize int) (uint64, error) {
 	u, err := strconv.ParseUint(strings.TrimSpace(GetEnv(env)), 10, bitSize)
 	if err != nil {
@@ -47,6 +54,8 @@ func parseEnvUint(env string, bitSize int) (uint64, error) {
 	return u, nil
 }
 
+// parseEnvUintDefault calls parseEnvUint and returns def if parsing fails,
+// making it safe to use for optional environment variables.
 func parseEnvUintDefault(env string, def uint64, bitSize int) uint64 {
 	if u, err := parseEnvUint(env, bitSize); err == nil {
 		return u
