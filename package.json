@@ -66,5 +66,8 @@
     "test": "npm run generate && npm run testonly"
   },
   "author": "",
-  "license": "AGPL-3.0-only"
+  "license": "AGPL-3.0-only",
+  "dependencies": {
+    "@xterm/addon-clipboard": "^0.2.0"
+  }
 }

@@ -106,6 +106,7 @@ import { WebLinksAddon } from "@xterm/addon-web-links";
 import { Unicode11Addon } from '@xterm/addon-unicode11';
 import { WebglAddon } from "@xterm/addon-webgl";
 import { FitAddon } from "@xterm/addon-fit";
+import { ClipboardAddon } from "@xterm/addon-clipboard";
 import { isNumber } from "../commands/common.js";
 import { consoleScreenKeys } from "./screen_console_keys.js";
 
@@ -250,6 +251,7 @@ class Term {
     this.term.loadAddon(this.fit);
     this.term.loadAddon(new WebLinksAddon());
     this.term.loadAddon(new Unicode11Addon());
+    this.term.loadAddon(new ClipboardAddon());
     try {
       if (webglSupported()) {
         this.term.loadAddon(new WebglAddon());
