@@ -527,7 +527,7 @@ func (d *sshClient) remote(
 		return
 	}
 
-	err = session.RequestPty("xterm", 80, 40, ssh.TerminalModes{
+	err = session.RequestPty("xterm-256color", 80, 40, ssh.TerminalModes{
 		ssh.ECHO:          1,
 		ssh.TTY_OP_ISPEED: 14400,
 		ssh.TTY_OP_OSPEED: 14400,
