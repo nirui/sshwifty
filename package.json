@@ -12,6 +12,7 @@
     "@babel/preset-env": "^7.29.5",
     "@babel/register": "^7.29.3",
     "@babel/runtime": "^7.29.2",
+    "@xterm/addon-clipboard": "^0.2.0",
     "@xterm/addon-fit": "^0.11.0",
     "@xterm/addon-unicode11": "^0.9.0",
     "@xterm/addon-web-links": "^0.12.0",
