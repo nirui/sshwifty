@@ -106,7 +106,11 @@ import { WebLinksAddon } from "@xterm/addon-web-links";
 import { Unicode11Addon } from '@xterm/addon-unicode11';
 import { WebglAddon } from "@xterm/addon-webgl";
 import { FitAddon } from "@xterm/addon-fit";
-import { ClipboardAddon } from "@xterm/addon-clipboard";
+import { 
+  ClipboardAddon,
+  BrowserClipboardProvider,
+  Base64 as ClipboardBase64
+} from "@xterm/addon-clipboard";
 import { isNumber } from "../commands/common.js";
 import { consoleScreenKeys } from "./screen_console_keys.js";
 
@@ -144,8 +148,55 @@ function webglSupported() {
   return false;
 }
 
+const termClipboardWarningTimeout = 20000;
+const termClipboardWriteWarning = "Remote is requesting to write content to " +
+  "the local clipboard. Click here to allow this write, or wait 20 seconds " +
+  "for the request to expire";
+
+class CustomClipboardProvider extends BrowserClipboardProvider {
+  constructor(indicatorMsg) {
+    super();
+    this.cached = "";
+    this.indicatorMsg = indicatorMsg;
+    this.indicatorTimeout = null;
+  }
+
+  readText(selection) {
+    // Only allow in-browser clipboard sharing. If user needs to import data
+    // from their system clipboard, they can do that with Control+Shift+V
+    return this.cached;
+  }
+
+  showWriteIndicator(text) {
+    this.cached = text;
+    if (this.indicatorTimeout) {
+      return false;
+    }
+    self = this;
+    self.indicatorMsg.info(termClipboardWriteWarning, false, () => {
+      navigator.clipboard.writeText(self.cached);
+      self.indicatorMsg.info(termClipboardWriteWarning, true);
+      clearTimeout(self.indicatorTimeout);
+      self.indicatorTimeout = null;
+      self.cached = "";
+    });
+    self.indicatorTimeout = setTimeout(() => { 
+      self.indicatorMsg.info(termClipboardWriteWarning, true);
+      self.indicatorTimeout = null;
+    }, termClipboardWarningTimeout);
+    return true;
+  }
+
+  writeText(selection, text) {
+    if (!this.showWriteIndicator(text)) {
+      return;
+    }
+    return new Promise((resolve, reject) => { resolve() });
+  }
+}
+
 class Term {
-  constructor(control) {
+  constructor(control, indicatorMsg) {
     const resizeDelayInterval = 500;
 
     this.control = control;
@@ -243,7 +294,7 @@ class Term {
     });
   }
 
-  init(root) {
+  init(root, indicatorMsg) {
     if (this.closed) {
       return;
     }
@@ -251,7 +302,12 @@ class Term {
     this.term.loadAddon(this.fit);
     this.term.loadAddon(new WebLinksAddon());
     this.term.loadAddon(new Unicode11Addon());
-    this.term.loadAddon(new ClipboardAddon());
+    this.term.loadAddon(
+      new ClipboardAddon(
+        new ClipboardBase64(),
+        new CustomClipboardProvider(indicatorMsg),
+      )
+    );
     try {
       if (webglSupported()) {
         this.term.loadAddon(new WebglAddon());
@@ -472,7 +528,7 @@ export default {
         }
       }
     },
-    async openTerm(root, callbacks) {
+    async openTerm(root, indicatorMsg) {
       const self = this;
       try {
         await self.loadRemoteFont(termTypeFaces, termTypeFaceLoadTimeout);
@@ -480,7 +536,7 @@ export default {
           return;
         }
         root.innerHTML = "";
-        self.term.init(root);
+        self.term.init(root, indicatorMsg);
         return;
       } catch (e) {
         // Ignore
@@ -489,15 +545,15 @@ export default {
         return;
       }
       root.innerHTML = "";
-      callbacks.warn(termTypeFaceLoadError, false);
+      indicatorMsg.warn(termTypeFaceLoadError, false, null);
       self.term.setFont(termFallbackTypeFace);
-      self.term.init(root);
+      self.term.init(root, indicatorMsg);
       self.retryLoadRemoteFont(termTypeFaces, termTypeFaceLoadTimeout, () => {
         if (self.term.destroyed()) {
           return;
         }
         self.term.setFont(termTypeFaces);
-        callbacks.warn(termTypeFaceLoadError, true);
+        indicatorMsg.warn(termTypeFaceLoadError, true, null);
       });
     },
     triggerActive(active) {
@@ -509,16 +565,18 @@ export default {
       await self.openTerm(
         self.$el.getElementsByClassName("console-console")[0],
         {
-          warn(msg, toDismiss) {
+          warn(msg, toDismiss, callback) {
             self.$emit("warning", {
               text: msg,
               toDismiss: toDismiss,
+              callback: callback,
             });
           },
-          info(msg, toDismiss) {
+          info(msg, toDismiss, callback) {
             self.$emit("info", {
               text: msg,
               toDismiss: toDismiss,
+              callback: callback,
             });
           },
         },

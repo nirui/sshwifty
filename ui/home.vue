@@ -204,7 +204,6 @@ export default {
   },
   data() {
     let history = home_history.build(this);
-
     return {
       ticker: null,
       windows: {
@@ -234,17 +233,14 @@ export default {
     this.ticker = setInterval(() => {
       this.tick();
     }, 1000);
-
     if (this.query.length > 1 && this.query.indexOf("+") === 0) {
       this.connectLaunch(this.query.slice(1, this.query.length), (success) => {
         if (!success) {
           return;
         }
-
         this.$emit("navigate-to", "");
       });
     }
-
     window.addEventListener("beforeunload", this.onBrowserClose);
   },
   beforeDestroy() {
@@ -266,7 +262,6 @@ export default {
     },
     tick() {
       let now = new Date();
-
       this.socket.update(now, this);
     },
     closeAllWindow(e) {
@@ -288,25 +283,19 @@ export default {
     },
     async getStreamThenRun(run, end) {
       let errStr = null;
-
       try {
         let conn = await this.connection.get(this.socket);
-
         try {
           run(conn);
         } catch (e) {
           errStr = BACKEND_REQUEST_ERROR + e;
-
           process.env.NODE_ENV === "development" && console.trace(e);
         }
       } catch (e) {
         errStr = BACKEND_CONNECT_ERROR + e;
-
         process.env.NODE_ENV === "development" && console.trace(e);
       }
-
       end();
-
       if (errStr !== null) {
         alert(errStr);
       }
@@ -315,14 +304,11 @@ export default {
       if (this.connector.acquired) {
         return;
       }
-
       this.connector.acquired = true;
       this.connector.busy = true;
-
       this.getStreamThenRun(
         (stream) => {
           this.connector.busy = false;
-
           callback(stream);
         },
         () => {
@@ -333,7 +319,6 @@ export default {
     },
     connectNew(connector) {
       const self = this;
-
       self.runConnect((stream) => {
         self.connector.connector = {
           id: connector.id(),
@@ -349,13 +334,11 @@ export default {
             () => {},
           ),
         };
-
         self.connector.inputting = true;
       });
     },
     connectPreset(preset) {
       const self = this;
-
       self.runConnect((stream) => {
         self.connector.connector = {
           id: preset.command.id(),
@@ -371,37 +354,28 @@ export default {
             () => {},
           ),
         };
-
         self.connector.inputting = true;
       });
     },
     getConnectorByType(type) {
       let connector = null;
-
       for (let c in this.connector.connectors) {
         if (this.connector.connectors[c].name() !== type) {
           continue;
         }
-
         connector = this.connector.connectors[c];
       }
-
       return connector;
     },
     connectKnown(known) {
       const self = this;
-
       self.runConnect((stream) => {
         let connector = self.getConnectorByType(known.type);
-
         if (!connector) {
           alert("Unknown connector: " + known.type);
-
           self.connector.inputting = false;
-
           return;
         }
-
         self.connector.connector = {
           id: connector.id(),
           name: connector.name(),
@@ -418,18 +392,15 @@ export default {
             },
           ),
         };
-
         self.connector.inputting = true;
       });
     },
     parseConnectLauncher(ll) {
       let llSeparatorIdx = ll.indexOf(":");
-
       // Type must contain at least one charater
       if (llSeparatorIdx <= 0) {
         throw new Error("Invalid Launcher string");
       }
-
       return {
         type: ll.slice(0, llSeparatorIdx),
         query: ll.slice(llSeparatorIdx + 1, ll.length),
@@ -437,21 +408,15 @@ export default {
     },
     connectLaunch(launcher, done) {
       this.showConnectWindow();
-
       this.runConnect((stream) => {
         let ll = this.parseConnectLauncher(launcher),
           connector = this.getConnectorByType(ll.type);
-
         if (!connector) {
           alert("Unknown connector: " + ll.type);
-
           this.connector.inputting = false;
-
           return;
         }
-
         const self = this;
-
         this.connector.connector = {
           id: connector.id(),
           name: connector.name(),
@@ -468,17 +433,14 @@ export default {
             },
           ),
         };
-
         this.connector.inputting = true;
       });
     },
     buildknownLauncher(known) {
       let connector = this.getConnectorByType(known.type);
-
       if (!connector) {
         return;
       }
-
       return this.hostPath + "#+" + connector.launcher(known.data);
     },
     exportKnowns() {
@@ -486,17 +448,14 @@ export default {
     },
     importKnowns(d) {
       this.connector.historyRec.import(d);
-
       this.connector.knowns = this.connector.historyRec.all();
     },
     removeKnown(uid) {
       this.connector.historyRec.del(uid);
-
       this.connector.knowns = this.connector.historyRec.all();
     },
     clearSessionKnown(uid) {
       this.connector.historyRec.clearSession(uid);
-
       this.connector.knowns = this.connector.historyRec.all();
     },
     cancelConnection() {
@@ -507,9 +466,7 @@ export default {
       this.connector.inputting = false;
       this.connector.acquired = false;
       this.windows.connect = false;
-
       this.addToTab(data);
-
       this.$emit("tab-opened", this.tab.tabs);
     },
     async addToTab(data) {
@@ -525,6 +482,7 @@ export default {
             level: "",
             message: "",
             updated: false,
+            callback: null,
           },
           status: {
             closing: false,
@@ -534,7 +492,6 @@ export default {
     },
     removeFromTab(index) {
       let isLast = index === this.tab.tabs.length - 1;
-
       this.tab.tabs.splice(index, 1);
       this.tab.current = isLast ? this.tab.tabs.length - 1 : index;
     },
@@ -542,45 +499,38 @@ export default {
       if (this.tab.current >= 0) {
         await this.tab.tabs[this.tab.current].control.disabled();
       }
-
       this.tab.current = to;
-
       this.tab.tabs[this.tab.current].indicator.updated = false;
       await this.tab.tabs[this.tab.current].control.enabled();
     },
     async retapTab(tab) {
       this.tab.tabs[tab].toolbar = !this.tab.tabs[tab].toolbar;
-
       await this.tab.tabs[tab].control.retap(this.tab.tabs[tab].toolbar);
     },
     async closeTab(index) {
       if (this.tab.tabs[index].status.closing) {
         return;
       }
-
       this.tab.tabs[index].status.closing = true;
-
       try {
         this.tab.tabs[index].control.disabled();
-
         await this.tab.tabs[index].control.close();
       } catch (e) {
         alert("Cannot close tab due to error: " + e);
-
         process.env.NODE_ENV === "development" && console.trace(e);
       }
-
       this.removeFromTab(index);
-
       this.$emit("tab-closed", this.tab.tabs);
     },
     tabStopped(index, reason) {
       if (reason !== null) {
         this.tab.tabs[index].indicator.message = "" + reason;
         this.tab.tabs[index].indicator.level = "error";
+        this.tab.tabs[index].indicator.callback = null;
       } else {
         this.tab.tabs[index].indicator.message = "";
         this.tab.tabs[index].indicator.level = "";
+        this.tab.tabs[index].indicator.callback = null;
       }
     },
     tabMessage(index, msg, type) {
@@ -591,15 +541,14 @@ export default {
         ) {
           return;
         }
-
         this.tab.tabs[index].indicator.message = "";
         this.tab.tabs[index].indicator.level = "";
-
+        this.tab.tabs[index].indicator.callback = null;
         return;
       }
-
       this.tab.tabs[index].indicator.message = msg.text;
       this.tab.tabs[index].indicator.level = type;
+      this.tab.tabs[index].indicator.callback = msg.callback;
     },
     tabWarning(index, msg) {
       this.tabMessage(index, msg, "warning");
@@ -609,7 +558,6 @@ export default {
     },
     tabUpdated(index) {
       this.$emit("tab-updated", this.tab.tabs);
-
       this.tab.tabs[index].indicator.updated = index !== this.tab.current;
     },
   },

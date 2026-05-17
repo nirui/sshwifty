@@ -32,7 +32,11 @@
       <div
         v-if="screenInfo.indicator.message.length > 0"
         class="screen-error"
-        :class="'screen-error-level-' + screenInfo.indicator.level"
+        @click="clickIndicator(screenInfo.indicator.callback)"
+        :class="[
+          'screen-error-level-' + screenInfo.indicator.level,
+          { 'screen-error-clickable': screenInfo.indicator.callback },
+        ]"
       >
         {{ screenInfo.indicator.message }}
       </div>
@@ -85,7 +89,6 @@ export default {
       switch (ui) {
         case "Console":
           return "ConsoleScreen";
-
         default:
           throw new Error("Unknown UI: " + ui);
       }
@@ -98,6 +101,12 @@ export default {
     },
     info(index, msg) {
       this.$emit("info", index, msg);
+    },
+    clickIndicator(callback) {
+      if (!callback) {
+        return;
+      }
+      callback();
     },
     updated(index) {
       this.$emit("updated", index);

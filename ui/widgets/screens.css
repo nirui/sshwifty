@@ -39,22 +39,34 @@
 #home-content > .screen > .screen-error {
   display: block;
   padding: 10px;
-  background: #b44;
+  background-color: #b44;
   color: #fff;
   font-size: 0.75em;
   flex: 0 0;
 }
 
 #home-content > .screen > .screen-error.screen-error-level-error {
-  background: #b44;
+  background-color: #b44;
 }
 
 #home-content > .screen > .screen-error.screen-error-level-warning {
-  background: #b82;
+  background-color: #b82;
 }
 
 #home-content > .screen > .screen-error.screen-error-level-info {
-  background: #28b;
+  background-color: #28b;
+}
+
+#home-content > .screen > .screen-error.screen-error-clickable {
+  cursor: pointer;
+}
+
+#home-content > .screen > .screen-error.screen-error-clickable::hover {
+  opacity: 0.7;
+}
+
+#home-content > .screen > .screen-error.screen-error-clickable::active {
+  opacity: 1;
 }
 
 #home-content > .screen > .screen-screen {
