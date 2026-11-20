@@ -93,6 +93,7 @@ func Environ() Loader {
 			HeartbeatTimeout: castUintToInt(
 				parseEnvUintDefault("SSHWIFTY_HEARTBEATTIMEOUT", 0, 32),
 			),
+			AllowedOrigins: GetEnv("SSHWIFTY_ALLOWEDORIGINS"),
 			ReadDelay: castUintToInt(
 				parseEnvUintDefault("SSHWIFTY_READDELAY", 0, 32),
 			),

@@ -100,6 +100,10 @@ func newSocketVerification(
 	}
 }
 
+func (s socketVerification) accessAllowedMethods() string {
+	return "GET"
+}
+
 func (s socketVerification) authKey(r *http.Request) []byte {
 	timeMixer := strconv.FormatInt(time.Now().Unix()/100, 10)
 	if len(s.commonCfg.SharedKey) > 0 {

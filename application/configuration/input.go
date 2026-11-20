@@ -33,6 +33,7 @@ type serverInput struct {
 	HeartbeatTimeout      int    // Client heartbeat interval, in second
 	ReadDelay             int    // Read delay, in millisecond
 	WriteDelay            int    // Write delay, in millisecond
+	AllowedOrigins        string // "," separated list for origins
 	TLSCertificateFile    string // Location of TLS certificate file
 	TLSCertificateKeyFile string // Location of TLS certificate key
 	ServerMessage         string // Server message displayed on the Home page
@@ -49,6 +50,7 @@ func (f *serverInput) concretize() Server {
 		HeartbeatTimeout:      time.Duration(f.HeartbeatTimeout) * time.Second,
 		ReadDelay:             time.Duration(f.ReadDelay) * time.Millisecond,
 		WriteDelay:            time.Duration(f.WriteDelay) * time.Millisecond,
+		AllowedOrigins:        f.AllowedOrigins,
 		TLSCertificateFile:    f.TLSCertificateFile,
 		TLSCertificateKeyFile: f.TLSCertificateKeyFile,
 		ServerMessage:         f.ServerMessage,

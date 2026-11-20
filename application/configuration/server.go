@@ -21,6 +21,8 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"net/url"
+	"strings"
 	"time"
 )
 
@@ -34,6 +36,7 @@ type Server struct {
 	HeartbeatTimeout      time.Duration
 	ReadDelay             time.Duration
 	WriteDelay            time.Duration
+	AllowedOrigins        string
 	TLSCertificateFile    string
 	TLSCertificateKeyFile string
 	ServerMessage         string
@@ -44,11 +47,62 @@ func (s Server) IsTLS() bool {
 	return len(s.TLSCertificateFile) > 0 && len(s.TLSCertificateKeyFile) > 0
 }
 
+// buildOrigin builds a valid origin data from given `input`
+func (s Server) buildOrigin(input string) (string, error) {
+	u, err := url.Parse(strings.TrimSpace(input))
+	if err != nil {
+		return "", fmt.Errorf("failed to parse Origin %q: %s", input, err)
+	}
+	if len(u.Host) <= 0 || len(u.Scheme) <= 0 {
+		return "", fmt.Errorf(
+			"The URL %q in AllowedOrigins is invalid: %s. "+
+				"A valid one should look like \"https://example.internal\"",
+			input,
+			err,
+		)
+	}
+	if len(u.Path) > 0 ||
+		len(u.Fragment) > 0 ||
+		len(u.Query()) > 0 ||
+		len(u.Opaque) > 0 {
+		return "", fmt.Errorf(
+			"Invalid Origin value %q. "+
+				"A valid Origin must not contain request path, query, "+
+				"or fragment",
+			input,
+		)
+	}
+	return u.String(), nil
+}
+
+// AllowedOriginList contains a list of allowed origins
+func (s Server) AllowedOriginList() (out []string) {
+	for v := range strings.SplitSeq(s.AllowedOrigins, ",") {
+		u, err := s.buildOrigin(v)
+		if err != nil {
+			panic(fmt.Errorf("failed to parse Origin %q: %s", v, err))
+		}
+		out = append(out, u)
+	}
+	return
+}
+
 // verify verifies current configuration
 func (s Server) verify() error {
+	// s.ListenInterface must be a valid IP
 	if net.ParseIP(s.ListenInterface) == nil {
 		return fmt.Errorf("invalid IP address \"%s\"", s.ListenInterface)
 	}
+	// Strings in s.AllowedOrigins must be a valid URL
+	for v := range strings.SplitSeq(s.AllowedOrigins, ",") {
+		_, err := s.buildOrigin(v)
+		if err == nil {
+			continue
+		}
+		return err
+	}
+	// s.TLSCertificateFile and s.TLSCertificateKeyFile must be specified at
+	// the same time
 	if (len(s.TLSCertificateFile) > 0 && len(s.TLSCertificateKeyFile) <= 0) ||
 		(len(s.TLSCertificateFile) <= 0 && len(s.TLSCertificateKeyFile) > 0) {
 		return errors.New("TLSCertificateFile and TLSCertificateKeyFile must " +
@@ -113,6 +167,7 @@ func (s Server) normalize() Server {
 		HeartbeatTimeout:      heartbeatTimeout,
 		ReadDelay:             atLeast(s.ReadDelay, 0),  // No less than 0
 		WriteDelay:            atLeast(s.WriteDelay, 0), // No less than 0
+		AllowedOrigins:        s.AllowedOrigins,
 		TLSCertificateFile:    s.TLSCertificateFile,
 		TLSCertificateKeyFile: s.TLSCertificateKeyFile,
 		ServerMessage:         s.ServerMessage,

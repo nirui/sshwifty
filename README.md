@@ -272,6 +272,9 @@ Here is all the options of the configuration file:
       // (In Milliseconds)
       "WriteDelay": 10,
 
+      // List of allowed Origins, separated by ","
+      "AllowedOrigins": "http://invalidhost.localhost,https://invalidhost.localhost,https://anotherinvalidhost.localhost",
+
       // Path to TLS certificate file. Set empty to use HTTP
       "TLSCertificateFile": "",
 
@@ -422,6 +425,7 @@ SSHWIFTY_HEARTBEATTIMEOUT
 SSHWIFTY_READDELAY
 SSHWIFTY_WRITEELAY
 SSHWIFTY_LISTENINTERFACE
+SSHWIFTY_ALLOWEDORIGINS
 SSHWIFTY_TLSCERTIFICATEFILE
 SSHWIFTY_TLSCERTIFICATEKEYFILE
 SSHWIFTY_SERVERMESSAGE
