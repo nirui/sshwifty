@@ -234,6 +234,25 @@ Here is all the options of the configuration file:
   // exceeded, the hook will be terminated, and thus cause a failure
   "HookTimeout": 30,
 
+  // The pinned SSH Host fingerprints. If a remote is defined on this list, the
+  // Sshwifty backend will check it's host fingerprint on the server side, and 
+  // reject the connection if the fingerprint don't match
+  //
+  // Format: "hostaddress1,hostaddress2" : "HASH:FingerprintBase64"
+  //
+  // You can define multiple host address at the same time, this allows you to
+  // for example setup the DNS name and IP address in one line more conveniently
+  // but it does NOT support CIDR range
+  //
+  // This setting all by itself is not a security setting, as user could get
+  // around this restriction by typing in an alternative host name. If security
+  // is a concern, use this in combination with `Presets` and
+  // `OnlyAllowPresetRemotes`
+  "PinnedSSHFingerprints": {
+    "router,192.168.0.1": "SHA256:NAo=",
+    "server:2222": "SHA256:NAo="
+  },
+
   // Sshwifty HTTP server, you can set multiple ones to serve on different
   // ports
   "Servers": [
@@ -417,6 +436,7 @@ SSHWIFTY_SOCKS5_USER
 SSHWIFTY_SOCKS5_PASSWORD
 SSHWIFTY_HOOK_BEFORE_CONNECTING
 SSHWIFTY_HOOKTIMEOUT
+SSHWIFTY_PINNEDSSHHOSTFINGERPRINTS
 SSHWIFTY_LISTENPORT
 SSHWIFTY_INITIALTIMEOUT
 SSHWIFTY_READTIMEOUT
@@ -450,6 +470,10 @@ is to use `jq`:
 Which should give you one line of escaped JSON string, safe for use in scripts.
 
 [`preset.example.json`]: preset.example.json
+
+Same goes for `SSHWIFTY_PINNEDSSHHOSTFINGERPRINTS` which also expects JSON 
+encoded data in the same format demonstrated in the `sshwifty.conf.example.json`
+file, and can be loaded in the same way as how `SSHWIFTY_PRESETS` is loaded.
 
 Notice: When you're using environment variables to configure Sshwifty, only one
 Sshwifty HTTP server is then allowed. There is no way to setup multiple servers

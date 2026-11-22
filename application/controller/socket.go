@@ -290,8 +290,11 @@ func (s socket) Get(
 	senderLock := sync.Mutex{}
 	cmdExec, cmdExecErr := s.commander.New(
 		command.Configuration{
-			Dial:        s.commonCfg.Dialer,
-			DialTimeout: s.commonCfg.DecideDialTimeout(s.serverCfg.ReadTimeout),
+			Dial: s.commonCfg.Dialer,
+			DialTimeout: s.commonCfg.DecideDialTimeout(
+				s.serverCfg.ReadTimeout,
+			),
+			SSHPinnedHosts: s.commonCfg.PinnedSSHFingerprints,
 		},
 		rw.NewFetchReader(func() ([]byte, error) {
 			defer s.increaseNonce(readNonce[:])

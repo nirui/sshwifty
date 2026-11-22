@@ -107,7 +107,6 @@ func (a SSHAuthModes) supports(t SSHAuthModes) bool {
 func (a SSHAuthModes) build(
 	d *sshClient,
 	b []byte,
-	retries int,
 ) []ssh.AuthMethod {
 	if !a.enabled() {
 		return nil
@@ -137,7 +136,7 @@ func (a SSHAuthModes) build(
 					return "", ErrSSHAuthCancelled
 				}
 				return string(passphraseBytes), nil
-			}), retries),
+			}), 0),
 		)
 	}
 	if a.supports(SSHAuthMethodPrivateKey) {
@@ -168,7 +167,7 @@ func (a SSHAuthModes) build(
 					return nil, signerErr
 				}
 				return []ssh.Signer{signer}, signerErr
-			}), retries),
+			}), 0),
 		)
 	}
 	if a.supports(SSHAuthMethodKeyboardInteractive) {
@@ -255,7 +254,7 @@ func (a SSHAuthModes) build(
 					answers[i] = string(ans[i].Data())
 				}
 				return
-			}), retries),
+			}), 0),
 		)
 	}
 	return methods
@@ -272,11 +271,15 @@ var (
 	ErrSSHInvalidAddress = errors.New(
 		"invalid address")
 
+	ErrSSHRemotePinnedFingerprintUnmatched = errors.New(
+		"remote Fingerprint don't match the pinned one defined by the " +
+			"Sshwifty operator")
+
 	ErrSSHRemoteFingerprintVerificationCancelled = errors.New(
-		"server Fingerprint verification process has been cancelled")
+		"remote Fingerprint verification process has been cancelled")
 
 	ErrSSHRemoteFingerprintRefused = errors.New(
-		"server Fingerprint has been refused")
+		"remote Fingerprint has been refused")
 
 	ErrSSHRemoteConnUnavailable = errors.New(
 		"remote SSH connection is unavailable")
@@ -443,13 +446,32 @@ func (d *sshClient) Bootup(
 	return d.local, command.NoFSMError()
 }
 
+func (d *sshClient) checkPinnedFingerprint(
+	fgp string,
+	hostname string,
+	hostIP string,
+) error {
+	if checkFPS, hasFPS := d.cfg.SSHPinnedHosts.Get(
+		hostname,
+		hostIP,
+	); hasFPS && !checkFPS.Has(fgp) { // Skip checking if the host is not pinned
+		return ErrSSHRemotePinnedFingerprintUnmatched
+	}
+	return nil
+}
+
 func (d *sshClient) confirmRemoteFingerprint(
+	hostname string,
+	hostIP string,
 	key ssh.PublicKey,
 	buf []byte,
 ) error {
 	d.enableRemoteReadTimeoutRetry()
 	defer d.disableRemoteReadTimeoutRetry()
 	fgp := ssh.FingerprintSHA256(key)
+	if err := d.checkPinnedFingerprint(fgp, hostname, hostIP); err != nil {
+		return err
+	}
 	fgpLen := copy(buf[d.w.HeaderSize():], fgp)
 	wErr := d.w.SendManual(
 		SSHServerConnectVerifyFingerprint,
@@ -568,9 +590,9 @@ func (d *sshClient) remote(
 	conn, clearConnInitialDeadline, err :=
 		d.dialRemote("tcp", address, &ssh.ClientConfig{
 			User: user,
-			Auth: authMethods.build(d, (*u)[:], d.cfg.AuthRetries),
+			Auth: authMethods.build(d, (*u)[:]),
 			HostKeyCallback: func(h string, r net.Addr, k ssh.PublicKey) error {
-				return d.confirmRemoteFingerprint(k, (*u)[:])
+				return d.confirmRemoteFingerprint(h, r.String(), k, (*u)[:])
 			},
 			Timeout: d.cfg.DialTimeout,
 		})

@@ -150,6 +150,9 @@ type commonInput struct {
 	// HookTimeout execution timeout
 	HookTimeout int
 
+	// PinnedSSHFingerprints
+	PinnedSSHFingerprints map[string]string
+
 	// Servers
 	Servers serverInputs
 
@@ -188,6 +191,7 @@ func (f commonInput) concretize() (Configuration, error) {
 			f.HookTimeout,
 			1,
 		)) * time.Second,
+		PinnedSSHFingerprints:  f.PinnedSSHFingerprints,
 		Servers:                servers,
 		Presets:                presets,
 		OnlyAllowPresetRemotes: f.OnlyAllowPresetRemotes,

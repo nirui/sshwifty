@@ -35,6 +35,11 @@ func parseJsonStringArray(s string) (r []string, err error) {
 	return
 }
 
+func parseJsonStringMap(s string) (r map[string]string, err error) {
+	err = json.Unmarshal([]byte(s), &r)
+	return
+}
+
 func parseEnvUint(env string, bitSize int) (uint64, error) {
 	u, err := strconv.ParseUint(strings.TrimSpace(GetEnv(env)), 10, bitSize)
 	if err != nil {
@@ -116,6 +121,20 @@ func Environ() Loader {
 			}
 		}
 
+		// PinnedSSHFingerprints
+		var pinnedSSHFingerprints map[string]string
+		if h := GetEnv("SSHWIFTY_PINNEDSSHHOSTFINGERPRINTS"); len(h) > 0 {
+			var err error
+			pinnedSSHFingerprints, err = parseJsonStringMap(h)
+			if err != nil {
+				return "", Configuration{}, fmt.Errorf(
+					"Unable to parse %q: %s",
+					"SSHWIFTY_PINNEDSSHHOSTFINGERPRINTS",
+					err,
+				)
+			}
+		}
+
 		cfg, err := commonInput{
 			HostName:  GetEnv("SSHWIFTY_HOSTNAME"),
 			SharedKey: GetEnv("SSHWIFTY_SHAREDKEY"),
@@ -129,8 +148,9 @@ func Environ() Loader {
 			HookTimeout: castUintToInt(
 				parseEnvUintDefault("SSHWIFTY_HOOKTIMEOUT", 0, 32),
 			),
-			Servers: serverInputs{cfgSer},
-			Presets: presets,
+			PinnedSSHFingerprints: pinnedSSHFingerprints,
+			Servers:               serverInputs{cfgSer},
+			Presets:               presets,
 			OnlyAllowPresetRemotes: len(
 				GetEnv("SSHWIFTY_ONLYALLOWPRESETREMOTES"),
 			) > 0,

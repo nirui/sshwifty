@@ -22,6 +22,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/nirui/sshwifty/application/configuration"
 	"github.com/nirui/sshwifty/application/log"
 	"github.com/nirui/sshwifty/application/network"
 	"github.com/nirui/sshwifty/application/rw"
@@ -29,9 +30,9 @@ import (
 
 // Configuration contains configuration data needed to run command
 type Configuration struct {
-	Dial        network.Dial
-	DialTimeout time.Duration
-	AuthRetries int
+	Dial           network.Dial
+	DialTimeout    time.Duration
+	SSHPinnedHosts configuration.SSHHostFingerprints
 }
 
 // Commander command control

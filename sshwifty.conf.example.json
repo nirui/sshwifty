@@ -9,6 +9,10 @@
     "before_connecting": []
   },
   "HookTimeout": 30,
+  "PinnedSSHFingerprints": {
+    "router,192.168.0.1": "SHA256:NAo=",
+    "server:2222": "SHA256:NAo="
+  },
   "Servers": [
     {
       "ListenInterface": "127.0.0.1",

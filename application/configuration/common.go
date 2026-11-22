@@ -30,6 +30,7 @@ type Common struct {
 	Dialer                 network.Dial
 	DialTimeout            time.Duration
 	Presets                []Preset
+	PinnedSSHFingerprints  SSHHostFingerprints
 	Hooks                  HookSettings
 	OnlyAllowPresetRemotes bool
 }
