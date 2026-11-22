@@ -206,24 +206,10 @@ function startApp(rootEl) {
         ).slice(0, 32);
       },
       buildBackendSocketURLs() {
-        let r = {
-          webSocket: "",
-          keepAlive: "",
+        return {
+          webSocket: socksInterface,
+          keepAlive: socksInterface,
         };
-
-        switch (location.protocol) {
-          case "https:":
-            r.webSocket = "wss://";
-            break;
-
-          default:
-            r.webSocket = "ws://";
-        }
-
-        r.webSocket += location.host + socksInterface;
-        r.keepAlive = location.protocol + "//" + location.host + socksInterface;
-
-        return r;
       },
       buildSocket(key, dialTimeout, heartbeatInterval) {
         return new Socket(
