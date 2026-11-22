@@ -559,6 +559,11 @@ computer console.
   formatting fixes
 - Thanks to [Scarfsai](https://github.com/Scarfsai) for enabling supports to
   `xterm-256color` and `@xterm/addon-clipboard`
+- Thanks to Nelson Trindade Silva [www.paos.pt](https://www.paos.pt) for
+  conducting detailed security review and suggestions for Sshwifty, multiple
+  critical bugs are discovered by him in the process. These bugs are addressed
+  in commit e0846a7b1a, 4569345861, e569e58e6c and 984d0193b1 following his
+  discovery.
 
 ## License
 
