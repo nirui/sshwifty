@@ -153,7 +153,7 @@ export class History {
       this.records.splice(i, 1);
       break;
     }
-    this.saver(this, this.records);
+    this.store();
   }
 
   /**
@@ -280,4 +280,132 @@ export class History {
     }
     return s;
   }
+}
+
+/**
+ * Check if current user is effected by the Secret Data Mis Stored Bug
+ *
+ * @param {History} h
+ *
+ * @returns {Array<string>} the title of records effected by the bug
+ */
+function effectedBySecretDataStoredBug(h) {
+  const memRecord = h.all();
+  let effected = [];
+  for (let i in memRecord) {
+    if (!memRecord[i]["session"]) {
+      // No secret saved
+      continue;
+    }
+    if (!memRecord[i]["keptSessions"]) {
+      // No secret should be saved?
+      return true;
+    }
+    const totalSessionSaved = Object.keys(memRecord[i].session).length;
+    let intendedStoredSessionData = 0;
+    for (let k in memRecord[i].keptSessions) {
+      if (typeof memRecord[i].session[k] === "undefined") {
+        continue;
+      }
+      intendedStoredSessionData++;
+    }
+    if (totalSessionSaved === intendedStoredSessionData) {
+      continue;
+    }
+    effected.push(memRecord[i].title);
+  }
+  return effected;
+}
+
+const isEffectedBySecretDataStoredBugMessage = `<div class="version-warning">
+<div class="version-message">
+  <p>
+    You're effected by a bug in the previous versions of Sshwifty that
+    unintentionally <b>stored your SSH logins such as passwords and/or private
+    keys</b> to your browser's local data storage.
+  </p>
+
+  <p>
+    The effected record(s) are: <b>%effectedRecords%</b>
+  </p>
+
+  <p>
+    An automated process should have already removed the secrets from the
+    effected records. But based on the security of your browser, <b>it is
+    recommended to secure of these servers by changing your logins</b>. Sorry
+    for the inconvenience.
+  </p>
+
+  <p>
+    This message disappears if you reload the page.
+  </p>
+</div>
+</div>`;
+const notEffectedBySecretDataStoredBugMessage = `<div class="version-info">
+<div class="version-message">
+  <details>
+    <summary>
+      There was a bug in the previous versions of Sshwifty that could
+      <b>unintentionally store your SSH logins</b> into your browser's local
+      storage. <u>Click here</u> to learn more.
+    </summary>
+
+    <hr />
+
+    <p>
+      In the previous versions of Sshwifty, a bug could allow SSH logins, which
+      is considered user secret by Sshwifty and should never be stored, to
+      be saved in your browser's local data storage.
+    </p>
+
+    <p>
+      The bug is triggered when user deletes a remote from their "Connected
+      before" list while the SSH login data from other remote(s) remain loaded
+      in the browser's runtime memory (observable if the remote item shows
+      "Clear" rather than "Remove" when hovering pointer over it).
+    </p>
+
+    <p>
+      The remote deletion process failed to sanitize these login data before
+      storing the remote login history to your browser, causing the data leak.
+    </p>
+
+    <p>
+      Sshwifty has scanned your current remote records and founds no leaked
+      data. But still, if you've ever triggered the bug and this browser is
+      insecure (for example, it's installed on a shared computer or have an
+      insecure browser plugin), please consider to change your SSH logins just
+      be safe.
+    </p>
+
+    <p>
+      I'm so sorry for the inconvenience.
+    </p>
+  </details>
+</div>
+</div>`;
+
+/**
+ * Generates the warning message for the bug that caused user secret data been
+ * saved to the history record
+ *
+ * Note: keep this feature for at least until May 2027 (6 month)
+ *
+ * @param {History} h
+ *
+ * @returns {string} the warning message in HTML format
+ */
+export function generateSecretDataStoreBugWarningMessage(h) {
+  const effectedRecords = effectedBySecretDataStoredBug(h);
+  if (effectedRecords.length > 0) {
+    h.store();
+    return isEffectedBySecretDataStoredBugMessage.replaceAll(
+      "%effectedRecords%",
+      effectedRecords
+        .join(", ")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;"),
+    );
+  }
+  return notEffectedBySecretDataStoredBugMessage;
 }

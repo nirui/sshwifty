@@ -430,3 +430,43 @@
   height: 20px;
   cursor: pointer;
 }
+
+#home-version-message {
+  font-size: 0.9em;
+  text-align: left;
+}
+
+#home-version-message .version-info {
+  padding: 10px 20px;
+  background: #333;
+}
+
+#home-version-message .version-warning {
+  padding: 10px 20px;
+  background: #a60;
+}
+
+#home-version-message .version-warning::before {
+  content: "!";
+  display: block;
+  float: left;
+  padding: 10px 20px 10px 5px;
+  font-size: 2em;
+}
+
+#home-version-message .version-message {
+  overflow: auto;
+}
+
+#home-version-message .version-message > details > summary {
+  font-size: 0.9em;
+  cursor: pointer;
+  margin: 10px 0;
+  color: #eee;
+  line-height: 1.6;
+  list-style: none;
+}
+
+#home-version-message .version-message > details > summary::marker {
+  text-align: right;
+}
