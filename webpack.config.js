@@ -24,7 +24,7 @@ import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import CssMinimizerPlugin from "css-minimizer-webpack-plugin";
 import ImageMinimizerPlugin from "image-minimizer-webpack-plugin";
 import { VueLoaderPlugin  } from "vue-loader";
-import WebpackFavicons from "webpack-favicons";
+import FaviconsWebpackPlugin from "favicons-webpack-plugin";
 import CopyPlugin from "copy-webpack-plugin";
 import TerserPlugin from "terser-webpack-plugin";
 import { CleanWebpackPlugin } from "clean-webpack-plugin";
@@ -338,26 +338,28 @@ export default {
           );
         },
       },
-      new WebpackFavicons({
-        src: path.join(__dirname, "ui", "sshwifty.svg"),
-        appName: "Sshwifty SSH Client",
-        appShortName: "Sshwifty",
-        appDescription: "Web SSH Client",
-        developerName: "Ni Rui",
-        developerURL: "https://nirui.org",
-        background: "#333",
-        theme_color: "#333",
-        appleStatusBarStyle: "black",
-        display: "standalone",
-        icons: {
-          android: { offset: 0, overlayGlow: false, overlayShadow: true },
-          appleIcon: { offset: 5, overlayGlow: false },
-          appleStartup: { offset: 5, overlayGlow: false },
-          coast: false,
-          favicons: { overlayGlow: false },
-          windows: { offset: 5, overlayGlow: false },
-          yandex: false,
-        },
+      new FaviconsWebpackPlugin({
+        logo: path.join(__dirname, "ui", "sshwifty.svg"),
+        cache: true,
+        inject: true,
+        prefix: "",
+        favicons: {
+          appName: "Sshwifty SSH Client",
+          appDescription: "SSH and Telnet client",
+          developerName: "Ni Rui <ranqus@gmail.com>",
+          developerURL: "https://nirui.org",
+          background: "#333",
+          theme_color: "#333",
+          appleStatusBarStyle: "black-translucent",
+          icons: {
+            android: true,
+            appleIcon: true,
+            appleStartup: true,
+            favicons: true,
+            windows: true,
+            yandex: true
+          },
+        }
       }),
       new HtmlWebpackPlugin({
         inject: true,

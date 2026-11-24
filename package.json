@@ -31,6 +31,7 @@
     "eslint-plugin-vue": "^9.32.0",
     "eslint-webpack-plugin": "^6.0.0",
     "favicons": "^7.3.1",
+    "favicons-webpack-plugin": "^6.0.1",
     "fontfaceobserver": "^2.3.0",
     "globals": "^17.14.0",
     "hack-font": "^3.3.0",
@@ -54,8 +55,7 @@
     "vue": "^2.6.14",
     "vue-loader": "^15.9.8",
     "webpack": "^5.113.0",
-    "webpack-cli": "^7.3.1",
-    "webpack-favicons": "^1.5.43"
+    "webpack-cli": "^7.3.1"
   },
   "scripts": {
     "dev": "CGO_ENABLED=0 NODE_ENV=development webpack watch --mode=development --config=webpack.config.js",
