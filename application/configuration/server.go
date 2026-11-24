@@ -55,10 +55,9 @@ func (s Server) buildOrigin(input string) (string, error) {
 	}
 	if len(u.Host) <= 0 || len(u.Scheme) <= 0 {
 		return "", fmt.Errorf(
-			"The URL %q in AllowedOrigins is invalid: %s. "+
+			"The URL %q in AllowedOrigins is invalid. "+
 				"A valid one should look like \"https://example.internal\"",
 			input,
-			err,
 		)
 	}
 	if len(u.Path) > 0 ||
@@ -77,6 +76,9 @@ func (s Server) buildOrigin(input string) (string, error) {
 
 // AllowedOriginList contains a list of allowed origins
 func (s Server) AllowedOriginList() (out []string) {
+	if len(s.AllowedOrigins) <= 0 {
+		return
+	}
 	for v := range strings.SplitSeq(s.AllowedOrigins, ",") {
 		u, err := s.buildOrigin(v)
 		if err != nil {
@@ -94,12 +96,14 @@ func (s Server) verify() error {
 		return fmt.Errorf("invalid IP address \"%s\"", s.ListenInterface)
 	}
 	// Strings in s.AllowedOrigins must be a valid URL
-	for v := range strings.SplitSeq(s.AllowedOrigins, ",") {
-		_, err := s.buildOrigin(v)
-		if err == nil {
-			continue
+	if len(s.AllowedOrigins) > 0 {
+		for v := range strings.SplitSeq(s.AllowedOrigins, ",") {
+			_, err := s.buildOrigin(v)
+			if err == nil {
+				continue
+			}
+			return err
 		}
-		return err
 	}
 	// s.TLSCertificateFile and s.TLSCertificateKeyFile must be specified at
 	// the same time
